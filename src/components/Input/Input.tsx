@@ -13,7 +13,7 @@ export default function Input({title, placeholder, value, onChangeText, password
     <View style={styles.inputContainer}>
       {title && <Text style={[styles.inputTitle, { color: theme.primary100 }]}>{title}</Text>}
       <TextInput
-        style={[styles.input, { borderColor: theme.grey10 }]}
+        style={[styles.input, { borderColor: theme.grey10, color: theme.highDark }]}
         placeholder={placeholder}
         placeholderTextColor={theme.grey20}
         secureTextEntry={password && !isPasswordVisible}

@@ -26,9 +26,6 @@ export default function LoginScreen({ navigation }: any) {
     requestLogin({ username, password });
   };
 
-  const backgroundColor = theme.highLight;
-  console.log(backgroundColor)
-
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={[styles.wrapper, { backgroundColor: theme.highLight }]}>
