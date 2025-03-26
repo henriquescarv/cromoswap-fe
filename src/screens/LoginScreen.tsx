@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import {
   StyleSheet,
   Text,
   View,
   TouchableWithoutFeedback,
   Keyboard,
-  TouchableHighlight,
 } from 'react-native';
 import Input from '@/components/Input/Input';
 import Button from '@/components/Button/Button';
 import useStore from '@/services/store';
+import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
+import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 
 export default function LoginScreen({ navigation }: any) {
   const [username, setUsername] = useState('');
@@ -17,36 +18,46 @@ export default function LoginScreen({ navigation }: any) {
 
   const { login: loginStore, requestLogin } = useStore((state: any) => state);
 
+  const { theme } = useTheme();
+  const { locale } = useContext(LocaleContext);
+  const { login: loginLocale } = locale;
+
   const handleLogin = async () => {
     requestLogin({ username, password });
   };
 
-  console.log(loginStore);
+  const backgroundColor = theme.highLight;
+  console.log(backgroundColor)
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={styles.wrapper}>
+      <View style={[styles.wrapper, { backgroundColor: theme.highLight }]}>
         <View style={styles.container}>
-          <Text style={styles.title}>Entrar</Text>
-          <Input
-            placeholder="Nome de usuário"
-            value={username}
-            onChangeText={setUsername}
-          />
-          <Input
-            placeholder="Senha"
-            value={password}
-            password
-            onChangeText={setPassword}
-          />
-          <Button onClick={handleLogin} text="Entrar" loading={loginStore.loading} widthFull />
+          <Text style={[styles.title, { color: theme.primary100 }]}>{loginLocale.title}</Text>
+          <View style={styles.inputsContainer}>
+            <Input
+              placeholder={loginLocale.usernamePlaceholder}
+              value={username}
+              onChangeText={setUsername}
+            />
+            <Input
+              placeholder={loginLocale.passwordPlaceholder}
+              value={password}
+              password
+              onChangeText={setPassword}
+            />
+          </View>
+          <Button onClick={handleLogin} text={loginLocale.loginButton} loading={loginStore.loading} widthFull />
           <View style={styles.registerContainer}>
-            <Text style={styles.text}>
-              {'Não tem uma conta ainda?'}
+            <Text style={[styles.text, { color: theme.grey20 }]}>
+              {loginLocale.noAccountLabel}
             </Text>
-            <TouchableHighlight onPress={() => navigation.navigate('Register')}>
-              <Text style={styles.linkText}>Cadastre-se!</Text>
-            </TouchableHighlight>
+            <Button
+              text={loginLocale.registerButton}
+              variant="text"
+              onClick={() => navigation.navigate('Register')}
+              loading={loginStore.loading}
+            />
           </View>
         </View>
       </View>
@@ -54,47 +65,35 @@ export default function LoginScreen({ navigation }: any) {
   );
 }
 
-
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
     fontFamily: 'primaryRegular',
     paddingBottom: 80,
   },
   container: {
-    width: '80%',
+    width: '90%',
     alignItems: 'center',
+  },
+  inputsContainer: {
+    width: '100%',
+    marginTop: 12,
+    marginBottom: 40,
   },
   registerContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 40,
+    display: 'flex',
+    flexDirection: 'row',
+    marginTop: 12,
   },
   title: {
-    fontSize: 24,
+    fontSize: 36,
     marginBottom: 20,
-    fontFamily: 'primaryMedium',
+    fontFamily: 'semiBold',
+    width: '100%',
   },
   text: {
     fontFamily: 'primaryRegular',
   },
-  button: {
-    backgroundColor: '#3a70c2',
-    borderRadius: 24,
-    paddingVertical: 12,
-    width: '100%',
-    alignItems: 'center',
-  },
-  linkText: {
-    color: '#3a70c2',
-    textDecorationLine: 'underline',
-    fontFamily: 'primaryRegular',
-  },
-  buttonLabel: {
-    fontFamily: 'primaryMedium',
-    color: '#fff',
-  }
 });

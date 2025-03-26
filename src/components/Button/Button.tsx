@@ -1,32 +1,47 @@
 import React from "react";
-import { StyleSheet, Pressable, Text, ActivityIndicator } from "react-native";
+import { StyleSheet, Pressable, Text, ActivityIndicator, TouchableHighlight } from "react-native";
 import { ButtonProps } from "./Button.types";
+import { useTheme } from "@/providers/ThemeModeProvider/ThemeModeProvider";
 
-export default function Button({text, children, widthFull, variant, loading, onClick}: ButtonProps) {
+export default function Button({text, children, disabled, widthFull, variant, loading, onClick}: ButtonProps) {
+  const { theme } = useTheme();
+
+  if (variant === 'text') {
+    return (
+      <TouchableHighlight onPress={onClick} disabled={disabled}>
+        <Text style={[styles.linkText, { color: theme.primary50 }]}>{text}</Text>
+      </TouchableHighlight>
+    )
+  }
+
   return (
-    <Pressable style={[styles.button, widthFull && styles.buttonFullWidth]} onTouchEnd={onClick}>
-      {text && !loading && <Text style={styles.text}>{text}</Text>}
-      {loading && <ActivityIndicator size="small" color="#fff" />}
+    <Pressable
+      style={[styles.button, widthFull && styles.buttonFullWidth, { backgroundColor: theme.primary50 }]}
+      onTouchEnd={onClick}
+      disabled={disabled}
+    >
+      {text && !loading && <Text style={[styles.text, { color: theme.defaultLight }]}>{text}</Text>}
+      {loading && <ActivityIndicator size="small" color={theme.defaultLight} />}
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: '#3a70c2',
-    borderRadius: 24,
+    borderRadius: 8,
     paddingHorizontal: 24,
     width: 'auto',
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 44,
+    minHeight: 48,
   },
-  text: {
-    color: '#fff',
+  linkText: {
     fontFamily: 'primaryMedium',
   },
-
-
+  text: {
+    fontFamily: 'primaryMedium',
+    fontSize: 16,
+  },
   buttonFullWidth: {
     width: '100%',
     paddingHorizontal: 0,

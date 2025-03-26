@@ -1,23 +1,28 @@
 import React from 'react';
 
 const Locales = {
-	home: {
-		helloLabel: 'Olá, mundo! Sou o Henrique.',
-		chaveLabel: (<>{'> '}</>),
-		devFrontLabel: 'Desenvolvedor Front-end',
-		linkedinButtonLabel: 'LinkedIn',
-		githubButtonLabel: 'GitHub',
-		cvButtonLabel: 'Baixar CV',
-		presentationLabel: (
-			<>
-				{'Estudante de '}
-				<em>Sistemas de Informação</em>
-				{'. Desde 2022 impactando milhares de usuários com projetos que utilizam '}
-				<em>ReactJS, TypeScript, Redux, Jest</em>
-				{', entre outras tecnologias.'}
-			</>
-		),
+	login: {
+		title: 'Bem vindo! ',
+		usernamePlaceholder: 'Nome de usuário',
+		passwordPlaceholder: 'Senha',
+		loginButton: 'Entrar',
+		noAccountLabel: 'Não possui uma conta? ',
+		registerButton: 'Cadastre-se!',
 	},
+	register: {
+		title: 'Cadastre-se!',
+		description: 'Crie uma conta para continuar',
+		registerButton: 'Cadastrar-se',
+		inputs: {
+			nameTitle: 'Nome',
+			namePlaceholder: 'Nome completo',
+			emailTitle: 'E-mail',
+			emailPlaceholder: 'Digite seu E-mail',
+			passwordTitle: 'Senha',
+			passwordPlaceholder: 'Crie uma senha forte',
+			confirmPasswordPlaceholder: 'Repita sua senha',
+		}
+	}
 };
 
 export default Locales;
