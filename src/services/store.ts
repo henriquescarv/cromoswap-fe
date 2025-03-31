@@ -1,5 +1,5 @@
 import {create} from 'zustand';
-import { actions } from './actions';
+import { actions } from './actions/login/login.actions';
 
 const initialState = {
   login: {

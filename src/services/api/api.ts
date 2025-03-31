@@ -8,12 +8,7 @@ const api = axios.create({
   },
 });
 
-type getLoginProps = {
-  username: string;
-  password: string;
-}
-
-export const getLogin = async ({ username, password }: getLoginProps) => {
+export const postLogin = async ({ username, password }: postLoginProps) => {
   try {
     const response = await api.post('/login', { username, password });
     return response.data;

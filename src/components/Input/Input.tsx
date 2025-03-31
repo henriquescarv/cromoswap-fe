@@ -4,22 +4,28 @@ import { InputProps } from "./Input.types";
 import { useTheme } from "@/providers/ThemeModeProvider/ThemeModeProvider";
 import { Ionicons } from "@expo/vector-icons";
 
-export default function Input({title, placeholder, value, onChangeText, password}: InputProps) {
+export default function Input({title, placeholder, value, onChangeText, password, maxLength, errorMessage}: InputProps) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   const { theme } = useTheme();
+
+  const inputBorderColor = errorMessage ? theme.primaryRed : theme.grey10;
   
   return (
     <View style={styles.inputContainer}>
       {title && <Text style={[styles.inputTitle, { color: theme.primary100 }]}>{title}</Text>}
       <TextInput
-        style={[styles.input, { borderColor: theme.grey10, color: theme.highDark }]}
+        style={[styles.input, { borderColor: inputBorderColor, color: theme.highDark }]}
         placeholder={placeholder}
         placeholderTextColor={theme.grey20}
         secureTextEntry={password && !isPasswordVisible}
         value={value}
         onChangeText={onChangeText}
+        maxLength={maxLength}
       />
+      <View style={[styles.inputError]}>
+        {errorMessage && <Text style={[styles.inputErrorText, { color: theme.primaryRed }]}>{errorMessage}</Text>}	
+      </View>
       {password && (
         <TouchableOpacity onPress={() => setIsPasswordVisible(!isPasswordVisible)} style={styles.inputIcon}>
           <Ionicons
@@ -38,7 +44,7 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'column',
     width: '100%',
-    marginBottom: 16,
+    marginBottom: 24,
   },
   input: {
     height: 48,
@@ -48,6 +54,14 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     width: '100%',
     fontFamily: 'primaryRegular',
+  },
+  inputError: {
+    position: 'absolute',
+    bottom: -18,
+  },
+  inputErrorText: {
+    fontFamily: 'primaryRegular',
+    fontSize: 12,
   },
   inputTitle: {
     fontFamily: 'semiBold',

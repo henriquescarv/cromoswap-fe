@@ -14,7 +14,7 @@ const ThemeContext = createContext<ThemeContextProps>({
 });
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-    const [theme, setTheme] = useState(Appearance.getColorScheme() === 'dark' ? darkTheme : lightTheme);
+    const [theme, setTheme] = useState(Appearance.getColorScheme() === 'light' ? darkTheme : lightTheme);
 
     useEffect(() => {
         const subscription = Appearance.addChangeListener(({ colorScheme }) => {

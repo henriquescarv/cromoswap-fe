@@ -12,6 +12,8 @@ const darkTheme = {
 
   primary50: '#994ED2',
   primary100: '#F8F0FF',
+
+  primaryRed: '#DD2B49',
 }
 
 export default darkTheme;

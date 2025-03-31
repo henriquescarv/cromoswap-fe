@@ -8,7 +8,7 @@ export default function Button({text, children, disabled, widthFull, variant, lo
 
   if (variant === 'text') {
     return (
-      <TouchableHighlight onPress={onClick} disabled={disabled}>
+      <TouchableHighlight onPress={onClick} disabled={disabled || loading}>
         <Text style={[styles.linkText, { color: theme.primary50 }]}>{text}</Text>
       </TouchableHighlight>
     )
@@ -18,7 +18,7 @@ export default function Button({text, children, disabled, widthFull, variant, lo
     <Pressable
       style={[styles.button, widthFull && styles.buttonFullWidth, { backgroundColor: theme.primary50 }]}
       onTouchEnd={onClick}
-      disabled={disabled}
+      disabled={disabled || loading}
     >
       {text && !loading && <Text style={[styles.text, { color: theme.defaultLight }]}>{text}</Text>}
       {loading && <ActivityIndicator size="small" color={theme.defaultLight} />}

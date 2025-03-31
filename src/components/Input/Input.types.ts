@@ -4,4 +4,6 @@ export type InputProps = {
   value: string;
   onChangeText: (text: string) => void;
   password?: boolean;
+  maxLength?: number;
+  errorMessage?: string | null;
 }

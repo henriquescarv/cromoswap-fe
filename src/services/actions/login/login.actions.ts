@@ -1,21 +1,4 @@
-import { getLogin } from './api';
-
-type setLoginProps = {
-  set: any;
-  token: string | null;
-  isAuthenticated: boolean;
-}
-
-type requestLoginProps = {
-  set: any;
-  username: string;
-  password: string;
-}
-
-type setLoadingProps = {
-  set: any;
-  loading: boolean;
-}
+import { postLogin } from '@/services/api/api';
 
 const setLoading = ({ set, loading }: setLoadingProps) => {
   set((state: any) => ({
@@ -42,7 +25,7 @@ const requestLogin = async ({set, username, password}: requestLoginProps) => {
   try {
     setLoading({ set, loading: true });
 
-    const data = await getLogin({ username, password });
+    const data = await postLogin({ username, password });
     setLogin({ set, token: data.token, isAuthenticated: true });
 
     console.log('Login successful', `Token: ${data.token}`);

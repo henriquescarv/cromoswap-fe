@@ -1,0 +1,1 @@
+export { default as BasicInfosStep } from './BasicInfosStep';
