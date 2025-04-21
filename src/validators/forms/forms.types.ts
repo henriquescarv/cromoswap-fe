@@ -30,3 +30,16 @@ export type DefaultErrorsProps = {
   password: PasswordErrors | null;
   confirmPassword: PasswordErrors | null;
 };
+
+export enum StateErrors {
+  EMPTY = 'EMPTY',
+};
+
+export enum CityErrors {
+  EMPTY = 'EMPTY',
+};
+
+export type DefaultRegionErrorsProps = {
+  countryState: StateErrors | null;
+  city: CityErrors | null;
+};

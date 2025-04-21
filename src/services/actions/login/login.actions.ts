@@ -1,4 +1,4 @@
-import { postLogin } from '@/services/api/api';
+import { postLogin } from "./login.requests";
 
 const setLoading = ({ set, loading }: setLoadingProps) => {
   set((state: any) => ({
@@ -21,17 +21,31 @@ const setLogin = ({set, token, isAuthenticated}: setLoginProps) => {
   }));
 };
 
+const setStatus = ({set, status}: setLoginStatusProps) => {
+  set((state: any) => ({
+    ...state,
+    login: {
+      ...state.login,
+      status,
+    },
+  }));
+}
+
 const requestLogin = async ({set, username, password}: requestLoginProps) => {
   try {
     setLoading({ set, loading: true });
 
     const data = await postLogin({ username, password });
     setLogin({ set, token: data.token, isAuthenticated: true });
+    setStatus({ set, status: 'success' });
 
-    console.log('Login successful', `Token: ${data.token}`);
+    console.log('Login successful', `Message: ${data.message}`);
+
+    setLoading({ set, loading: false });
   } catch (error) {
-    console.log('Error', 'Something went wrong');
-  } finally {
+    setStatus({ set, status: 'error' });
+    console.log('requestLogin', 'Something went wrong');
+
     setLoading({ set, loading: false });
   }
 };
@@ -40,7 +54,7 @@ const logout = (set: any) => {
   setLogin({ set, token: null, isAuthenticated: false });
 };
 
-export const actions = {
+export const loginActions = {
   login: {
     loading: setLoading,
     request: requestLogin,

@@ -7,6 +7,8 @@ const darkTheme = {
   highLight: '#000',
   highDark: '#fff',
 
+  grey5: '#F2F2F2',
+  grey6: '#E8E8E8',
   grey10: '#383838',
   grey20: '#67676C',
 

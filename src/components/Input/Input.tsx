@@ -14,6 +14,7 @@ export default function Input({title, placeholder, value, onChangeText, password
   return (
     <View style={styles.inputContainer}>
       {title && <Text style={[styles.inputTitle, { color: theme.primary100 }]}>{title}</Text>}
+
       <TextInput
         style={[styles.input, { borderColor: inputBorderColor, color: theme.highDark }]}
         placeholder={placeholder}

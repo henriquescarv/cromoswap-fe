@@ -11,6 +11,8 @@ export type BasicInfosStepProps = {
   setConfirmPassword: (confirmPassword: string) => void;
   inputErrors: DefaultErrorsProps;
   setInputErrors: (errors: DefaultErrorsProps) => void;
-  handleClickRegister: () => void;
-  buttonIsDisabled: boolean;
+  handleVerifyErrors: () => void;
+  handleGoToRegionStep: () => void;
+  handleBackToLoginStep: () => void;
+  basicInfosButtonIsDisabled: boolean;
 };

@@ -1,5 +1,9 @@
 {
   "compilerOptions": {
+    "moduleResolution": "node",
+    "noImplicitAny": false,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
     "strict": true,
     "baseUrl": ".",
     "paths": {

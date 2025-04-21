@@ -3,9 +3,9 @@ import Button from "@/components/Button/Button"
 import Input from "@/components/Input/Input"
 import { LocaleContext } from "@/providers/LocaleProvider/LocaleProvider"
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
-import formsValidators from "@/validators/forms/forms"
-import { StyleSheet, Text, View } from "react-native"
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import { BasicInfosStepProps } from "./BasicInfosStep.types";
+import { Ionicons } from '@expo/vector-icons';
 
 const BasicInfosStep = ({
   username,
@@ -18,28 +18,14 @@ const BasicInfosStep = ({
   setConfirmPassword,
   inputErrors,
   setInputErrors,
-  handleClickRegister,
-  buttonIsDisabled,
+  handleVerifyErrors,
+  handleGoToRegionStep,
+  handleBackToLoginStep,
+  basicInfosButtonIsDisabled,
 }: BasicInfosStepProps) => {
-  const { verifyUsername, verifyEmail, verifyPassword, comparePassowrd } = formsValidators;
-
   const { theme } = useTheme();
   const { locale } = useContext(LocaleContext);
   const { register: registerLocale } = locale;
-
-  const handleVerifyErrors = () => {
-    const usernameError = verifyUsername(username);
-    const emailError = verifyEmail(email);
-    const passwordError = verifyPassword(password);
-    const confirmPasswordError = comparePassowrd(password, confirmPassword);
-
-    setInputErrors({
-      username: usernameError,
-      email: emailError,
-      password: passwordError,
-      confirmPassword: confirmPasswordError,
-    });
-  }
 
   const onChangeUsername = (username: string) => {
     setUsername(username);
@@ -58,12 +44,21 @@ const BasicInfosStep = ({
     setInputErrors({ ...inputErrors, confirmPassword: null });
   }
 
-
   return (
     <View style={styles.container}>
       <View style={styles.headContainer}>
-        <Text style={[styles.title, { color: theme.primary100 }]}>{registerLocale.title}</Text>
-        <Text style={[styles.description, { color: theme.grey20 }]}>{registerLocale.description}</Text>
+        <TouchableOpacity onPress={() => handleBackToLoginStep()}>
+          <Ionicons
+            name={"chevron-back-outline"}
+            size={32}
+            color={theme.primary50}
+          />
+        </TouchableOpacity>
+
+        <View style={styles.headTextContainer}>
+          <Text style={[styles.title, { color: theme.primary100 }]}>{registerLocale.title}</Text>
+          <Text style={[styles.description, { color: theme.grey20 }]}>{registerLocale.description}</Text>
+        </View>
       </View>
       <View style={[styles.inputsContainer]}>
         <Input
@@ -100,14 +95,22 @@ const BasicInfosStep = ({
           errorMessage={inputErrors.confirmPassword ? locale.register.inputErrors.password[inputErrors.confirmPassword] : null}
         />
       </View>
-      <Button onClick={handleClickRegister} text={registerLocale.registerButton} widthFull disabled={buttonIsDisabled} />
+      <View style={[styles.buttonsContainer]}>
+        <Button
+          onClick={handleGoToRegionStep}
+          onClickDisabled={handleVerifyErrors}
+          text={registerLocale.continueButton}
+          widthFull
+          disabled={basicInfosButtonIsDisabled}
+        />
+      </View>
     </View>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
-    width: '90%',
+    width: '100%',
     alignItems: 'center',
   },
   title: {
@@ -121,11 +124,21 @@ const styles = StyleSheet.create({
   },
   headContainer: {
     width: '100%',
+    display: 'flex',
+    flexDirection: 'row',
+    gap: 16,
+  },
+  headTextContainer: {
+    width: '100%',
   },
   inputsContainer: {
-    width: '100%',
+    width: '90%',
     marginTop: 68,
     marginBottom: 68,
+  },
+  buttonsContainer: {
+    width: '90%',
+    gap: 16,
   }
 });
 

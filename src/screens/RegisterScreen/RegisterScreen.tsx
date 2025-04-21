@@ -1,18 +1,23 @@
-import React, { useState } from 'react';
-import { Alert, Keyboard, StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
-import axios from 'axios';
-import { urlApi } from '@/fakeenv';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Keyboard, StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
-import { DefaultErrorsProps } from '@/validators/forms/forms.types';
+import { CityErrors, DefaultErrorsProps, DefaultRegionErrorsProps, StateErrors } from '@/validators/forms/forms.types';
 import formsValidators from '@/validators/forms/forms';
 import { STEPS, StepProps } from './RegisterScreen.types';
 import { BasicInfosStep } from './components/BasicInfosStep';
+import { RegionStep } from './components/RegionStep';
+import useStore from '@/services/store';
 
 const defaultErrors: DefaultErrorsProps = {
   username: null,
   email: null,
   password: null,
   confirmPassword: null,
+};
+
+const defaultRegionErrors: DefaultRegionErrorsProps = {
+  countryState: null,
+  city: null,
 };
 
 const initialStep: StepProps = STEPS.BASIC_INFOS;
@@ -23,13 +28,50 @@ export default function RegisterScreen({ navigation }: any) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [countryState, setCountryState] = useState('');
+  const [city, setCity] = useState('');
   const [inputErrors, setInputErrors] = useState({ ...defaultErrors });
+  const [regionErrors, setRegionErrors] = useState({ ...defaultRegionErrors });
 
   const { verifyUsername, verifyEmail, verifyPassword, comparePassowrd } = formsValidators;
 
+  const {
+    register: registerStore,
+    login: loginStore,
+    requestRegister,
+    requestIbgeStates,
+    requestIbgeCities,
+  } = useStore((state: any) => state);
+
+  const statesList = registerStore.ibge.countryStates.list;
+  const citiesList = registerStore.ibge.cities.list;
+
   const { theme } = useTheme();
 
-  const buttonIsDisabled = password !== confirmPassword;
+  const basicInfosButtonIsDisabled = !username || !email || !password || password !== confirmPassword;
+  const regionButtonIsDisabled = !countryState || !city;
+
+  const redirectToHome = useCallback(() => {
+    if (registerStore.status === 'success' && !!loginStore.isAuthenticated) {
+      navigation.navigate('Home');
+    }
+  }, [loginStore.isAuthenticated, registerStore.status, navigation]);
+
+  useEffect(() => {
+    redirectToHome();
+  }, [redirectToHome]);
+
+  const getDefaultData = useCallback(() => {
+    requestIbgeStates();
+
+    if (countryState) {
+      requestIbgeCities(countryState);
+    }
+  }, [countryState]);
+
+  useEffect(() => {
+    getDefaultData();
+  }, [getDefaultData]);
 
   const handleVerifyErrors = () => {
     const usernameError = verifyUsername(username);
@@ -45,38 +87,40 @@ export default function RegisterScreen({ navigation }: any) {
     });
   }
 
-  const requestRegisterUser = async () => {
-    try {
-      const response = await axios.post(`${urlApi}/register`,
-        {
-          username,
-          password,
-        }, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+  const handleVerifyRegionErrors = () => {
+    const countryStateError = countryState ? null : StateErrors.EMPTY;
+    const cityError = city ? null : CityErrors.EMPTY;
 
-      const data = await response.data;
-      if (response.status === 201) {
-        Alert.alert('Register successful', data.message);
-        navigation.navigate('Login');
-      } else {
-        Alert.alert('Register failed', data.message);
-      }
-    } catch (error) {
-      console.log(error)
-      Alert.alert('Error', 'Something went wrong');
-    }
-  };
+    setRegionErrors({
+      countryState: countryStateError,
+      city: cityError,
+    });
+  }
 
-  const handleClickRegister = async () => {
-    handleVerifyErrors();
+  const handleGoToRegionStep = () => {
+    setCurrentStep(STEPS.REGION);
+  }
+
+  const handleGoToBasicInfosStep = () => {
+    setCurrentStep(STEPS.BASIC_INFOS);
+  }
+
+  const handleBackToLoginStep = () => {
+    navigation.goBack();
+  }
+
+  const handleRegister = () => {
+    requestRegister({ username, email, password, countryState, city });
+  }
+
+  const handleClickRegister = () => {
     const hasSomeError = Object.values(inputErrors).some((error) => error !== null);
 
-    if (hasSomeError) { return; }
+    if (hasSomeError) {
+      return;
+    }
 
-    await requestRegisterUser();
+    handleRegister();
   };
 
   const basicInfosStepProps = {
@@ -90,12 +134,31 @@ export default function RegisterScreen({ navigation }: any) {
     setConfirmPassword,
     inputErrors,
     setInputErrors,
+    handleVerifyErrors,
+    handleGoToRegionStep,
+    handleBackToLoginStep,
+    basicInfosButtonIsDisabled,
+  };
+
+  const regionStepProps = {
+    city,
+    setCity,
+    countryState,
+    setCountryState,
+    citiesList,
+    statesList,
+    handleVerifyRegionErrors,
+    handleGoToBasicInfosStep,
     handleClickRegister,
-    buttonIsDisabled,
+    regionButtonIsDisabled,
+    buttonIsLoading: registerStore.loading,
+    regionErrors,
+    setRegionErrors,
   };
 
   const stepRules = {
     [STEPS.BASIC_INFOS]: <BasicInfosStep {...basicInfosStepProps} />,
+    [STEPS.REGION]: <RegionStep {...regionStepProps} />,
   }
 
   return (

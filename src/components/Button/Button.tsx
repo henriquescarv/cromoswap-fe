@@ -3,25 +3,79 @@ import { StyleSheet, Pressable, Text, ActivityIndicator, TouchableHighlight } fr
 import { ButtonProps } from "./Button.types";
 import { useTheme } from "@/providers/ThemeModeProvider/ThemeModeProvider";
 
-export default function Button({text, children, disabled, widthFull, variant, loading, onClick}: ButtonProps) {
+export default function Button({
+  text,
+  children,
+  disabled = false,
+  fontSize = 16,
+  widthFull = false,
+  variant = 'primary',
+  loading = false,
+  size = 'medium',
+  color = 'primary50',
+  onClick,
+  onClickDisabled
+}: ButtonProps) {
   const { theme } = useTheme();
 
+  const handleClick = disabled ? onClickDisabled : onClick;
+
   if (variant === 'text') {
+    const buttonTextColor = disabled ? theme.grey20 : theme[color];
+
     return (
-      <TouchableHighlight onPress={onClick} disabled={disabled || loading}>
-        <Text style={[styles.linkText, { color: theme.primary50 }]}>{text}</Text>
+      <TouchableHighlight onPress={handleClick} disabled={disabled || loading}>
+        <Text style={[styles.linkText, { color: buttonTextColor, fontSize }]}>{text}</Text>
       </TouchableHighlight>
     )
   }
 
+  const backgroundColorRules = {
+    primary: disabled ? theme.grey20 : theme[color],
+    secondary: 'transparent',
+    link: theme[color],
+  }
+
+  const borderColorRules = {
+    primary: 'transparent',
+    secondary: disabled ? theme.grey20 : theme[color],
+    link: 'transparent',
+  }
+
+  const textColorRules = {
+    primary: theme.defaultLight,
+    secondary: theme[color],
+    link: theme[color],
+  }
+
+  const minHeightRules = {
+    small: 32,
+    medium: 48,
+    large: 48,
+  }
+
+  const buttonBackgroundColor = variant ? backgroundColorRules[variant] : theme[color];
+  const buttonBorderColor = variant ? borderColorRules[variant] : theme[color];
+  const buttonTextColor = variant ? textColorRules[variant] : theme.defaultLight;
+  const minHeightSize = variant ? minHeightRules[size] : 48;
+
   return (
     <Pressable
-      style={[styles.button, widthFull && styles.buttonFullWidth, { backgroundColor: theme.primary50 }]}
-      onTouchEnd={onClick}
+      style={[
+        styles.button,
+        widthFull && styles.buttonFullWidth,
+        {
+          backgroundColor: buttonBackgroundColor,
+          borderColor: buttonBorderColor,
+          minHeight: minHeightSize,
+        },
+        disabled && { opacity: 0.5 }
+      ]}
+      onTouchEnd={handleClick}
       disabled={disabled || loading}
     >
-      {text && !loading && <Text style={[styles.text, { color: theme.defaultLight }]}>{text}</Text>}
-      {loading && <ActivityIndicator size="small" color={theme.defaultLight} />}
+      {text && !loading && <Text style={[styles.text, { color: buttonTextColor, fontSize }]}>{text}</Text>}
+      {loading && <ActivityIndicator size="small" color={buttonTextColor} />}
     </Pressable>
   );
 }
@@ -29,6 +83,7 @@ export default function Button({text, children, disabled, widthFull, variant, lo
 const styles = StyleSheet.create({
   button: {
     borderRadius: 8,
+    borderWidth: 2,
     paddingHorizontal: 24,
     width: 'auto',
     alignItems: 'center',
@@ -36,7 +91,7 @@ const styles = StyleSheet.create({
     minHeight: 48,
   },
   linkText: {
-    fontFamily: 'primaryMedium',
+    fontFamily: 'semiBold',
   },
   text: {
     fontFamily: 'primaryMedium',

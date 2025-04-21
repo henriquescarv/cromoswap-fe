@@ -2,6 +2,7 @@ type setLoginProps = {
   set: any;
   token: string | null;
   isAuthenticated: boolean;
+  status?: 'success' | 'error' | null;
 }
 
 type requestLoginProps = {
@@ -13,4 +14,9 @@ type requestLoginProps = {
 type setLoadingProps = {
   set: any;
   loading: boolean;
+}
+
+type setLoginStatusProps = {
+  set: any;
+  status: 'success' | 'error' | null;
 }

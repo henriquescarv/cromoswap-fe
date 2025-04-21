@@ -1,18 +1,24 @@
 import axios from 'axios';
-import { urlApi } from '@/fakeenv';
+import { urlApi, ibgeApiUrl } from '@/fakeenv';
 
-const api = axios.create({
-  baseURL: urlApi,
+export const useApi = ({ token = null }: { token: string | null }) => {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  return axios.create({
+    baseURL: urlApi,
+    headers,
+  });
+};
+
+export const ibge = axios.create({
+  baseURL: ibgeApiUrl,
   headers: {
     'Content-Type': 'application/json',
   },
 });
-
-export const postLogin = async ({ username, password }: postLoginProps) => {
-  try {
-    const response = await api.post('/login', { username, password });
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-};

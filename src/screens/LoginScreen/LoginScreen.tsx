@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -21,6 +21,16 @@ export default function LoginScreen({ navigation }: any) {
   const { theme } = useTheme();
   const { locale } = useContext(LocaleContext);
   const { login: loginLocale } = locale;
+
+  const redirectToHome = useCallback(() => {
+    if (!!loginStore.isAuthenticated) {
+      navigation.navigate('Home');
+    }
+  }, [loginStore.isAuthenticated, navigation]);
+
+  useEffect(() => {
+    redirectToHome();
+  }, [redirectToHome]);
 
   const handleLogin = async () => {
     requestLogin({ username, password });
