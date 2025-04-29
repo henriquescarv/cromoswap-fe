@@ -43,7 +43,7 @@ export default function Album({
               {name}
             </Text>
 
-            {percentCompleted && (
+            {percentCompleted !== undefined && (
               <View
                 style={[styles.albumPercentageContainer, { borderColor: theme.primary50 }]}
               >
@@ -52,9 +52,20 @@ export default function Album({
                     style={[styles.percentageStickers, { color: theme.highLight }]}
                     numberOfLines={1}
                   >
-                    {`${percentCompleted}%`}
+                    {percentCompleted >= 30 && `${percentCompleted}%`}
                   </Text>
                 </View>
+
+                {percentCompleted < 30 && (
+                  <View style={[styles.albumPercentageBar, { flex: 1, width: `100%` }]}>
+                    <Text
+                      style={[styles.percentageStickers, { color: theme.primary50 }]}
+                      numberOfLines={1}
+                    >
+                      {`${percentCompleted}%`}
+                    </Text>
+                  </View>
+                )}
               </View>
             )}
 
@@ -111,6 +122,8 @@ const styles = StyleSheet.create({
     fontFamily: 'primaryBold',
   },
   albumPercentageContainer: {
+    display: 'flex',
+    flexDirection: 'row',
     height: 20,
     borderRadius: 10,
     borderWidth: 1,

@@ -1,0 +1,187 @@
+import { commonActions } from "../common/common.actions";
+import { requestAlbumDetailsProps, requestAlbumTemplatesProps, requestPurchaseAlbumProps, requestUserAlbumsProps, setAlbumDetailsLoadingProps, setAlbumDetailsProps, setAlbumTemplatesLoadingProps, setAlbumTemplatesProps, setPurchaseAlbumLoadingProps, setPurchaseAlbumProps, setUserAlbumsLoadingProps, setUserAlbumsProps } from "./albums.actions.types";
+import { getAlbumDetails, getAlbumTemplates, getUserAlbums, postPurchaseAlbum } from "./albums.requests";
+
+const setAlbumsTemplatesLoading = ({ set, loading }: setAlbumTemplatesLoadingProps) => {
+  set((state: any) => ({
+    ...state,
+    albumsTemplates: {
+      ...state.albumsTemplates,
+      loading,
+    }
+  }));
+};
+
+const setAlbumsTemplates = ({ set, list = null, status = null }: setAlbumTemplatesProps) => {
+  set((state: any) => ({
+    ...state,
+    albumsTemplates: {
+      ...state.albumsTemplates,
+      loading: false,
+      status,
+      list,
+    },
+  }));
+};
+
+const requestAlbumsTemplates = async ({ set }: requestAlbumTemplatesProps) => {
+  try {
+    setAlbumsTemplatesLoading({ set, loading: true });
+
+    const data = await getAlbumTemplates();
+
+    setAlbumsTemplates({ set, list: data, status: 'success' });
+  } catch (error: any) {
+    setAlbumsTemplatesLoading({ set, loading: false });
+
+    if (error.response?.data?.message === 'INVALID_TOKEN') {
+      commonActions.setInvalidToken({ set, invalidToken: true });
+    }
+
+    setAlbumsTemplates({ set, status: 'error' });
+    console.log('requestAlbumsTemplates', 'Something went wrong');
+  }
+};
+
+
+const setPurchaseAlbumLoading = ({ set, loading }: setPurchaseAlbumLoadingProps) => {
+  set((state: any) => ({
+    ...state,
+    purchaseAlbum: {
+      ...state.purchaseAlbum,
+      loading,
+    }
+  }));
+};
+
+const setPurchaseAlbum = ({ set, status = null, albumTemplateId }: setPurchaseAlbumProps) => {
+  set((state: any) => ({
+    ...state,
+    purchaseAlbum: {
+      ...state.purchaseAlbum,
+      loading: false,
+      status,
+      albumTemplateId,
+    },
+  }));
+};
+
+const requestPurchaseAlbum = async ({ set, albumTemplateId }: requestPurchaseAlbumProps) => {
+  try {
+    setPurchaseAlbumLoading({ set, loading: true });
+
+    const data = await postPurchaseAlbum({ albumTemplateId });
+
+    setPurchaseAlbum({ set, status: 'success', albumTemplateId: data.albumTemplateId });
+  } catch (error: any) {
+    setPurchaseAlbumLoading({ set, loading: false });
+
+    if (error.response?.data?.message === 'INVALID_TOKEN') {
+      commonActions.setInvalidToken({ set, invalidToken: true });
+    }
+
+    setAlbumsTemplates({ set, status: 'error' });
+    console.log('requestPurchaseAlbum', 'Something went wrong');
+  }
+};
+
+
+
+const setUserAlbumsLoading = ({ set, loading }: setUserAlbumsLoadingProps) => {
+  set((state: any) => ({
+    ...state,
+    userAlbums: {
+      ...state.albumsTemplates,
+      loading,
+    }
+  }));
+};
+
+const setUserAlbums = ({ set, list = null, status = null }: setUserAlbumsProps) => {
+  set((state: any) => ({
+    ...state,
+    userAlbums: {
+      ...state.albumsTemplates,
+      loading: false,
+      status,
+      list,
+    },
+  }));
+};
+
+const requestUserAlbums = async ({ set }: requestUserAlbumsProps) => {
+  try {
+    setUserAlbumsLoading({ set, loading: true });
+
+    const data = await getUserAlbums();
+
+    setUserAlbums({ set, list: data, status: 'success' });
+  } catch (error: any) {
+    setUserAlbumsLoading({ set, loading: false });
+
+    if (error.response?.data?.message === 'INVALID_TOKEN') {
+      commonActions.setInvalidToken({ set, invalidToken: true });
+    }
+
+    setUserAlbums({ set, status: 'error' });
+    console.log('requestUserAlbums', 'Something went wrong');
+  }
+};
+
+
+
+const setAlbumDetailsLoading = ({ set, loading }: setAlbumDetailsLoadingProps) => {
+  set((state: any) => ({
+    ...state,
+    albumDetails: {
+      ...state.albumDetails,
+      loading,
+    }
+  }));
+};
+
+const setAlbumDetails = ({ set, data, status }: setAlbumDetailsProps) => {
+  set((state: any) => ({
+    ...state,
+    albumDetails: {
+      ...state.albumDetails,
+      loading: false,
+      status,
+      data,
+    },
+  }));
+};
+
+const requestAlbumDetails = async ({ set, userAlbumId }: requestAlbumDetailsProps) => {
+  try {
+    setAlbumDetailsLoading({ set, loading: true });
+
+    const data = await getAlbumDetails({ userAlbumId });
+
+    setAlbumDetails({ set, status: 'success', data });
+  } catch (error: any) {
+    setAlbumDetailsLoading({ set, loading: false });
+
+    if (error.response?.data?.message === 'INVALID_TOKEN') {
+      commonActions.setInvalidToken({ set, invalidToken: true });
+    }
+
+    setAlbumsTemplates({ set, status: 'error' });
+    console.log('requestAlbumDetails', 'Something went wrong');
+  }
+};
+
+export const albumsActions = {
+  getAlbumsTemplates: {
+    request: requestAlbumsTemplates,
+  },
+  purchaseAlbum: {
+    request: requestPurchaseAlbum,
+  },
+  userAlbums: {
+    request: requestUserAlbums,
+  },
+  albumDetails: {
+    request: requestAlbumDetails,
+  }
+};

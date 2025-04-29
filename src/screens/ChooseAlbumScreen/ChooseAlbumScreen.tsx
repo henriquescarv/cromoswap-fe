@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { StyleSheet, Text, View, TouchableWithoutFeedback, Keyboard, FlatList, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TouchableWithoutFeedback, Keyboard, FlatList, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -7,89 +7,40 @@ import { Album } from '@/components/Album';
 import { Ionicons } from '@expo/vector-icons';
 import Search from '@/components/Search/Search';
 import { AlbumType } from './ChooseAlbumScreen.types';
+import useStore from '@/services/store';
 
 export default function ChooseAlbumScreen({ navigation }: any) {
   const [filter, setFilter] = useState('');
   const [filteredList, setFilteredList] = useState<AlbumType[]>([]);
 
+  const { albumsTemplates: albumsTemplatesStore, requestAlbumsTemplates } = useStore((state: any) => state);
+
   const { theme } = useTheme();
   const { locale } = useContext(LocaleContext);
   const { chooseAlbum: chooseAlbumLocale } = locale;
 
-  const templateAlbums = [
-    {
-      id: 1,
-      name: 'Copa do Mundo 2022',
-      image: 'https://cdn.conmebol.com/wp-content/uploads/2019/09/fwc_2022_square_portrait1080x1080-1024x1024.png',
-      totalStickers: 600,
-      percentCompleted: 50,
-      tags: ['Futebol', 'Copa do Mundo 2022', 'Copa', '2022', 'FIFA', 'Copa 2022'],
-    },
-    {
-      id: 2,
-      name: 'Harry Potter - e a Ordem da Fênix',
-      image: 'https://static.wikia.nocookie.net/harrypotter/images/e/e8/71clkMKyHhL._SL1425_.jpg/revision/latest?cb=20210210143929&path-prefix=pt-br',
-      totalStickers: 600,
-      percentCompleted: 75,
-      tags: ['Harry Potter', 'Ordem da Fênix', 'Harry Potter e a Ordem da Fênix', 'Filme'],
-    },
-    {
-      id: 3,
-      name: 'Copa do Mundo 2018',
-      image: 'https://i0.wp.com/assets.b9.com.br/wp-content/uploads/2014/10/fifa2018.jpg?fit=960%2C540&ssl=1',
-      totalStickers: 600,
-      percentCompleted: 100,
-      tags: ['Futebol', 'Copa do Mundo 2018', 'Copa', '2018', 'FIFA', 'Copa 2018'],
-    },
-    {
-      id: 1,
-      name: 'Copa do Mundo 2022',
-      image: 'https://cdn.conmebol.com/wp-content/uploads/2019/09/fwc_2022_square_portrait1080x1080-1024x1024.png',
-      totalStickers: 600,
-      percentCompleted: 50,
-      tags: ['Futebol', 'Copa do Mundo 2022', 'Copa', '2022', 'FIFA', 'Copa 2022'],
-    },
-    {
-      id: 2,
-      name: 'Harry Potter - e a Ordem da Fênix',
-      image: 'https://static.wikia.nocookie.net/harrypotter/images/e/e8/71clkMKyHhL._SL1425_.jpg/revision/latest?cb=20210210143929&path-prefix=pt-br',
-      totalStickers: 600,
-      percentCompleted: 75,
-      tags: ['Harry Potter', 'Ordem da Fênix', 'Harry Potter e a Ordem da Fênix', 'Filme'],
-    },
-    {
-      id: 3,
-      name: 'Copa do Mundo 2018',
-      image: 'https://i0.wp.com/assets.b9.com.br/wp-content/uploads/2014/10/fifa2018.jpg?fit=960%2C540&ssl=1',
-      totalStickers: 600,
-      percentCompleted: 100,
-      tags: ['Futebol', 'Copa do Mundo 2018', 'Copa', '2018', 'FIFA', 'Copa 2018'],
-    },
-    {
-      id: 1,
-      name: 'Copa do Mundo 2022',
-      image: 'https://cdn.conmebol.com/wp-content/uploads/2019/09/fwc_2022_square_portrait1080x1080-1024x1024.png',
-      totalStickers: 600,
-      percentCompleted: 50,
-      tags: ['Futebol', 'Copa do Mundo 2022', 'Copa', '2022', 'FIFA', 'Copa 2022'],
-    },
-    {
-      id: 2,
-      name: 'Harry Potter - e a Ordem da Fênix',
-      image: 'https://static.wikia.nocookie.net/harrypotter/images/e/e8/71clkMKyHhL._SL1425_.jpg/revision/latest?cb=20210210143929&path-prefix=pt-br',
-      totalStickers: 600,
-      percentCompleted: 75,
-      tags: ['Harry Potter', 'Ordem da Fênix', 'Harry Potter e a Ordem da Fênix', 'Filme'],
-    },
-    {
-      id: 3,
-      name: 'Copa do Mundo 2018',
-      image: 'https://i0.wp.com/assets.b9.com.br/wp-content/uploads/2014/10/fifa2018.jpg?fit=960%2C540&ssl=1',
-      totalStickers: 600,
-      percentCompleted: 100,
-      tags: ['Futebol', 'Copa do Mundo 2018', 'Copa', '2018', 'FIFA', 'Copa 2018'],
-    },
-  ];
+  const getDefaultData = useCallback(() => {
+    if (albumsTemplatesStore.status === null) {
+      requestAlbumsTemplates();
+    }
+  }, [albumsTemplatesStore.status]);
+
+  useEffect(() => {
+    getDefaultData();
+  }, [getDefaultData]);
+
+  const templateAlbums = albumsTemplatesStore.list || [];
+
+  // const templateAlbums2 = [
+  //   {
+  //     id: 1,
+  //     name: 'Copa do Mundo 2022',
+  //     image: 'https://cdn.conmebol.com/wp-content/uploads/2019/09/fwc_2022_square_portrait1080x1080-1024x1024.png',
+  //     totalStickers: 600,
+  //     percentCompleted: 50,
+  //     tags: ['Futebol', 'Copa do Mundo 2022', 'Copa', '2022', 'FIFA', 'Copa 2022'],
+  //   },
+  // ];
 
   const updateFilteredList = useCallback(() => {
     if (filter === '') {
@@ -111,7 +62,7 @@ export default function ChooseAlbumScreen({ navigation }: any) {
     );
   
     setFilteredList(filteredByAll);
-  }, [filter]);
+  }, [filter, albumsTemplatesStore.list]);
 
   useEffect(() => {
     updateFilteredList();
@@ -123,6 +74,20 @@ export default function ChooseAlbumScreen({ navigation }: any) {
 
   const goToPurchaseAlbum = (album: any) => {
     navigation.navigate('PurchaseAlbumScreen', { album });
+  };
+
+  if (albumsTemplatesStore.loading) {
+    return (
+      <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]}>
+        <View style={[styles.loadingWrapper]}>
+          <ActivityIndicator
+            size="large"
+            color={theme.primary50}
+            style={[ styles.wrapper ]}
+          />
+        </View>
+      </SafeAreaView>
+    );
   }
 
   return (
@@ -173,6 +138,13 @@ const styles = StyleSheet.create({
     flex: 0,
     width: '100%',
     height: 'auto',
+  },
+  loadingWrapper: {
+    display: 'flex',
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   headBlock: {
     padding: 16,

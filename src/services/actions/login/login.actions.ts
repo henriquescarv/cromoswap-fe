@@ -1,4 +1,5 @@
 import { postLogin } from "./login.requests";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const setLoading = ({ set, loading }: setLoadingProps) => {
   set((state: any) => ({
@@ -10,9 +11,10 @@ const setLoading = ({ set, loading }: setLoadingProps) => {
   }));
 }
 
-const setLogin = ({set, token, isAuthenticated}: setLoginProps) => {
+const setLogin = ({set, token, isAuthenticated, invalidToken}: setLoginProps) => {
   set((state: any) => ({
     ...state,
+    invalidToken: invalidToken || state.invalidToken,
     login: {
       ...state.login,
       token,
@@ -36,8 +38,15 @@ const requestLogin = async ({set, username, password}: requestLoginProps) => {
     setLoading({ set, loading: true });
 
     const data = await postLogin({ username, password });
-    setLogin({ set, token: data.token, isAuthenticated: true });
+    setLogin({ set, token: data.token, isAuthenticated: true, invalidToken: false });
     setStatus({ set, status: 'success' });
+
+    const loginStoreCache = {
+      token: data.token,
+      isAuthenticated: true,
+    }
+
+    await AsyncStorage.setItem('login_store', JSON.stringify(loginStoreCache));
 
     console.log('Login successful', `Message: ${data.message}`);
 
@@ -50,12 +59,15 @@ const requestLogin = async ({set, username, password}: requestLoginProps) => {
   }
 };
 
-const logout = (set: any) => {
+const logout = async (set: any) => {
+  console.log('Logout successful', 'Message: Logout successful');
   setLogin({ set, token: null, isAuthenticated: false });
+  await AsyncStorage.removeItem('login_store');
 };
 
 export const loginActions = {
   login: {
+    set: setLogin,
     loading: setLoading,
     request: requestLogin,
     logout,

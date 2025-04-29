@@ -16,17 +16,18 @@ export default function LoginScreen({ navigation }: any) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const { login: loginStore, requestLogin } = useStore((state: any) => state);
+  const { login: loginStore, requestLogin, requestSummary } = useStore((state: any) => state);
 
   const { theme } = useTheme();
   const { locale } = useContext(LocaleContext);
   const { login: loginLocale } = locale;
 
   const redirectToHome = useCallback(() => {
-    if (!!loginStore.isAuthenticated) {
-      navigation.navigate('Home');
+    if (!!loginStore.isAuthenticated && loginStore.status === 'success') {
+      requestSummary();
+      navigation.navigate('Main');
     }
-  }, [loginStore.isAuthenticated, navigation]);
+  }, [loginStore.isAuthenticated, loginStore.status, navigation]);
 
   useEffect(() => {
     redirectToHome();

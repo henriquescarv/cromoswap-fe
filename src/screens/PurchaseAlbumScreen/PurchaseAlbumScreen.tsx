@@ -5,15 +5,24 @@ import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute } from '@react-navigation/native';
 import Button from '@/components/Button/Button';
+import useStore from '@/services/store';
 
 export default function PurchaseAlbumScreen({ navigation }: any) {
   const { theme } = useTheme();
   const { locale } = useContext(LocaleContext);
   const route = useRoute();
 
+  const { purchaseAlbum: purchaseAlbumLocale } = locale;
+
   const { album } = route.params;
 
-  const { purchaseAlbum: purchaseAlbumLocale } = locale;
+  const { purchaseAlbum: purchaseAlbumStore, requestPurchaseAlbum } = useStore((state: any) => state);
+
+  const handlePurchaseAlbum = useCallback(async () => {
+    await requestPurchaseAlbum({ albumTemplateId: album.id }).then(() => {
+      navigation.navigate('Main');
+    });
+  }, []);
 
   const goBack = () => {
     navigation.goBack();
@@ -30,14 +39,15 @@ export default function PurchaseAlbumScreen({ navigation }: any) {
 
         <View style={[styles.purchaseWrapper]}>
           <View style={[styles.textsWrapper]}>
-            <Text style={[styles.stickersLabel, { color: theme.primary100 }]}>{purchaseAlbumLocale.stickersLabel(album.totalStickers)}</Text>
+            <Text style={[styles.stickersLabel, { color: theme.primary100 }]}>{purchaseAlbumLocale.stickersLabel(album.totalStickers || 0)}</Text>
             <Text style={[styles.albumName, { color: theme.primary100 }]} numberOfLines={2}>{album.name}</Text>
           </View>
 
           <View style={[styles.buttonsWrapper]}>
             <Button
               text={purchaseAlbumLocale.collectAlbumButtonLabel}
-              onClick={() => {}}
+              onClick={handlePurchaseAlbum}
+              loading={purchaseAlbumStore.loading}
             />
             <Button
               text={purchaseAlbumLocale.goBackButtonLabel}

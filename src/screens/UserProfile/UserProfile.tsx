@@ -3,107 +3,119 @@ import Button from "@/components/Button/Button";
 import { LocaleContext } from "@/providers/LocaleProvider/LocaleProvider";
 import { useTheme } from "@/providers/ThemeModeProvider/ThemeModeProvider";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useContext, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import { useRoute } from '@react-navigation/native';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Tab } from "./components/Tab";
-import { TabEnum } from "./UserProfile.types";
+import { TabEnum, UserProfileProps } from "./UserProfile.types";
 import { StickerItem } from "../../components/StickerItem";
 import { ScrollView } from "react-native-gesture-handler";
+import useStore from "@/services/store";
 
 export default function UserProfile({ navigation }: any) {
   const [selectedTab, setSelectedTab] = useState<keyof typeof TabEnum>(TabEnum.YOU_NEED);
+
+  const {
+    summary: summaryStore,
+    userAlbums: userAlbumsStore,
+    requestSummary,
+    requestUserAlbums,
+    logout
+  } = useStore((state: any) => state);
 
   const route = useRoute();
   const { theme } = useTheme();
   const { locale } = useContext(LocaleContext);
   const { userProfile: userProfileLocale } = locale;
 
-  const myUserId = 12345; // This should be replaced with the actual user ID from your context or state management
+  const myUserId = summaryStore.data?.id;
   const userId = route?.params?.userId || myUserId;
 
-  const isExternalUser = userId && userId !== myUserId;
+  const getDefaultData = useCallback(() => {
+    requestSummary();
+    requestUserAlbums();
+  }, []);
+
+  useEffect(() => {
+    getDefaultData()
+  }, [getDefaultData])
+
+  const isExternalUser = !!route?.params?.userId && route?.params?.userId !== myUserId;
+
+  const userProfile: UserProfileProps = {
+    ...summaryStore.data,
+    albums: userAlbumsStore.list || [],
+    youNeed: summaryStore.data?.youNeed || null,
+    youHave: summaryStore.data?.youHave || null,
+  }
 
   // const userProfile = {
-  //   id: myUserId,
+  //   id: 54321,
   //   avatar: null,
-  //   username: "riquefml",
+  //   username: "alanpatrick",
   //   albumsListLength: 4,
   //   followers: 20,
   //   following: 40,
-  //   albumsList: [
+  //   albums: [
   //     { id: 1, name: "Copa do Mundo 2022", image: "https://cdn.conmebol.com/wp-content/uploads/2019/09/fwc_2022_square_portrait1080x1080-1024x1024.png", percentCompleted: 50 },
-  //     { id: 2, name: "Harry Potter - e a Ordem da Fênix", image: "https://static.wikia.nocookie.net/harrypotter/images/e/e8/71clkMKyHhL._SL1425_.jpg/revision/latest?cb=20210210143929&path-prefix=pt-br", percentCompleted: 75 },
   //   ],
+  //   youNeed: {
+  //     quantity: 15,
+  //     albumsList: [
+  //       {
+  //         albumId: 1,
+  //         name: 'Copa do Mundo 2022',
+  //         quantity: 12,
+  //         stickersList: [
+  //           { id: 1, order: 1, number: '001', category: 'BRA' },
+  //           { id: 2, order: 2, number: '002', category: 'BRA' },
+  //           { id: 3, order: 3, number: '003', category: 'BRA' },
+  //           { id: 4, order: 4, number: '004', category: 'BRA' },
+  //           { id: 5, order: 5, number: '005', category: 'BRA' },
+  //         ],
+  //       },
+  //       {
+  //         albumId: 2,
+  //         name: 'Harry Potter - e a Ordem da Fênix',
+  //         quantity: 3,
+  //         stickersList: [
+  //           { id: 6, order: 1, number: '001' },
+  //           { id: 7, order: 2, number: '002' },
+  //           { id: 8, order: 3, number: '003' },
+  //         ],
+  //       },
+  //     ]
+  //   },
+  //   youHave: {
+  //     quantity: 10,
+  //     albumsList: [
+  //       {
+  //         albumId: 3,
+  //         name: 'Copa do Mundo 2022',
+  //         quantity: 4,
+  //         stickersList: [
+  //           { id: 9, order: 1, number: '001', category: 'ARG' },
+  //           { id: 12, order: 2, number: '002', category: 'ARG' },
+  //           { id: 13, order: 3, number: '003', category: 'ARG' },
+  //         ],
+  //       },
+  //       {
+  //         albumId: 4,
+  //         name: 'Harry Potter - e a Ordem da Fênix',
+  //         quantity: 7,
+  //         stickersList: [
+  //           { id: 21, order: 1, number: '001' },
+  //           { id: 22, order: 2, number: '002' },
+  //           { id: 23, order: 3, number: '003' },
+  //           { id: 24, order: 4, number: '004' },
+  //           { id: 25, order: 5, number: '005' },
+  //         ],
+  //       },
+  //     ]
+  //   },
   // };
 
-  const userProfile = {
-    id: 54321,
-    avatar: null,
-    username: "alanpatrick",
-    albumsListLength: 4,
-    followers: 20,
-    following: 40,
-    albumsList: [
-      { id: 1, name: "Copa do Mundo 2022", image: "https://cdn.conmebol.com/wp-content/uploads/2019/09/fwc_2022_square_portrait1080x1080-1024x1024.png", percentCompleted: 50 },
-    ],
-    youNeed: {
-      quantity: 15,
-      albumsList: [
-        {
-          albumId: 1,
-          name: 'Copa do Mundo 2022',
-          quantity: 12,
-          stickersList: [
-            { id: 1, order: 1, number: '001', category: 'BRA' },
-            { id: 2, order: 2, number: '002', category: 'BRA' },
-            { id: 3, order: 3, number: '003', category: 'BRA' },
-            { id: 4, order: 4, number: '004', category: 'BRA' },
-            { id: 5, order: 5, number: '005', category: 'BRA' },
-          ],
-        },
-        {
-          albumId: 2,
-          name: 'Harry Potter - e a Ordem da Fênix',
-          quantity: 3,
-          stickersList: [
-            { id: 6, order: 1, number: '001' },
-            { id: 7, order: 2, number: '002' },
-            { id: 8, order: 3, number: '003' },
-          ],
-        },
-      ]
-    },
-    youHave: {
-      quantity: 10,
-      albumsList: [
-        {
-          albumId: 3,
-          name: 'Copa do Mundo 2022',
-          quantity: 4,
-          stickersList: [
-            { id: 9, order: 1, number: '001', category: 'ARG' },
-            { id: 12, order: 2, number: '002', category: 'ARG' },
-            { id: 13, order: 3, number: '003', category: 'ARG' },
-          ],
-        },
-        {
-          albumId: 4,
-          name: 'Harry Potter - e a Ordem da Fênix',
-          quantity: 7,
-          stickersList: [
-            { id: 21, order: 1, number: '001' },
-            { id: 22, order: 2, number: '002' },
-            { id: 23, order: 3, number: '003' },
-            { id: 24, order: 4, number: '004' },
-            { id: 25, order: 5, number: '005' },
-          ],
-        },
-      ]
-    },
-  };
-
-  const listToShow = selectedTab === TabEnum.YOU_NEED ? userProfile.youNeed.albumsList : userProfile.youHave.albumsList;
+  const listToShow = selectedTab === TabEnum.YOU_NEED ? userProfile?.youNeed?.albumsList : userProfile?.youHave?.albumsList;
 
   const mountUserAvatar = () => {
     if (userProfile.avatar) {
@@ -114,6 +126,10 @@ export default function UserProfile({ navigation }: any) {
   }
 
   const userAvatar = mountUserAvatar();
+
+  const handleLogout = useCallback(() => {
+    logout();
+  }, [])
 
   const goBack = () => {
     navigation.goBack();
@@ -131,7 +147,7 @@ export default function UserProfile({ navigation }: any) {
     navigation.navigate('ChooseAlbumScreen');
   };
 
-  const mountPersonalInfo = ({ topText, bottomText }: { topText: string | number; bottomText: string }) => (
+  const mountPersonalInfo = ({ topText, bottomText }: { topText?: string | number; bottomText: string }) => (
     <View style={[styles.personalInfo]}>
       <Text style={[styles.personalInfoTopText, { color: theme.primary100 }]}>{topText}</Text>
       <Text style={[styles.personalInfoBottomText, { color: theme.primary100 }]}>{bottomText}</Text>
@@ -167,7 +183,7 @@ export default function UserProfile({ navigation }: any) {
           <Button
             text={userProfileLocale.leave}
             variant="secondary"
-            onClick={() => {}}
+            onClick={handleLogout}
             size="small"
             color="primaryRed"
           />
@@ -175,6 +191,21 @@ export default function UserProfile({ navigation }: any) {
       </>
     );
   };
+
+  if (userAlbumsStore.loading || summaryStore.loading) {
+    return (
+      <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]}>
+        <View style={[styles.loadingWrapper]}>
+          <ActivityIndicator
+            size="large"
+            color={theme.primary50}
+            style={[ styles.wrapper ]}
+          />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
 
   return (
     <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]}>
@@ -196,9 +227,9 @@ export default function UserProfile({ navigation }: any) {
         <View style={[styles.avatar, { backgroundColor: theme.primary10 }]}>
           {userAvatar}
         </View>
-        {mountPersonalInfo({ topText: userProfile.albumsListLength, bottomText: userProfileLocale.albums })}
-        {mountPersonalInfo({ topText: userProfile.followers, bottomText: userProfileLocale.followers })}
-        {mountPersonalInfo({ topText: userProfile.following, bottomText: userProfileLocale.following })}
+        {mountPersonalInfo({ topText: userProfile?.albums?.length, bottomText: userProfileLocale.albums })}
+        {mountPersonalInfo({ topText: userProfile.followers || 0, bottomText: userProfileLocale.followers })}
+        {mountPersonalInfo({ topText: userProfile.following || 0, bottomText: userProfileLocale.following })}
       </View>
 
       <View style={[styles.buttonsContainer, { borderBottomColor: !isExternalUser ? theme.grey5 : 'transparent' }]}>
@@ -210,28 +241,42 @@ export default function UserProfile({ navigation }: any) {
           <View style={[styles.blockContainer]}>
             <View style={[styles.blockHead]}>
               <Text style={[styles.blockTitle, { color: theme.primary100 }]}>{userProfileLocale.yourAlbums}</Text>
-              <Button text={userProfileLocale.seeMore} variant="text" fontSize={16} onClick={goToMyAlbumsScreen} />
+              {userProfile?.albums?.length > 5 && (
+                <Button
+                  text={userProfileLocale.seeMore}
+                  variant="text"
+                  fontSize={16}
+                  onClick={goToMyAlbumsScreen}
+                />
+              )}
             </View>
 
-              <View style={[styles.albumsContainer]}>
-                {userProfile?.albumsList?.slice(0, 2).map((item) => (
-                  <Album
-                    key={item.id}
-                    name={item.name}
-                    image={item.image}
-                    percentCompleted={item.percentCompleted}
-                    onClick={() => goToAlbumScreen(item.id)}
-                  />
-                ))}
-                
-                <TouchableOpacity style={[styles.plusButton, { borderColor: theme.primary100 }]} onPress={goToChooseAlbumScreen}>
-                  <Ionicons
-                    name={"add"}
-                    size={32}
-                    color={theme.primary100}
-                  />
-                </TouchableOpacity>
-              </View>
+            <View style={[styles.albumsContainer]}>
+              {userProfile?.albums?.slice(0, 4).map((item) => (
+                <Album
+                  key={item.id}
+                  name={item.name}
+                  image={item.image}
+                  percentCompleted={item.percentCompleted}
+                  onClick={() => goToAlbumScreen(item.userAlbumId)}
+                />
+              ))}
+
+
+              {!userProfile?.albums?.length && (
+                <View style={[styles.emptyStateContainer]}>
+                  <Text style={[styles.emptyStateText, { color: theme.primary100 }]}>{userProfileLocale.noAlbums}</Text>
+                </View>
+              )}
+
+              <TouchableOpacity style={[styles.plusButton, { borderColor: theme.primary100 }]} onPress={goToChooseAlbumScreen}>
+                <Ionicons
+                  name={"add"}
+                  size={32}
+                  color={theme.primary100}
+                />
+              </TouchableOpacity>
+            </View>
           </View>
         )}
 
@@ -240,12 +285,12 @@ export default function UserProfile({ navigation }: any) {
             <View style={[styles.externalUserWrapper]}>
               <View style={[styles.tabsContainer, { borderColor: theme.grey5 }]}>
                 <Tab
-                  label={userProfileLocale.externalUser.tabs[TabEnum.YOU_NEED](userProfile.youNeed.quantity)}
+                  label={userProfileLocale.externalUser.tabs[TabEnum.YOU_NEED](userProfile?.youNeed?.quantity || 0)}
                   selected={selectedTab === TabEnum.YOU_NEED}
                   onPress={() => setSelectedTab(TabEnum.YOU_NEED)}
                 />
                 <Tab
-                  label={userProfileLocale.externalUser.tabs[TabEnum.YOU_HAVE](userProfile.youHave.quantity)}
+                  label={userProfileLocale.externalUser.tabs[TabEnum.YOU_HAVE](userProfile?.youHave?.quantity || 0)}
                   selected={selectedTab === TabEnum.YOU_HAVE}
                   onPress={() => setSelectedTab(TabEnum.YOU_HAVE)}
                 />
@@ -253,7 +298,7 @@ export default function UserProfile({ navigation }: any) {
             </View>
 
             <ScrollView style={[styles.externalUserAlbuns]}>
-              {listToShow.map((item) => (
+              {listToShow?.map((item) => (
                 <View key={item.name} style={[styles.albumBlockContainer, { borderBottomColor: theme.grey5 }]}>
                   <View style={[styles.blockHead]}>
                     <Text style={[styles.albumNameTitle, { color: theme.primary100 }]}>{item.name}</Text>
@@ -293,6 +338,13 @@ const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
   },
+  loadingWrapper: {
+    display: 'flex',
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   personalInfo: {
     flexDirection: 'column',
     alignItems: 'flex-start',
@@ -327,6 +379,18 @@ const styles = StyleSheet.create({
   blockTitle: {
     fontSize: 20,
     fontFamily: 'primaryBold',
+  },
+  emptyStateContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '90%',
+    height: 120,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    fontFamily: 'primaryMedium',
+    textAlign: 'center',
   },
   externalUserAlbuns: {
     height: '100%',

@@ -3,6 +3,7 @@ type setLoginProps = {
   token: string | null;
   isAuthenticated: boolean;
   status?: 'success' | 'error' | null;
+  invalidToken?: boolean;
 }
 
 type requestLoginProps = {

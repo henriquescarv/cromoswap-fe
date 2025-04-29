@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useCallback, useContext, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableWithoutFeedback, Keyboard, FlatList, ScrollView, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
@@ -7,11 +7,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserCard } from './components/UserCard';
 import { Album } from '@/components/Album';
 import { Ionicons } from '@expo/vector-icons';
+import useStore from '@/services/store';
 
 export default function HomeScreen({ navigation }: any) {
   const { theme } = useTheme();
   const { locale } = useContext(LocaleContext);
   const { home: homeLocale } = locale;
+
+  const {
+    userAlbums: userAlbumsStore,
+    requestUserAlbums,
+  } = useStore((state: any) => state);
 
   const users = [
     {
@@ -49,29 +55,25 @@ export default function HomeScreen({ navigation }: any) {
     },
   ];
 
-  const albums = [
-    {
-      id: 1,
-      name: 'Copa do Mundo 2022',
-      image: 'https://cdn.conmebol.com/wp-content/uploads/2019/09/fwc_2022_square_portrait1080x1080-1024x1024.png',
-      totalStickers: 600,
-      percentCompleted: 50,
-    },
-    {
-      id: 2,
-      name: 'Harry Potter - e a Ordem da Fênix',
-      image: 'https://static.wikia.nocookie.net/harrypotter/images/e/e8/71clkMKyHhL._SL1425_.jpg/revision/latest?cb=20210210143929&path-prefix=pt-br',
-      totalStickers: 600,
-      percentCompleted: 75,
-    },
-    {
-      id: 3,
-      name: 'Copa do Mundo 2018',
-      image: 'https://cdn.conmebol.com/wp-content/uploads/2019/09/fwc_2022_square_portrait1080x1080-1024x1024.png',
-      totalStickers: 600,
-      percentCompleted: 100,
-    },
-  ];
+  const albums = userAlbumsStore.list || [];
+
+  // const albums = [
+  //   {
+  //     id: 1,
+  //     name: 'Copa do Mundo 2022',
+  //     image: 'https://cdn.conmebol.com/wp-content/uploads/2019/09/fwc_2022_square_portrait1080x1080-1024x1024.png',
+  //     totalStickers: 600,
+  //     percentCompleted: 50,
+  //   },
+  // ];
+
+  const getDefaultData = useCallback(() => {
+    requestUserAlbums();
+  }, []);
+
+  useEffect(() => {
+    getDefaultData();
+  }, [getDefaultData]);
 
   const goToNearYouScreen = () => {
     navigation.navigate('NearYouScreen');
@@ -153,7 +155,15 @@ export default function HomeScreen({ navigation }: any) {
           <View style={[styles.blockContainer]}>
             <View style={[styles.blockHead]}>
               <Text style={[styles.blockTitle, { color: theme.primary100 }]}>{homeLocale.albums.albumsTitle}</Text>
-              <Button text={homeLocale.seeMoreButtonLabel} variant="text" fontSize={16} onClick={goToMyAlbumsScreen} />
+
+              {albums.length > 2 && (
+                <Button
+                  text={homeLocale.seeMoreButtonLabel}
+                  variant="text"
+                  fontSize={16}
+                  onClick={goToMyAlbumsScreen}
+                />
+              )}
             </View>
 
             <View style={[styles.albumsContainer]}>
@@ -163,9 +173,15 @@ export default function HomeScreen({ navigation }: any) {
                   name={item.name}
                   image={item.image}
                   percentCompleted={item.percentCompleted}
-                  onClick={() => goToAlbumScreen(item.id)}
+                  onClick={() => goToAlbumScreen(item.userAlbumId)}
                 />
               ))}
+
+              {!albums.length && (
+                <View style={[styles.emptyStateContainer]}>
+                  <Text style={[styles.emptyStateText, { color: theme.primary100 }]}>{homeLocale.albums.noAlbums}</Text>
+                </View>
+              )}
               
               <TouchableOpacity style={[styles.plusButton, { borderColor: theme.primary100 }]} onPress={goToChooseAlbumScreen}>
                 <Ionicons
@@ -228,6 +244,18 @@ const styles = StyleSheet.create({
     flex: 1,
     marginTop: 16,
     gap: 16,
+  },
+  emptyStateContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '90%',
+    height: 120,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    fontFamily: 'primaryMedium',
+    textAlign: 'center',
   },
   plusButton: {
     borderRadius: 16,

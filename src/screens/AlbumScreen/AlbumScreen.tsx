@@ -10,12 +10,19 @@ import { StickerItem } from '../../components/StickerItem';
 import { ChipsTypes, StickersListProps } from './AlbumScreen.types';
 import { Chip } from './components/Chip';
 import Button from '@/components/Button/Button';
+import useStore from '@/services/store';
 
 export default function AlbumScreen({ navigation }: any) {
   const [filter, setFilter] = useState('');
   const [selectedChip, setSelectedChip] = useState(null);
   const [filteredList, setFilteredList] = useState<StickersListProps>([]);
   const [displayFilter, setDisplayFilter] = useState(true);
+
+  const {
+    albumDetails: albumDetailsStore,
+    summary: summaryStore,
+    requestAlbumDetails,
+  } = useStore((state: any) => state);
 
   const stickersQuantity = filteredList.reduce((acc, category) => {
     return acc + category.length;
@@ -28,50 +35,80 @@ export default function AlbumScreen({ navigation }: any) {
 
   const { albumId, userId: userIdByParam } = route.params;
 
-  const userId = userIdByParam || 12345; // Mocked userId for testing. Return from userState
+  const getDefaultData = useCallback(() => {
+    requestAlbumDetails({ userAlbumId: albumId });
+  }, []);
 
-  const album = useMemo(() => ({
-    id: 1,
-    userId: 12345,
-    name: 'Copa do Mundo 2022',
-    totalStickers: 600,
-    stickersListByCategory: [
-      [
-        { id: 1, order: 1, number: '001', category: 'BRA', quantity: 0, youHave: true, youNeed: false },
-        { id: 2, order: 2, number: '002', category: 'BRA', quantity: 1, youHave: true, youNeed: true },
-        { id: 3, order: 3, number: '003', category: 'BRA', quantity: 2, youHave: false, youNeed: true },
-        { id: 4, order: 4, number: '004', category: 'BRA', quantity: 0, youHave: false, youNeed: true },
-        { id: 5, order: 5, number: '005', category: 'BRA', quantity: 0, youHave: false, youNeed: true },
-        { id: 6, order: 6, number: '006', category: 'BRA', quantity: 0, youHave: false, youNeed: true },
-        { id: 7, order: 7, number: '007', category: 'BRA', quantity: 0, youHave: false, youNeed: true },
-        { id: 8, order: 8, number: '008', category: 'BRA', quantity: 0, youHave: false, youNeed: false },
-        { id: 9, order: 9, number: '009', category: 'BRA', quantity: 0, youHave: true, youNeed: false },
-        { id: 10, order: 10, number: '010', category: 'BRA', quantity: 0, youHave: true, youNeed: false },
-      ],
-      [
-        { id: 11, order: 1, number: '001', category: 'ARG', quantity: 0, youHave: true, youNeed: false },
-        { id: 12, order: 2, number: '002', category: 'ARG', quantity: 1, youHave: true, youNeed: true },
-        { id: 13, order: 3, number: '003', category: 'ARG', quantity: 2, youHave: true, youNeed: true },
-        { id: 14, order: 4, number: '004', category: 'ARG', quantity: 0, youHave: true, youNeed: true },
-        { id: 15, order: 5, number: '005', category: 'ARG', quantity: 0, youHave: false, youNeed: false },
-        { id: 16, order: 6, number: '006', category: 'ARG', quantity: 0, youHave: false, youNeed: false },
-        { id: 17, order: 7, number: '007', category: 'ARG', quantity: 0, youHave: false, youNeed: false },
-        { id: 18, order: 8, number: '008', category: 'ARG', quantity: 0, youHave: true, youNeed: false },
-      ],
-      [
-        { id: 21, order: 1, number: '001', category: 'BOL', quantity: 0, youHave: true, youNeed: true },
-        { id: 22, order: 2, number: '002', category: 'BOL', quantity: 1, youHave: true, youNeed: true },
-        { id: 23, order: 3, number: '003', category: 'BOL', quantity: 2, youHave: true, youNeed: true },
-        { id: 24, order: 4, number: '004', category: 'BOL', quantity: 0, youHave: true, youNeed: false },
-        { id: 25, order: 5, number: '005', category: 'BOL', quantity: 0, youHave: true, youNeed: false },
-        { id: 26, order: 6, number: '006', category: 'BOL', quantity: 0, youHave: false, youNeed: false },
-        { id: 27, order: 7, number: '007', category: 'BOL', quantity: 0, youHave: false, youNeed: false },
-        { id: 28, order: 8, number: '008', category: 'BOL', quantity: 0, youHave: false, youNeed: false },
-      ],
-    ],
-  }), []);
+  useEffect(() => {
+    getDefaultData();
+  }, [getDefaultData]);
 
-  const isExternalUserAlbum = userId !== album.userId;
+  const userId = userIdByParam || summaryStore?.data?.id;
+
+  const groupStickersByCategory = useCallback((stickersList) => {
+    if (!stickersList) return [];
+
+    const grouped: { [category: string]: any[] } = {};
+  
+    stickersList.forEach(sticker => {
+      const category = sticker.category || '';
+      if (!grouped[category]) {
+        grouped[category] = [];
+      }
+      grouped[category].push(sticker);
+    });
+  
+    Object.values(grouped).forEach(arr => arr.sort((a, b) => a.order - b.order));
+  
+    return Object.values(grouped);
+  }, []);
+
+  const stickersListByCategory = useMemo(() => {
+    return groupStickersByCategory(albumDetailsStore.data?.stickersList);
+  }, [albumDetailsStore.data?.stickersListByCategory, groupStickersByCategory]);
+
+  // const album = useMemo(() => ({
+  //   id: 1,
+  //   userAlbumId: 12345,
+  //   name: 'Copa do Mundo 2022',
+  //   totalStickers: 600,
+  //   stickersListByCategory: [
+  //     [
+  //       { id: 1, order: 1, number: '001', category: 'BRA', quantity: 0, youHave: true, youNeed: false },
+  //       { id: 2, order: 2, number: '002', category: 'BRA', quantity: 1, youHave: true, youNeed: true },
+  //       { id: 3, order: 3, number: '003', category: 'BRA', quantity: 2, youHave: false, youNeed: true },
+  //       { id: 4, order: 4, number: '004', category: 'BRA', quantity: 0, youHave: false, youNeed: true },
+  //       { id: 5, order: 5, number: '005', category: 'BRA', quantity: 0, youHave: false, youNeed: true },
+  //       { id: 6, order: 6, number: '006', category: 'BRA', quantity: 0, youHave: false, youNeed: true },
+  //       { id: 7, order: 7, number: '007', category: 'BRA', quantity: 0, youHave: false, youNeed: true },
+  //       { id: 8, order: 8, number: '008', category: 'BRA', quantity: 0, youHave: false, youNeed: false },
+  //       { id: 9, order: 9, number: '009', category: 'BRA', quantity: 0, youHave: true, youNeed: false },
+  //       { id: 10, order: 10, number: '010', category: 'BRA', quantity: 0, youHave: true, youNeed: false },
+  //     ],
+  //     [
+  //       { id: 11, order: 1, number: '001', category: 'ARG', quantity: 0, youHave: true, youNeed: false },
+  //       { id: 12, order: 2, number: '002', category: 'ARG', quantity: 1, youHave: true, youNeed: true },
+  //       { id: 13, order: 3, number: '003', category: 'ARG', quantity: 2, youHave: true, youNeed: true },
+  //       { id: 14, order: 4, number: '004', category: 'ARG', quantity: 0, youHave: true, youNeed: true },
+  //       { id: 15, order: 5, number: '005', category: 'ARG', quantity: 0, youHave: false, youNeed: false },
+  //       { id: 16, order: 6, number: '006', category: 'ARG', quantity: 0, youHave: false, youNeed: false },
+  //       { id: 17, order: 7, number: '007', category: 'ARG', quantity: 0, youHave: false, youNeed: false },
+  //       { id: 18, order: 8, number: '008', category: 'ARG', quantity: 0, youHave: true, youNeed: false },
+  //     ],
+  //     [
+  //       { id: 21, order: 1, number: '001', category: 'BOL', quantity: 0, youHave: true, youNeed: true },
+  //       { id: 22, order: 2, number: '002', category: 'BOL', quantity: 1, youHave: true, youNeed: true },
+  //       { id: 23, order: 3, number: '003', category: 'BOL', quantity: 2, youHave: true, youNeed: true },
+  //       { id: 24, order: 4, number: '004', category: 'BOL', quantity: 0, youHave: true, youNeed: false },
+  //       { id: 25, order: 5, number: '005', category: 'BOL', quantity: 0, youHave: true, youNeed: false },
+  //       { id: 26, order: 6, number: '006', category: 'BOL', quantity: 0, youHave: false, youNeed: false },
+  //       { id: 27, order: 7, number: '007', category: 'BOL', quantity: 0, youHave: false, youNeed: false },
+  //       { id: 28, order: 8, number: '008', category: 'BOL', quantity: 0, youHave: false, youNeed: false },
+  //     ],
+  //   ],
+  // }), []);
+
+  const isExternalUserAlbum = userId !== albumDetailsStore.data?.userId;
 
   const mountChipsList = useCallback(() => {
     const list = [
@@ -120,11 +157,11 @@ export default function AlbumScreen({ navigation }: any) {
     }
 
     if (filter === '' && selectedChip === null) {
-      setFilteredList(album.stickersListByCategory);
+      setFilteredList(stickersListByCategory);
       return;
     }
 
-    let filtered = album.stickersListByCategory.map(category => {
+    let filtered = stickersListByCategory.map(category => {
       return category?.filter(sticker => {
         return filterByChip(sticker);
       })
@@ -137,7 +174,7 @@ export default function AlbumScreen({ navigation }: any) {
     });
 
     setFilteredList(filtered);
-  }, [filter, album.stickersListByCategory, selectedChip]);
+  }, [filter, stickersListByCategory, selectedChip]);
 
   useEffect(() => {
     filterStickers();
@@ -166,8 +203,8 @@ export default function AlbumScreen({ navigation }: any) {
 
           <View style={[styles.albumInfos]}>
             <Text style={[styles.albumName, { color: theme.primary100 }]}>
-              {album.name}
-              <Text style={[styles.stickersCount, { color: theme.grey20 }]}>{` (${album.totalStickers})`}</Text>
+              {albumDetailsStore.data?.name}
+              <Text style={[styles.stickersCount, { color: theme.grey20 }]}>{` (${albumDetailsStore.data?.totalStickers})`}</Text>
             </Text>
           </View>
 
@@ -218,7 +255,7 @@ export default function AlbumScreen({ navigation }: any) {
         <Text style={[styles.stickersQty, { color: theme.grey20 }]}>{albumLocale.stickersQty(stickersQuantity)}</Text>
 
         <View style={[styles.blockContainer]}>
-          {filteredList.map((list) => (
+          {filteredList.map((list) => !!list.length && (
             <View key={list[0]?.category} style={[styles.categoryListContainer]}>
               {!!list[0]?.category && <Text>{list[0]?.category}</Text>}
 

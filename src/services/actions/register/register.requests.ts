@@ -20,7 +20,6 @@ export const postRegion = async ({ countryState, city }: postRegionProps) => {
     const response = await api.post(`/region`, { countryState, city });
     return response.data;
   } catch (error) {
-    console.log('o erro foi aqui')
     throw error;
   }
 }

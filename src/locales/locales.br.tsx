@@ -72,6 +72,7 @@ const Locales = {
 		},
 		albums: {
 			albumsTitle: 'Seus álbuns',
+			noAlbums: 'Você ainda não possui álbuns! Clique no botão abaixo para começar a colecionar!',
 			totalStickers: quantity => `${quantity} cromos`,
 		},
 	},
@@ -122,6 +123,8 @@ const Locales = {
 		unfollow: 'Deixar de seguir',
 		sendMessage: 'Enviar mensagem',
 
+		noAlbums: 'Você ainda não possui álbuns! Clique no botão abaixo para começar a colecionar!',
+
 		externalUser: {
 			tabs: {
 				[TabEnum.YOU_NEED]: qty => `Você precisa (${qty})`,
@@ -144,6 +147,7 @@ const Locales = {
 		title: 'Mensagens',
 	},
 	chat: {
+		title: 'Mensagens',
 		placeholder: 'Digite sua mensagem...',
 	}
 };
