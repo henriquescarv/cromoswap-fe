@@ -1,6 +1,7 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { commonActions } from "../common/common.actions";
-import { requestAlbumDetailsProps, requestAlbumTemplatesProps, requestPurchaseAlbumProps, requestUserAlbumsProps, setAlbumDetailsLoadingProps, setAlbumDetailsProps, setAlbumTemplatesLoadingProps, setAlbumTemplatesProps, setPurchaseAlbumLoadingProps, setPurchaseAlbumProps, setUserAlbumsLoadingProps, setUserAlbumsProps } from "./albums.actions.types";
-import { getAlbumDetails, getAlbumTemplates, getUserAlbums, postPurchaseAlbum } from "./albums.requests";
+import { requestAlbumDetailsProps, requestAlbumTemplatesProps, requestPurchaseAlbumProps, requestUpdateStickersQuantityProps, requestUserAlbumsProps, requestUsersByRegionProps, setAlbumDetailsLoadingProps, setAlbumDetailsProps, setAlbumTemplatesLoadingProps, setAlbumTemplatesProps, setPurchaseAlbumLoadingProps, setPurchaseAlbumProps, setUpdateStickersQuantityLoadingProps, setUpdateStickersQuantityProps, setUserAlbumsLoadingProps, setUserAlbumsProps, setUsersByRegionLoadingProps, setUsersByRegionProps } from "./albums.actions.types";
+import { getAlbumDetails, getAlbumTemplates, getUserAlbums, getUsersByRegion, postPurchaseAlbum, postStickersQuantity } from "./albums.requests";
 
 const setAlbumsTemplatesLoading = ({ set, loading }: setAlbumTemplatesLoadingProps) => {
   set((state: any) => ({
@@ -171,6 +172,94 @@ const requestAlbumDetails = async ({ set, userAlbumId }: requestAlbumDetailsProp
   }
 };
 
+
+
+const setUsersByRegionLoading = ({ set, loading }: setUsersByRegionLoadingProps) => {
+  set((state: any) => ({
+    ...state,
+    usersByRegion: {
+      ...state.usersByRegion,
+      loading,
+    }
+  }));
+};
+
+const setUsersByRegion = ({ set, list, status }: setUsersByRegionProps) => {
+  set((state: any) => ({
+    ...state,
+    usersByRegion: {
+      ...state.usersByRegion,
+      loading: false,
+      status,
+      list,
+    },
+  }));
+};
+
+const requestUsersByRegion = async ({ set }: requestUsersByRegionProps) => {
+  try {
+    setUsersByRegionLoading({ set, loading: true });
+
+    const list = await getUsersByRegion();
+
+    setUsersByRegion({ set, status: 'success', list });
+  } catch (error: any) {
+    setUsersByRegionLoading({ set, loading: false });
+
+    if (error.response?.data?.message === 'INVALID_TOKEN') {
+      commonActions.setInvalidToken({ set, invalidToken: true });
+    }
+
+    setAlbumsTemplates({ set, status: 'error' });
+    console.log('requestUsersByRegion', 'Something went wrong');
+  }
+};
+
+
+
+const setUpdateStickersQuantityLoading = ({ set, loading }: setUpdateStickersQuantityLoadingProps) => {
+  set((state: any) => ({
+    ...state,
+    updateStickersQuantity: {
+      ...state.updateStickersQuantity,
+      loading,
+    }
+  }));
+};
+
+const setUpdateStickersQuantity = ({ set, status }: setUpdateStickersQuantityProps) => {
+  set((state: any) => ({
+    ...state,
+    updateStickersQuantity: {
+      ...state.updateStickersQuantity,
+      loading: false,
+      status,
+    },
+  }));
+};
+
+const requestUpdateStickersQuantity = async ({ set, stickersToUpdate }: requestUpdateStickersQuantityProps) => {
+  console.log('cheguei aqui')
+  try {
+    setUpdateStickersQuantityLoading({ set, loading: true });
+
+    await postStickersQuantity({ stickersToUpdate });
+
+    await AsyncStorage.removeItem('stickers_to_update_cache');
+
+    setUpdateStickersQuantity({ set, status: 'success' });
+  } catch (error: any) {
+    setUpdateStickersQuantityLoading({ set, loading: false });
+
+    if (error.response?.data?.message === 'INVALID_TOKEN') {
+      commonActions.setInvalidToken({ set, invalidToken: true });
+    }
+
+    setAlbumsTemplates({ set, status: 'error' });
+    console.log('requestUpdateStickersQuantity', 'Something went wrong');
+  }
+};
+
 export const albumsActions = {
   getAlbumsTemplates: {
     request: requestAlbumsTemplates,
@@ -183,5 +272,11 @@ export const albumsActions = {
   },
   albumDetails: {
     request: requestAlbumDetails,
-  }
+  },
+  usersByRegion: {
+    request: requestUsersByRegion,
+  },
+  updateStickersQuantity: {
+    request: requestUpdateStickersQuantity,
+  },
 };

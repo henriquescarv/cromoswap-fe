@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { StyleSheet, Text, View, TouchableWithoutFeedback, Keyboard, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TouchableWithoutFeedback, Keyboard, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -11,10 +11,13 @@ import { ChipsTypes, StickersListProps } from './AlbumScreen.types';
 import { Chip } from './components/Chip';
 import Button from '@/components/Button/Button';
 import useStore from '@/services/store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function AlbumScreen({ navigation }: any) {
   const [filter, setFilter] = useState('');
   const [selectedChip, setSelectedChip] = useState(null);
+  const [stickersListByCategory, setStickersListByCategory] = useState<any[][]>([]);
+  const [originalStickersList, setOriginalStickersList] = useState<any[]>([]);
   const [filteredList, setFilteredList] = useState<StickersListProps>([]);
   const [displayFilter, setDisplayFilter] = useState(true);
 
@@ -22,6 +25,7 @@ export default function AlbumScreen({ navigation }: any) {
     albumDetails: albumDetailsStore,
     summary: summaryStore,
     requestAlbumDetails,
+    requestUpdateStickersQuantity,
   } = useStore((state: any) => state);
 
   const stickersQuantity = filteredList.reduce((acc, category) => {
@@ -35,6 +39,27 @@ export default function AlbumScreen({ navigation }: any) {
 
   const { albumId, userId: userIdByParam } = route.params;
 
+  const userId = userIdByParam || summaryStore?.data?.id;
+
+  const checkAndSyncStickersCache = useCallback(async () => {
+    const cacheKey = 'stickers_to_update_cache';
+    const cacheRaw = await AsyncStorage.getItem(cacheKey);
+
+    let stickersToUpdate = [];
+
+    if (cacheRaw) {
+      stickersToUpdate = JSON.parse(cacheRaw);
+    }
+
+    if (stickersToUpdate.length > 0) {
+      await requestUpdateStickersQuantity({ stickersToUpdate });
+    }
+  }, [requestUpdateStickersQuantity]);
+  
+  useEffect(() => {
+    checkAndSyncStickersCache();
+  }, [checkAndSyncStickersCache]);
+
   const getDefaultData = useCallback(() => {
     requestAlbumDetails({ userAlbumId: albumId });
   }, []);
@@ -43,7 +68,24 @@ export default function AlbumScreen({ navigation }: any) {
     getDefaultData();
   }, [getDefaultData]);
 
-  const userId = userIdByParam || summaryStore?.data?.id;
+  const cleanUpFunction = async () => {
+    const cacheKey = 'stickers_to_update_cache';
+    const cacheRaw = await AsyncStorage.getItem(cacheKey);
+
+    let stickersToUpdate = [];
+
+    if (cacheRaw) {
+      stickersToUpdate = JSON.parse(cacheRaw);
+    }
+
+    if (stickersToUpdate.length > 0) {
+      await requestUpdateStickersQuantity({ stickersToUpdate });
+    }
+  };
+
+  useEffect(() => () => {
+    cleanUpFunction();
+  }, []);
 
   const groupStickersByCategory = useCallback((stickersList) => {
     if (!stickersList) return [];
@@ -59,13 +101,152 @@ export default function AlbumScreen({ navigation }: any) {
     });
   
     Object.values(grouped).forEach(arr => arr.sort((a, b) => a.order - b.order));
+
+    const listByCategory = Object.values(grouped);
   
-    return Object.values(grouped);
+    setStickersListByCategory(listByCategory);
   }, []);
 
-  const stickersListByCategory = useMemo(() => {
-    return groupStickersByCategory(albumDetailsStore.data?.stickersList);
-  }, [albumDetailsStore.data?.stickersListByCategory, groupStickersByCategory]);
+  useEffect(() => {
+    if (albumDetailsStore.data?.stickersList) {
+      groupStickersByCategory(albumDetailsStore.data?.stickersList);
+    }
+  }, [albumDetailsStore.data?.stickersList, groupStickersByCategory]);
+
+  useEffect(() => {
+    if (albumDetailsStore.data?.stickersList) {
+      const originalCopy = albumDetailsStore.data.stickersList.map(sticker => ({ ...sticker }));
+      setOriginalStickersList(originalCopy);
+      groupStickersByCategory(albumDetailsStore.data.stickersList);
+    }
+  }, [albumDetailsStore.data?.stickersList, groupStickersByCategory]);
+
+  const stickerPlusAction = async (stickerId) => {
+    const sticker = albumDetailsStore.data?.stickersList.find((sticker) => sticker.id === stickerId);
+    const originalSticker = originalStickersList.find((s) => s.id === stickerId);
+
+    if (sticker) {
+      const stickerQuantity = sticker.quantity || 0;
+      const originalQuantity = originalSticker.quantity || 0;
+      const newStickerQuantity = stickerQuantity + 1;
+  
+      stickersListByCategory.forEach((category) => {
+        category.forEach((sticker) => {
+          if (sticker.id === stickerId) {
+            setStickersListByCategory((prevState) => {
+              const newState = [...prevState];
+              const categoryIndex = newState.findIndex((cat) => cat[0].category === sticker.category);
+              if (categoryIndex !== -1) {
+                const stickerIndex = newState[categoryIndex].findIndex((s) => s.id === stickerId);
+                if (stickerIndex !== -1) {
+                  newState[categoryIndex][stickerIndex].quantity = newStickerQuantity;
+                }
+              }
+              return newState;
+            });
+          }
+        });
+      });
+  
+      // Atualiza o AsyncStorage
+      try {
+        const cacheKey = 'stickers_to_update_cache';
+        const cacheRaw = await AsyncStorage.getItem(cacheKey);
+        let cache = [] as any[];
+        if (cacheRaw) {
+          cache = JSON.parse(cacheRaw);
+        }
+  
+        // Verifica se já existe no cache
+        const existingIndex = cache.findIndex(item => item.id === stickerId);
+
+  
+        if (newStickerQuantity === originalQuantity) {
+          // Se a quantidade for igual à original, remove do cache
+          if (existingIndex !== -1) {
+            cache.splice(existingIndex, 1);
+          }
+        } else {
+          // Se diferente, adiciona ou atualiza no cache
+          if (existingIndex !== -1) {
+            cache[existingIndex].quantity = newStickerQuantity;
+          } else {
+            cache.push({ id: stickerId, quantity: newStickerQuantity });
+          }
+        }
+  
+        await AsyncStorage.setItem(cacheKey, JSON.stringify(cache));
+
+        // Após await AsyncStorage.setItem(cacheKey, JSON.stringify(cache));
+        await AsyncStorage.setItem(cacheKey, JSON.stringify(cache));
+      } catch (e) {
+        console.error('Erro ao atualizar o cache de stickers:', e);
+      }
+    }
+  };
+
+  const stickerMinusAction = async(stickerId) => {
+    const sticker = albumDetailsStore.data?.stickersList.find((sticker) => sticker.id === stickerId);
+    const originalSticker = originalStickersList.find((s) => s.id === stickerId);
+
+    if (sticker) {
+      const stickerQuantity = sticker.quantity || 0;
+      const originalQuantity = originalSticker.quantity || 0;
+      const newStickerQuantity = stickerQuantity - 1;
+  
+      stickersListByCategory.forEach((category) => {
+        category.forEach((sticker) => {
+          if (sticker.id === stickerId) {
+            setStickersListByCategory((prevState) => {
+              const newState = [...prevState];
+              const categoryIndex = newState.findIndex((cat) => cat[0].category === sticker.category);
+              if (categoryIndex !== -1) {
+                const stickerIndex = newState[categoryIndex].findIndex((s) => s.id === stickerId);
+                if (stickerIndex !== -1) {
+                  newState[categoryIndex][stickerIndex].quantity = newStickerQuantity;
+                }
+              }
+              return newState;
+            });
+          }
+        });
+      });
+  
+      // Atualiza o AsyncStorage
+      try {
+        const cacheKey = 'stickers_to_update_cache';
+        const cacheRaw = await AsyncStorage.getItem(cacheKey);
+        let cache = [] as any[];
+        if (cacheRaw) {
+          cache = JSON.parse(cacheRaw);
+        }
+  
+        // Verifica se já existe no cache
+        const existingIndex = cache.findIndex(item => item.id === stickerId);
+  
+        if (newStickerQuantity === originalQuantity) {
+          // Se a quantidade for igual à original, remove do cache
+          if (existingIndex !== -1) {
+            cache.splice(existingIndex, 1);
+          }
+        } else {
+          // Se diferente, adiciona ou atualiza no cache
+          if (existingIndex !== -1) {
+            cache[existingIndex].quantity = newStickerQuantity;
+          } else {
+            cache.push({ id: stickerId, quantity: newStickerQuantity });
+          }
+        }
+  
+        await AsyncStorage.setItem(cacheKey, JSON.stringify(cache));
+
+        // Após await AsyncStorage.setItem(cacheKey, JSON.stringify(cache));
+        await AsyncStorage.setItem(cacheKey, JSON.stringify(cache));
+      } catch (e) {
+        console.error('Erro ao atualizar o cache de stickers:', e);
+      }
+    }
+  };
 
   // const album = useMemo(() => ({
   //   id: 1,
@@ -84,26 +265,6 @@ export default function AlbumScreen({ navigation }: any) {
   //       { id: 8, order: 8, number: '008', category: 'BRA', quantity: 0, youHave: false, youNeed: false },
   //       { id: 9, order: 9, number: '009', category: 'BRA', quantity: 0, youHave: true, youNeed: false },
   //       { id: 10, order: 10, number: '010', category: 'BRA', quantity: 0, youHave: true, youNeed: false },
-  //     ],
-  //     [
-  //       { id: 11, order: 1, number: '001', category: 'ARG', quantity: 0, youHave: true, youNeed: false },
-  //       { id: 12, order: 2, number: '002', category: 'ARG', quantity: 1, youHave: true, youNeed: true },
-  //       { id: 13, order: 3, number: '003', category: 'ARG', quantity: 2, youHave: true, youNeed: true },
-  //       { id: 14, order: 4, number: '004', category: 'ARG', quantity: 0, youHave: true, youNeed: true },
-  //       { id: 15, order: 5, number: '005', category: 'ARG', quantity: 0, youHave: false, youNeed: false },
-  //       { id: 16, order: 6, number: '006', category: 'ARG', quantity: 0, youHave: false, youNeed: false },
-  //       { id: 17, order: 7, number: '007', category: 'ARG', quantity: 0, youHave: false, youNeed: false },
-  //       { id: 18, order: 8, number: '008', category: 'ARG', quantity: 0, youHave: true, youNeed: false },
-  //     ],
-  //     [
-  //       { id: 21, order: 1, number: '001', category: 'BOL', quantity: 0, youHave: true, youNeed: true },
-  //       { id: 22, order: 2, number: '002', category: 'BOL', quantity: 1, youHave: true, youNeed: true },
-  //       { id: 23, order: 3, number: '003', category: 'BOL', quantity: 2, youHave: true, youNeed: true },
-  //       { id: 24, order: 4, number: '004', category: 'BOL', quantity: 0, youHave: true, youNeed: false },
-  //       { id: 25, order: 5, number: '005', category: 'BOL', quantity: 0, youHave: true, youNeed: false },
-  //       { id: 26, order: 6, number: '006', category: 'BOL', quantity: 0, youHave: false, youNeed: false },
-  //       { id: 27, order: 7, number: '007', category: 'BOL', quantity: 0, youHave: false, youNeed: false },
-  //       { id: 28, order: 8, number: '008', category: 'BOL', quantity: 0, youHave: false, youNeed: false },
   //     ],
   //   ],
   // }), []);
@@ -189,6 +350,20 @@ export default function AlbumScreen({ navigation }: any) {
     navigation.goBack();
   };
 
+  if (albumDetailsStore.loading || !albumDetailsStore.data) {
+    return (
+      <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]}>
+        <View style={[styles.loadingWrapper]}>
+          <ActivityIndicator
+            size="large"
+            color={theme.primary50}
+            style={[ styles.wrapper ]}
+          />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]}>
       <View style={[styles.headBlock, { borderColor: theme.grey5 }]}>
@@ -266,6 +441,8 @@ export default function AlbumScreen({ navigation }: any) {
                     number={item.number}
                     quantity={item.quantity}
                     myAlbum={!isExternalUserAlbum}
+                    plusAction={() => stickerPlusAction(item.id)}
+                    minusAction={() => stickerMinusAction(item.id)}
                   />
                 ))}
               </View>
@@ -281,6 +458,13 @@ const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
     width: '100%',
+  },
+  loadingWrapper: {
+    display: 'flex',
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   headBlock: {
     paddingLeft: 16,

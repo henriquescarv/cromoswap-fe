@@ -4,7 +4,7 @@ import { SearchProps } from "./Search.types";
 import { useTheme } from "@/providers/ThemeModeProvider/ThemeModeProvider";
 import { Ionicons } from "@expo/vector-icons";
 
-export default function Search({title, placeholder, value, onChangeText, maxLength, errorMessage}: SearchProps) {
+export default function Search({title, placeholder, disabled, value, onChangeText, maxLength, errorMessage}: SearchProps) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   const { theme } = useTheme();
@@ -20,6 +20,8 @@ export default function Search({title, placeholder, value, onChangeText, maxLeng
         value={value}
         onChangeText={onChangeText}
         maxLength={maxLength}
+        editable={!disabled}
+        
       />
     
       <View style={[styles.inputError]}>
@@ -30,7 +32,7 @@ export default function Search({title, placeholder, value, onChangeText, maxLeng
         <Ionicons
           name='search'
           size={24}
-          color={theme.highDark}
+          color={disabled ? theme.grey15 : theme.highDark}
         />
       </View>
     </View>

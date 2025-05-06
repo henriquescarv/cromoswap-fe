@@ -1,10 +1,20 @@
 import React from "react";
 import { StickerItemProps } from "./StickerItem.types";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useTheme } from "@/providers/ThemeModeProvider/ThemeModeProvider";
 
-export default function StickerItem({ myAlbum = false, number, quantity = 0, showQuantity = true, topText }: StickerItemProps) {
+export default function StickerItem({
+  myAlbum = false,
+  number,
+  quantity = 0,
+  showQuantity = true,
+  topText,
+  plusAction,
+  minusAction,
+}: StickerItemProps) {
   const { theme } = useTheme();
+
+  const displayMinusButton = quantity > 0;
 
   const colorRules = {
     0: 'transparent',
@@ -12,27 +22,40 @@ export default function StickerItem({ myAlbum = false, number, quantity = 0, sho
     2: theme.grey5,
   };
 
-  const backgroundColor = colorRules[quantity] || 'transparent';
+  const backgroundColor = colorRules[quantity] || theme.grey5;
 
   const stickerHeight = myAlbum ? 80 : 60;
 
   const displayQuantity = showQuantity && quantity > 0;
 
+  const handlePlusAction = () => {
+    plusAction && plusAction();
+  };
+
+  const handleMinusAction = () => {
+    minusAction && minusAction();
+  };
+
   return (
     <View style={[styles.wrapper, { borderColor: theme.grey10, backgroundColor, height: stickerHeight }]}>
-      <View>
-        {displayQuantity && <Text style={[styles.topText, { color: theme.grey15 }]}>{quantity}</Text>}
-        {topText && !displayQuantity && <Text style={[styles.topText, { color: theme.grey15 }]}>{topText}</Text>}
-      </View>
-
-      <View style={[styles.stickerOrderWrapper, { marginBottom: myAlbum ? 12 : 0 }]}>
-        <Text style={[styles.stickerOrder, { color: theme.primary100 }]}>{number}</Text>
-      </View>
-
-      {(myAlbum && quantity > 0) && (
-        <View style={[styles.minusWrapper, { borderColor: theme.grey10 }]}>
-          <Text style={[styles.minus, { color: theme.primaryRed }]}>-</Text>
+      <TouchableOpacity onPress={handlePlusAction} style={[ styles.plusArea ]}>
+        <View>
+          {displayQuantity && <Text style={[styles.topText, { color: theme.grey15 }]}>{quantity}</Text>}
+          {topText && !displayQuantity && <Text style={[styles.topText, { color: theme.grey15 }]}>{topText}</Text>}
         </View>
+
+        <View style={[styles.stickerOrderWrapper, { marginBottom: myAlbum ? 12 : 0 }]}>
+          <Text style={[styles.stickerOrder, { color: theme.primary100 }]}>{number}</Text>
+        </View>
+      </TouchableOpacity>
+
+      {(myAlbum) && (
+        <TouchableOpacity
+          onPress={displayMinusButton ? handleMinusAction : handlePlusAction}
+          style={[styles.minusWrapper, { borderColor: displayMinusButton ? theme.grey10 : 'transparent' }]}
+        >
+          {displayMinusButton && <Text style={[styles.minus, { color: theme.primaryRed }]}>-</Text>}
+        </TouchableOpacity>
       )}
     </View>
   );
@@ -47,6 +70,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     overflow: 'hidden',
     position: 'relative',
+  },
+  plusArea: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    position: 'static',
+    height: '100%',
   },
   topText: {
     width: '100%',

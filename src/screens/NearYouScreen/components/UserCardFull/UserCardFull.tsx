@@ -10,7 +10,8 @@ import { UserCardFullTypes } from './UserCars.types';
 export default function UserCard({
   albums,
   username,
-  trocableStickers,
+  youNeed,
+  youHave,
   avatar,
   onClick,
   onSendMessage,
@@ -44,10 +45,10 @@ export default function UserCard({
 
           <View style={[styles.rightContainer]}>
             <View>
-              <Tag number={trocableStickers} text={nearYouLocale.youHave} />
+              <Tag number={youHave} text={nearYouLocale.youHave} />
             </View>
             <View>
-              <Tag number={trocableStickers} text={nearYouLocale.youNeed} variant='tertiary' />
+              <Tag number={youNeed} text={nearYouLocale.youNeed} variant='tertiary' />
             </View>
           </View>
         </View>
@@ -143,6 +144,7 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     gap: 8,
+    marginTop: 8,
   },
   button1: {
     flex: 1,

@@ -85,6 +85,7 @@ const Locales = {
 		albumsTitle: 'Seus álbuns',
 		seeMoreButtonLabel: 'Ver mais',
 		searchPlaceholder: 'Ex: “Copa 2026”',
+		noAlbums: 'Você ainda não possui álbuns! Clique no botão abaixo para começar a colecionar!',
 	},
 	purchaseAlbum: {
 		stickersLabel: quantity => `${quantity} cromos`,

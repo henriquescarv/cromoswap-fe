@@ -4,4 +4,6 @@ export type StickerItemProps = {
   quantity?: number,
   topText?: string,
   number: string,
+  plusAction: () => void,
+  minusAction: () => void,
 }

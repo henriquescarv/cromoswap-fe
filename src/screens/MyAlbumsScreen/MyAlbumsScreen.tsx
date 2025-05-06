@@ -73,7 +73,11 @@ export default function MyAlbumsScreen({ navigation }: any) {
 
   const goToAlbumScreen = (albumId: number) => {
     navigation.navigate('AlbumScreen', { albumId });
-  }
+  };
+
+  const goToChooseAlbumScreen = () => {
+    navigation.navigate('ChooseAlbumScreen');
+  };
 
   if (userAlbumsStore.loading) {
     return (
@@ -108,24 +112,41 @@ export default function MyAlbumsScreen({ navigation }: any) {
           placeholder={myAlbumsLocale.searchPlaceholder}
           onChangeText={setFilter}
           value={filter}
+          disabled={!filteredList.length}
         />
       </View>
 
-      <ScrollView style={[styles.contentWrapper]}>
-        <View style={[styles.blockContainer]}>
-          <View style={[styles.albumsContainer]}>
-            {filteredList.map((item, index) => (
-              <Album
-                key={index} // trocar isso depois para item.id
-                name={item.name}
-                image={item.image}
-                percentCompleted={item.percentCompleted}
-                onClick={() => goToAlbumScreen(item.userAlbumId)}
-              />
-            ))}
-          </View>
+      {!filteredList.length && (
+        <View style={[styles.emptyWrapper]}>
+          <Text style={[styles.emptyStateText, { color: theme.primary100 }]}>{myAlbumsLocale.noAlbums}</Text>
+
+          <TouchableOpacity style={[styles.plusButton, { borderColor: theme.primary100 }]} onPress={goToChooseAlbumScreen}>
+            <Ionicons
+              name={"add"}
+              size={32}
+              color={theme.primary100}
+            />
+          </TouchableOpacity>
         </View>
-      </ScrollView>
+      )}
+
+      {!!filteredList.length && (
+        <ScrollView style={[styles.contentWrapper]}>
+          <View style={[styles.blockContainer]}>
+            <View style={[styles.albumsContainer]}>
+              {filteredList.map(item => (
+                <Album
+                  key={item.id}
+                  name={item.name}
+                  image={item.image}
+                  percentCompleted={item.percentCompleted}
+                  onClick={() => goToAlbumScreen(item.userAlbumId)}
+                />
+              ))}
+            </View>
+          </View>
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 }
@@ -173,5 +194,25 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'center',
     gap: 16,
+  },
+  emptyWrapper: {
+    flex: 1,
+    display: 'flex',
+    gap: 32,
+    width: '100%',
+    height: '100%',
+    padding: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyStateText: {
+    fontSize: 16,
+    fontFamily: 'primaryMedium',
+    textAlign: 'center',
+  },
+  plusButton: {
+    borderRadius: 16,
+    borderWidth: 1.5,
+    padding: 8,
   },
 });

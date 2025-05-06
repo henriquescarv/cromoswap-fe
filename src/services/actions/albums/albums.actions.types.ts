@@ -66,3 +66,42 @@ export type setAlbumDetailsProps = {
   data?: any;
   status?: "success" | "error" | null;
 }
+
+
+
+export type setUsersByRegionLoadingProps = {
+  set: any;
+  loading: boolean;
+}
+
+export type requestUsersByRegionProps = {
+  set: any;
+}
+
+export type setUsersByRegionProps = {
+  set: any;
+  list?: any;
+  status?: "success" | "error" | null;
+}
+
+
+
+export type setUpdateStickersQuantityLoadingProps = {
+  set: any;
+  loading: boolean;
+}
+
+export type StickerToUpdate = {
+  id: number;
+  quantity: number;
+}
+
+export type requestUpdateStickersQuantityProps = {
+  set: any;
+  stickersToUpdate: StickerToUpdate[];
+}
+
+export type setUpdateStickersQuantityProps = {
+  set: any;
+  status?: "success" | "error" | null;
+}

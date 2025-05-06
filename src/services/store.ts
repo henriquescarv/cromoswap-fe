@@ -4,6 +4,7 @@ import { registerActions } from './actions/register/register.actions';
 import { summaryActions } from './actions/summary/summary.actions';
 import { albumsActions } from './actions/albums/albums.actions';
 import { StoreState } from './store.types';
+import { StickerToUpdate } from './actions/albums/albums.actions.types';
 
 const initialState = {
   invalidToken: false,
@@ -58,7 +59,12 @@ const initialState = {
     loading: false,
     status: null,
     data: null,
-  }
+  },
+  usersByRegion: {
+    loading: false,
+    status: null,
+    list: [],
+  },
 };
 
 const useStore = create<StoreState>((set) => {
@@ -90,6 +96,8 @@ const useStore = create<StoreState>((set) => {
   const requestPurchaseAlbum = ({ albumTemplateId }) => albumsActions.purchaseAlbum.request({ set, albumTemplateId });
   const requestUserAlbums = () => albumsActions.userAlbums.request({ set });
   const requestAlbumDetails = ({ userAlbumId }) => albumsActions.albumDetails.request({ set, userAlbumId });
+  const requestUsersByRegion = () => albumsActions.usersByRegion.request({ set });
+  const requestUpdateStickersQuantity = ({ stickersToUpdate }: { stickersToUpdate: StickerToUpdate[] }) => albumsActions.updateStickersQuantity.request({ set, stickersToUpdate });
 
   return {
     ...initialState,
@@ -106,6 +114,8 @@ const useStore = create<StoreState>((set) => {
     requestPurchaseAlbum,
     requestUserAlbums,
     requestAlbumDetails,
+    requestUsersByRegion,
+    requestUpdateStickersQuantity,
 
     logout,
   }

@@ -1,7 +1,10 @@
 export type UserProps = {
   id: number;
   username: string;
-  trocableStickers: number;
-  albums_in_common: string[];
+  youNeed: number,
+  youHave: number,
+  countryState?: string;
+  city?: string;
+  albumsInCommon: string[];
   avatar?: any;
 }

@@ -1,6 +1,7 @@
 export type UserCardFullTypes = {
   username: string,
-  trocableStickers: number,
+  youNeed: number,
+  youHave: number,
   avatar?: string | null,
   albums: string[],
   onClick?: () => void,
