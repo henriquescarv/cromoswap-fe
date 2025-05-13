@@ -85,3 +85,38 @@ export type setNotificationsProps = {
   status?: string | null;
   list?: any;
 }
+
+
+
+export type requestNotificationsUnreadCountProps = {
+  set: any;
+}
+
+export type setNotificationsUnreadCountLoadingProps = {
+  set: any;
+  loading: boolean;
+}
+
+export type setNotificationsUnreadCountProps = {
+  set: any;
+  status?: string | null;
+  quantity?: number | null;
+}
+
+
+
+export type requestNotificationAsSeenProps = {
+  set: any;
+  notificationId?: number | null;
+}
+
+export type setNotificationAsSeenLoadingProps = {
+  set: any;
+  loading: boolean;
+}
+
+export type setNotificationAsSeenProps = {
+  set: any;
+  status?: string | null;
+  notificationId?: number | null;
+}

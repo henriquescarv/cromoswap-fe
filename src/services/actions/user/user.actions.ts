@@ -1,6 +1,6 @@
 import { commonActions } from "../common/common.actions";
-import { requestFollowsProps, requestFollowUserProps, requestNotificationsProps, requestUnfollowUserProps, setFollowsLoadingProps, setFollowsProps, setFollowUserLoadingProps, setFollowUserProps, setNotificationsLoadingProps, setNotificationsProps, setUnfollowUserLoadingProps, setUnfollowUserProps } from "./user.actions.types";
-import { getNotifications, postFollows, postFollowUser, postUnfollowUser } from "./user.requests";
+import { requestFollowsProps, requestFollowUserProps, requestNotificationAsSeenProps, requestNotificationsProps, requestNotificationsUnreadCountProps, requestUnfollowUserProps, setFollowsLoadingProps, setFollowsProps, setFollowUserLoadingProps, setFollowUserProps, setNotificationAsSeenLoadingProps, setNotificationAsSeenProps, setNotificationsLoadingProps, setNotificationsProps, setNotificationsUnreadCountLoadingProps, setNotificationsUnreadCountProps, setUnfollowUserLoadingProps, setUnfollowUserProps } from "./user.actions.types";
+import { getNotifications, getNotificationsUnreadCount, postFollows, postFollowUser, postNotificationsAsSeen, postUnfollowUser } from "./user.requests";
 
 const setFollowsLoading = ({ set, loading }: setFollowsLoadingProps) => {
   set((state: any) => ({
@@ -230,6 +230,104 @@ const requestNotifications = async ({ set }: requestNotificationsProps) => {
 
 
 
+const setNotificationsUnreadCountLoading = ({ set, loading }: setNotificationsUnreadCountLoadingProps) => {
+  set((state: any) => ({
+    ...state,
+    notificationsUnreadCount: {
+      ...state.notificationsUnreadCount,
+      loading,
+    }
+  }));
+};
+
+const setNotificationsUnreadCount = ({ set, quantity = 0, status = null }: setNotificationsUnreadCountProps) => {
+  set((state: any) => ({
+    ...state,
+    notificationsUnreadCount: {
+      ...state.notificationsUnreadCount,
+      loading: false,
+      status,
+      quantity,
+    },
+  }));
+};
+
+const requestNotificationsUnreadCount = async ({ set }: requestNotificationsUnreadCountProps) => {
+  try {
+    setNotificationsUnreadCountLoading({ set, loading: true });
+
+    const data = await getNotificationsUnreadCount();
+
+    setNotificationsUnreadCount({ set, quantity: data?.unreadCount, status: 'success' });
+  } catch (error: any) {
+    setNotificationsUnreadCountLoading({ set, loading: false });
+
+    if (error.response?.data?.message === 'INVALID_TOKEN') {
+      commonActions.setInvalidToken({ set, invalidToken: true });
+    }
+
+    setNotificationsUnreadCount({ set, status: 'error' });
+    console.log('requestNotificationsUnreadCount', 'Something went wrong');
+  }
+};
+
+const resetNotificationsUnreadCount = ({ set }: any) => {
+  set((state: any) => ({
+    ...state,
+    notificationsUnreadCount: {
+      ...state.notificationsUnreadCount,
+      loading: false,
+      status: null,
+      quantity: 0,
+    },
+  }));
+};
+
+
+
+const setNotificationAsSeenLoading = ({ set, loading }: setNotificationAsSeenLoadingProps) => {
+  set((state: any) => ({
+    ...state,
+    notificationAsSeen: {
+      ...state.notificationAsSeen,
+      loading,
+    }
+  }));
+};
+
+const setNotificationAsSeen = ({ set, notificationId = null, status = null }: setNotificationAsSeenProps) => {
+  set((state: any) => ({
+    ...state,
+    notificationAsSeen: {
+      ...state.notificationAsSeen,
+      loading: false,
+      status,
+      notificationId,
+    },
+  }));
+};
+
+const requestNotificationAsSeen = async ({ set, notificationId }: requestNotificationAsSeenProps) => {
+  try {
+    setNotificationAsSeenLoading({ set, loading: true });
+
+    await postNotificationsAsSeen({ notificationId });
+
+    setNotificationAsSeen({ set, notificationId, status: 'success' });
+  } catch (error: any) {
+    setNotificationAsSeenLoading({ set, loading: false });
+
+    if (error.response?.data?.message === 'INVALID_TOKEN') {
+      commonActions.setInvalidToken({ set, invalidToken: true });
+    }
+
+    setNotificationAsSeen({ set, status: 'error' });
+    console.log('requestNotificationAsSeen', 'Something went wrong');
+  }
+};
+
+
+
 export const userActions = {
   follows: {
     request: requestFollows,
@@ -242,5 +340,14 @@ export const userActions = {
   },
   notifications: {
     request: requestNotifications,
-  }
+    set: setNotifications,
+  },
+  notificationsUnreadCount: {
+    request: requestNotificationsUnreadCount,
+    reset: resetNotificationsUnreadCount,
+    set: setNotificationsUnreadCount,
+  },
+  notificationAsSeen: {
+    request: requestNotificationAsSeen,
+  },
 };

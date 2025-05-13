@@ -14,17 +14,19 @@ export default function NotificationsScreen({ navigation }: any) {
 
   const {
     notifications: notificationsStore,
+    notificationsUnreadCount: notificationsUnreadCountStore,
     requestNotifications,
+    requestNotificationAsSeen,
+    requestNotificationsUnreadCount,
+    setNotificationsUnreadCount,
+    setNotifications,
   } = useStore((state: any) => state);
 
   const notificationsList = notificationsStore.list || [];
 
-  // const notificationsList = [
-  //   { id: 2, type: 'follow', userId: 1, senderUser: { id: 2, username: 'julianomachado', avatar: null }, createdAt: '2025-04-15 17:17:00' },
-  // ];
-
   const getDefaultData = useCallback(() => {
     requestNotifications();
+    requestNotificationsUnreadCount();
   }, []);
 
   useEffect(() => {
@@ -35,8 +37,28 @@ export default function NotificationsScreen({ navigation }: any) {
     navigation.goBack();
   };
 
+  const markNotificationAsSeen = (notificationId: number) => {
+    requestNotificationAsSeen({ notificationId });
+
+    const updatedList = notificationsList.map((notification: any) =>
+      notification.id === notificationId
+        ? { ...notification, seen: true }
+        : notification
+    );
+
+    setNotifications({ list: updatedList, status: 'success' });
+
+    const unreadCount = notificationsUnreadCountStore.quantity - 1;
+    setNotificationsUnreadCount({ quantity: unreadCount, status: 'success' });
+  };
+
   const goToUserProfileScreen = (userId: number) => {
     navigation.navigate('UserProfileScreen', { userId });
+  };
+
+  const onClickNotification = ({ notificationId, userId }: { notificationId: number; userId: number }) => {
+    markNotificationAsSeen(notificationId);
+    goToUserProfileScreen(userId);
   };
 
   return (
@@ -61,7 +83,7 @@ export default function NotificationsScreen({ navigation }: any) {
             <NotificationCard
               key={notification.id}
               notification={notification}
-              goToUserProfileScreen={() => goToUserProfileScreen(notification.senderUser.id)}
+              goToUserProfileScreen={() => onClickNotification({ userId: notification.senderUser.id, notificationId: notification.id })}
             />
           ))}
         </View>

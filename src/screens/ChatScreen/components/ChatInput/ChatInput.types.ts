@@ -3,5 +3,6 @@ export type ChatInputProps = {
   value?: string;
   onChangeText?: (text: string) => void;
   maxLength?: number;
-  onSendMessage?: () => void;
+  onSendMessage?: (content) => void;
+  onFocus?: () => void;
 }

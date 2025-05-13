@@ -1,5 +1,5 @@
 export type MessageProps = {
-  message: string,
   sender: 'me' | 'other',
+  message?: string,
   date?: Date,
 }

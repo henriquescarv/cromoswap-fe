@@ -46,6 +46,7 @@ const requestAlbumsTemplates = async ({ set }: requestAlbumTemplatesProps) => {
 };
 
 
+
 const setPurchaseAlbumLoading = ({ set, loading }: setPurchaseAlbumLoadingProps) => {
   set((state: any) => ({
     ...state,

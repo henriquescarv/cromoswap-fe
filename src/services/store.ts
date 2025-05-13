@@ -8,6 +8,7 @@ import { StickerToUpdate } from './actions/albums/albums.actions.types';
 import { requestLoginProps, setLoginProps } from './actions/login/login.actions.types';
 import { requestRegisterProps } from './actions/register/register.actions.types';
 import { userActions } from './actions/user/user.actions';
+import { messagesActions } from './actions/messages/messages.actions';
 
 const initialState = {
   invalidToken: false,
@@ -97,6 +98,39 @@ const initialState = {
     loading: false,
     status: null,
     list: [],
+  },
+  notificationAsSeen: {
+    loading: false,
+    status: null,
+    notificationId: null,
+  },
+  notificationsUnreadCount: {
+    loading: false,
+    status: null,
+    quantity: 0,
+  },
+  messages: {
+    lastMessages: {
+      loading: false,
+      status: null,
+      list: [],
+    },
+    unreadMessagesCount: {
+      loading: false,
+      status: null,
+      count: 0,
+    },
+    withUser: {
+      loading: false,
+      status: null,
+      data: null,
+      userId: null,
+    },
+    messagesMarkSeen: {
+      loading: false,
+      status: null,
+      userId: null,
+    },
   }
 };
 
@@ -139,6 +173,19 @@ const useStore = create<StoreState>((set) => {
   const requestFollowUser = ({ userId, requestFrom }) => userActions.followUser.request({ set, userId, requestFrom });
   const requestUnfollowUser = ({ userId, requestFrom }) => userActions.unfollowUser.request({ set, userId, requestFrom });
   const requestNotifications = () => userActions.notifications.request({ set });
+  const setNotifications = ({ status, list }) => userActions.notifications.set({ set, status, list });
+  const requestNotificationsUnreadCount = () => userActions.notificationsUnreadCount.request({ set });
+  const resetNotificationsUnreadCount = () => userActions.notificationsUnreadCount.reset({ set });
+  const setNotificationsUnreadCount = ({ status, quantity }) => userActions.notificationsUnreadCount.set({ set, status, quantity });
+  const requestNotificationAsSeen = ({ notificationId }) => userActions.notificationAsSeen.request({ set, notificationId });
+
+  const requestLastMessages = () => messagesActions.lastMessages.request({ set });
+  const resetLastMessages = () => messagesActions.lastMessages.reset({ set });
+  const requestUnreadMessagesCount = () => messagesActions.unreadMessagesCount.request({ set });
+  const resetUnreadMessagesCount = () => messagesActions.unreadMessagesCount.reset({ set });
+  const requestMessagesMarkAllSeen = ({ userId }) => messagesActions.messagesMarkAllSeen.request({ set, userId });
+  const requestMessagesWithUser = ({ userId }) => messagesActions.getMessagesWithUser.request({ set, userId });
+  const setMessagesWithUser = ({ status, data, userId }) => messagesActions.getMessagesWithUser.set({ set, status, data, userId });
 
   return {
     ...initialState,
@@ -170,6 +217,20 @@ const useStore = create<StoreState>((set) => {
     requestFollowUser,
     requestUnfollowUser,
     requestNotifications,
+    setNotifications,
+    requestNotificationsUnreadCount,
+    resetNotificationsUnreadCount,
+    setNotificationsUnreadCount,
+    requestNotificationAsSeen,
+
+    // messages
+    requestLastMessages,
+    resetLastMessages,
+    requestUnreadMessagesCount,
+    resetUnreadMessagesCount,
+    requestMessagesMarkAllSeen,
+    requestMessagesWithUser,
+    setMessagesWithUser,
 
     logout,
   }

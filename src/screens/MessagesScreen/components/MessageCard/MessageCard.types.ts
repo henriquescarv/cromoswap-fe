@@ -1,11 +1,12 @@
 export type MessageProps = {
-  user: {
+  otherUser: {
     username: string;
     avatar: string | null;
+    id: number;
   };
-  lastMessage: string,
+  senderId: number;
+  content: string,
   unreadMessages: number,
-  date: string;
 }
 
 export type MessageCardProps = {

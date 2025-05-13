@@ -152,6 +152,9 @@ const Locales = {
 	},
 	messages: {
 		title: 'Mensagens',
+		messageCard: {
+			you: 'Você: ',
+		}
 	},
 	chat: {
 		title: 'Mensagens',

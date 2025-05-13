@@ -7,10 +7,10 @@ import { MessageCardProps } from "./MessageCard.types";
 
 export default function MessageCard({ message, goToChat }: MessageCardProps) {
   const { locale } = useContext(LocaleContext);
-  const { notifications: notificationsLocale } = locale;
+  const { messages: messagesLocale } = locale;
   const { theme } = useTheme();
 
-  const mountUserAvatar = ({avatar = null}: { avatar: string | null }) => {
+  const mountUserAvatar = ({avatar = null}: { avatar?: string | null }) => {
     if (avatar) {
       return avatar;
     }
@@ -18,31 +18,32 @@ export default function MessageCard({ message, goToChat }: MessageCardProps) {
     return <Ionicons name="person" size={32} color={theme.primary100} />;
   };
 
-  const mountTimeAgoLabel = (notificationDate: Date) => {
-    const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - notificationDate.getTime()) / 1000);
-
-    if (diffInSeconds < 60) {
-      return notificationsLocale.time.now;
-    } else if (diffInSeconds < 3600) {
-      return notificationsLocale.time.minute(Math.floor(diffInSeconds / 60));
-    } else if (diffInSeconds < 86400) {
-      return notificationsLocale.time.hour(Math.floor(diffInSeconds / 3600));
-    } else {
-      return notificationsLocale.time.day(Math.floor(diffInSeconds / 86400));
+  const mountMessageText = () => {
+    if (message?.senderId !== message.otherUser?.id) {
+      return messagesLocale.messageCard.you + message?.content;
     }
-  };
+
+    return message?.content;
+  }
 
   return (
     <TouchableOpacity style={[ styles.wrapper, { borderColor: theme.primary10 } ]} onPress={goToChat}>
       <View style={[styles.avatar, { backgroundColor: theme.primary10 }]}>
-        {mountUserAvatar({ avatar: message.user.avatar })}
+        {mountUserAvatar({ avatar: message.otherUser?.avatar })}
       </View>
 
       <View style={[styles.messageContainer]}>
-        <Text style={[styles.notificationText, { color: theme.primary100 }]}>{message.user.username}</Text>
-        <Text numberOfLines={2} style={[styles.lastMessageText, { color: theme.grey20 }]}>{message.lastMessage}</Text>
+        <Text style={[styles.notificationText, { color: theme.primary100 }]}>{message.otherUser?.username}</Text>
+        <Text numberOfLines={2} style={[styles.lastMessageText, { color: theme.grey20 }]}>
+          {mountMessageText()}
+        </Text>
       </View>
+
+      {message?.unreadMessages > 0 && (
+        <View style={[styles.unreadCount, { backgroundColor: theme.primary50 }]}>
+          <Text style={{ color: theme.highLight, fontFamily: 'primaryBold', fontSize: 12, }}>{message?.unreadMessages}</Text>
+        </View>
+      )}
     </TouchableOpacity>
   );
 };
@@ -83,4 +84,15 @@ const styles = StyleSheet.create({
     fontFamily: 'primaryRegular',
     width: '100%',
   },
+  unreadCount: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    position: 'absolute',
+    right: 16,
+    top: 16,
+  }
 });

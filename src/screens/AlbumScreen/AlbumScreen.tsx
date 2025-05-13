@@ -63,7 +63,6 @@ export default function AlbumScreen({ navigation }: any) {
   }, [checkAndSyncStickersCache]);
 
   const getDefaultData = useCallback(() => {
-    resetAlbumDetails();
     setFilteredList([]);
     setOriginalStickersList([]);
     setStickersListByCategory([]);
@@ -87,6 +86,8 @@ export default function AlbumScreen({ navigation }: any) {
     if (stickersToUpdate?.length > 0) {
       await requestUpdateStickersQuantity({ stickersToUpdate });
     }
+
+    resetAlbumDetails();
   };
 
   useEffect(() => () => {

@@ -9,6 +9,7 @@ import { Album } from '@/components/Album';
 import { Ionicons } from '@expo/vector-icons';
 import useStore from '@/services/store';
 import { Skeleton } from '@/components/Skeleton';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function HomeScreen({ navigation }: any) {
   const { theme } = useTheme();
@@ -19,8 +20,14 @@ export default function HomeScreen({ navigation }: any) {
     summary: summaryStore,
     usersByRegion: usersByRegionStore,
     userAlbums: userAlbumsStore,
+    messages: messagesStore,
+    notificationsUnreadCount: notificationsUnreadCountStore,
     requestUsersByRegion,
     requestUserAlbums,
+    requestUnreadMessagesCount,
+    resetUnreadMessagesCount,
+    requestNotificationsUnreadCount,
+    resetNotificationsUnreadCount,
   } = useStore((state: any) => state);
 
   const users = useMemo(() => {
@@ -30,43 +37,53 @@ export default function HomeScreen({ navigation }: any) {
     })) || []
   }, [usersByRegionStore]);
 
-  // const users = [
-  //   {
-  //     id: 1,
-  //     username: 'alanpatrick',
-  //     trocableStickers: 6,
-  //     albumsInCommon: [
-  //       'Copa do Mundo 2022',
-  //       'Harry Potter - e a Ordem da Fênix',
-  //       'Harry Potter e a Câmara Secreta',
-  //     ],
-  //     avatar: null,
-  //   },
-  // ];
-
   const albums = userAlbumsStore.list || [];
-
-  // const albums = [
-  //   {
-  //     id: 1,
-  //     name: 'Copa do Mundo 2022',
-  //     image: 'https://cdn.conmebol.com/wp-content/uploads/2019/09/fwc_2022_square_portrait1080x1080-1024x1024.png',
-  //     totalStickers: 600,
-  //     percentCompleted: 50,
-  //   },
-  // ];
 
   const getDefaultData = useCallback(() => {
     requestUsersByRegion();
 
     if (!summaryStore.data?.id) return;
 
+    requestNotificationsUnreadCount();
     requestUserAlbums();
   }, []);
 
   useEffect(() => {
     getDefaultData();
   }, [getDefaultData]);
+
+  const getUnreadMessagesCount = useCallback(() => {
+    if (!summaryStore.data?.id || messagesStore?.unreadMessagesCount?.status) return;
+
+    requestUnreadMessagesCount();
+  }, [summaryStore.data?.id, messagesStore?.unreadMessagesCount?.status]);
+
+  useEffect(() => {
+    getUnreadMessagesCount();
+  }, [getUnreadMessagesCount]);
+
+  const getNotificationsUnreadCount = useCallback(() => {
+    if (!summaryStore.data?.id || notificationsUnreadCountStore?.status) return;
+
+    requestNotificationsUnreadCount();
+  }, [summaryStore.data?.id, notificationsUnreadCountStore?.status]);
+
+  useEffect(() => {
+    getNotificationsUnreadCount();
+  }, [getNotificationsUnreadCount]);
+
+  const cleanUpFunction = useCallback(() => {
+    resetUnreadMessagesCount();
+    resetNotificationsUnreadCount();
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        cleanUpFunction();
+      };
+    }, [cleanUpFunction])
+  );
 
   const goToNearYouScreen = () => {
     navigation.navigate('NearYouScreen');
@@ -109,14 +126,26 @@ export default function HomeScreen({ navigation }: any) {
                 size={28}
                 color={theme.primary100}
               />
+
+              {notificationsUnreadCountStore?.quantity > 0 && (
+                <View style={[styles.messagesCountContainer, { backgroundColor: theme.primary50 }]}>
+                  <Text style={[styles.messagesCountText, { color: theme.highLight }]}>{notificationsUnreadCountStore?.quantity}</Text>
+                </View>
+              )}
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={goToMessagesScreen}>
+            <TouchableOpacity onPress={goToMessagesScreen} style={{ position: 'relative' }}>
               <Ionicons
                 name={"chatbubble-outline"}
                 size={28}
                 color={theme.primary100}
               />
+
+              {messagesStore.unreadMessagesCount?.unreadCount > 0 && (
+                <View style={[styles.messagesCountContainer, { backgroundColor: theme.primary50 }]}>
+                  <Text style={[styles.messagesCountText, { color: theme.highLight }]}>{messagesStore.unreadMessagesCount?.unreadCount}</Text>
+                </View>
+              )}
             </TouchableOpacity>
           </View>
         </View>
@@ -290,6 +319,20 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
+    fontFamily: 'primaryBold',
+  },
+  messagesCountContainer: {
+    position: 'absolute',
+    right: -5,
+    top: -5,
+    borderRadius: 50,
+    width: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  messagesCountText: {
+    fontSize: 12,
     fontFamily: 'primaryBold',
   },
 });

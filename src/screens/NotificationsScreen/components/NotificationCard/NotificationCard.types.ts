@@ -8,6 +8,7 @@ export type NotificationProps = {
       avatar: null;
   };
   createdAt: string;
+  seen: boolean;
 }
 
 export type NotificationCardProps = {

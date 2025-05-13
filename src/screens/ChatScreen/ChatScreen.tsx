@@ -1,5 +1,5 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { StyleSheet, Text, View, TouchableWithoutFeedback, Keyboard, FlatList, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Image } from 'react-native';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { StyleSheet, Text, View, TouchableWithoutFeedback, Keyboard, FlatList, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Image, ActivityIndicator } from 'react-native';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -7,54 +7,105 @@ import { Ionicons } from '@expo/vector-icons';
 import { Message } from './components/Message';
 import { useRoute } from '@react-navigation/native';
 import { ChatInput } from './components/ChatInput';
+import useStore from '@/services/store';
+import { connectSocket, disconnectSocket, getSocket } from '@/services/socket/socket';
 
 export default function ChatScreen({ navigation }: any) {
+  const [newMessageContent, setNewMessageContent] = useState('');
+
+  const {
+    messages: messagesStore,
+    summary: summaryStore,
+    setMessagesWithUser,
+    resetLastMessages,
+    requestMessagesWithUser,
+    requestMessagesMarkAllSeen,
+    resetUnreadMessagesCount,
+  } = useStore((state: any) => state);
+
+  const chatData = messagesStore?.withUser?.data || null;
+
+  const scrollViewRef = useRef<ScrollView>(null);
+
   const { theme } = useTheme();
   const { locale } = useContext(LocaleContext);
-  const route = useRoute();
+  const route = useRoute<any>();
 
   const { chat: chatLocale } = locale;
-  const userId = route.params.userId || null; // Get the userId from the route params
 
-  const chatData = {
-    id: 11243,
-    username: 'alanpatrick',
-    avatar: null,
-    messagesList: [
-      {
-        id: 1,
-        senderId: 1,
-        text: 'Lorem ipsum dolor sit amet',
-      },
-      {
-        id: 2,
-        senderId: 2,
-        text: 'Lorem ipsum dolor sit amet',
-      },
-      {
-        id: 3,
-        senderId: 1,
-        text: 'Lorem ipsum dolor sit amet',
-      },
-      {
-        id: 4,
-        senderId: 2,
-        text: 'Lorem ipsum dolor sit amet',
-      },
-      {
-        id: 5,
-        senderId: 1,
-        text: 'Lorem ipsum dolor sit amet',
-      },
-      {
-        id: 6,
-        senderId: 2,
-        text: 'Qui voluptatem nemo 33 voluptatem culpa et numquam dolor. Et alias exercitationem id cupiditate suscipit qui perspiciatis voluptatem a obcaecati optio aut voluptate dolorem qui expedita quia. Qui reprehenderit quia est dolores suscipit et deleniti quibusdam qui adipisci ipsa et reiciendis corporis qui Quis dolores qui nulla expedita.',
-      },
-    ]
-  }
+  const userId = route?.params?.userId || null;
+  const myId = summaryStore.data?.id;
 
-  const myId = 1; // This should be replaced with the actual user ID from your context or state management
+  const getDefaultData = useCallback(() => {
+    requestMessagesWithUser({ userId });
+  }, [userId]);
+
+  useEffect(() => {
+    getDefaultData();
+  }, [getDefaultData]);
+
+  const cleanUpFunction = useCallback(() => {
+    requestMessagesMarkAllSeen({ userId });
+    resetLastMessages();
+    resetUnreadMessagesCount();
+  }, []);
+
+  useEffect(() => () => {
+    cleanUpFunction();
+  }, [cleanUpFunction]);
+
+  useEffect(() => {
+    if (!myId) return;
+    const socket = connectSocket(myId);
+
+    socket.on('receive_message', (msg) => {
+      // Atualizar store localmente ao receber mensagem
+      if (msg && msg.senderId === userId) {
+        setMessagesWithUser({
+          data: {
+            ...chatData,
+            messages: [...(chatData?.messages || []), msg],
+          },
+          userId,
+          status: 'success',
+        });
+      } else {
+        getDefaultData();
+      }
+    });
+
+    return () => {
+      disconnectSocket();
+    };
+  }, [myId, getDefaultData, chatData, userId, setMessagesWithUser]);
+
+  const goToEndOfMessagesList = useCallback(() => {
+    if (messagesStore?.withUser?.status === 'success') {
+
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: false });
+      }, 0);
+    }
+  }, [messagesStore?.withUser?.status]);
+
+  useEffect(() => {
+    goToEndOfMessagesList();
+  }, [goToEndOfMessagesList]);
+
+  const scrollToEndWhenOpeningKeyboard = useCallback(() => {
+    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 0);
+    });
+    return () => {
+      keyboardDidShowListener.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    scrollToEndWhenOpeningKeyboard();
+  }, [scrollToEndWhenOpeningKeyboard]);
 
   const getSenderById = (senderId: number) => {
     if (senderId === myId) {
@@ -73,8 +124,8 @@ export default function ChatScreen({ navigation }: any) {
   };
 
   const mountUserAvatar = () => {
-    if (chatData.avatar) {
-      return chatData.avatar;
+    if (chatData?.otherUser?.avatar) {
+      return chatData.otherUser.avatar;
     }
     
     return <Ionicons name="person" size={16} color={theme.primary100} />;
@@ -86,12 +137,62 @@ export default function ChatScreen({ navigation }: any) {
     navigation.goBack();
   };
 
+  const goToUserProfile = () => {
+    navigation.navigate('UserProfileScreen', { userId });
+  };
+
+  const sendMessage = (content: string) => {
+    if (!myId || !userId) return;
+    if (!content) return;
+    setNewMessageContent('');
+    Keyboard.dismiss();
+
+    getSocket()?.emit('send_message', {
+      senderId: myId,
+      receiverId: userId,
+      content,
+    });
+
+    if (chatData) {
+      const newMsg = {
+        id: Date.now(),
+        senderId: myId,
+        receiverId: userId,
+        content,
+        createdAt: new Date().toISOString(),
+      };
+
+      setMessagesWithUser({
+        data: {
+          ...chatData,
+          messages: [...(chatData.messages || []), newMsg],
+        },
+        userId,
+        status: 'success',
+      });
+    }
+  };
+
+  if (!chatData || messagesStore.withUser.loading) {
+    return (
+      <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]}>
+        <View style={[styles.loadingWrapper]}>
+          <ActivityIndicator
+            size="large"
+            color={theme.primary50}
+            style={[ styles.wrapper ]}
+          />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]}>
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0} // ajuste conforme seu header
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
       >
         <View style={[styles.headBlock, { borderColor: theme.primary10 }]}>
           <View style={[styles.headContainer]}>
@@ -103,20 +204,26 @@ export default function ChatScreen({ navigation }: any) {
               />
             </TouchableOpacity>
 
-            <View style={[styles.avatar, { backgroundColor: theme.primary10 }]}>
-              {userAvatar}
-            </View>
+            <TouchableOpacity style={[styles.headContainer]} onPress={goToUserProfile}>
+              <View style={[styles.avatar, { backgroundColor: theme.primary10 }]}>
+                {userAvatar}
+              </View>
 
-            <Text style={[styles.blockTitle, { color: theme.primary100 }]}>{chatData.username}</Text>
+              <Text style={[styles.blockTitle, { color: theme.primary100 }]}>{chatData?.otherUser?.username}</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
-        <ScrollView contentContainerStyle={styles.contentWrapper}>
-          {chatData.messagesList.map((message) => (
+        <ScrollView
+          contentContainerStyle={styles.contentWrapper}
+          ref={scrollViewRef}
+          onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+        >
+          {chatData?.messages?.map((message) => (
             <View style={[styles.messageContainer, { alignItems: messagePosition(message.senderId) }]} key={message.id}>
               <Message
                 key={message.id}
-                message={message.text}
+                message={message.content}
                 sender={getSenderById(message.senderId)}
               />
             </View>
@@ -124,7 +231,13 @@ export default function ChatScreen({ navigation }: any) {
         </ScrollView>
 
         <View style={[styles.chatInputContainer]}>
-          <ChatInput placeholder={chatLocale.placeholder} />
+          <ChatInput
+            placeholder={chatLocale.placeholder}
+            value={newMessageContent}
+            onChangeText={setNewMessageContent}
+            onSendMessage={() => sendMessage(newMessageContent)}
+            onFocus={() => scrollViewRef.current?.scrollToEnd({ animated: false })}
+          />
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -135,6 +248,13 @@ const styles = StyleSheet.create({
   wrapper: {
     width: '100%',
     height: '100%',
+  },
+  loadingWrapper: {
+    display: 'flex',
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   container: {
     height: '100%',
@@ -154,11 +274,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   contentWrapper: {
-    display: 'flex',
     width: '100%',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
   },
   blockTitle: {
     fontSize: 20,

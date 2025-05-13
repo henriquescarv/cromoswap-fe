@@ -53,3 +53,29 @@ export const getNotifications = async () => {
     throw error;
   }
 };
+
+export const getNotificationsUnreadCount = async () => {
+  const state = useStore.getState();
+  const api = useApi({ token: state.login.token });
+
+  try {
+    const response = await api.get(`/notifications-unread-count`);
+
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const postNotificationsAsSeen = async ({ notificationId }) => {
+  const state = useStore.getState();
+  const api = useApi({ token: state.login.token });
+
+  try {
+    const response = await api.post(`/notification-seen/${notificationId}`, { seenNewValue: true });
+
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

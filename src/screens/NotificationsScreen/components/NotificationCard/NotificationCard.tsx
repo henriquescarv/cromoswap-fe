@@ -44,6 +44,10 @@ export default function NotificationCard({ notification, goToUserProfileScreen }
         {` ${notificationsLocale.newFollower} `}
         <Text style={{ color: theme.grey15 }}>{mountTimeAgoLabel(new Date(notification.createdAt))}</Text>
       </Text>
+
+      {!notification.seen && (
+        <View style={{ width: 16, height: 16, borderRadius: '50%', backgroundColor: theme.primary50 }} />
+      )}
     </TouchableOpacity>
   );
 };

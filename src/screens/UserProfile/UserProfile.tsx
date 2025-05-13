@@ -167,6 +167,10 @@ export default function UserProfile({ navigation }: any) {
     navigation.navigate('FollowListScreen', { type, userId });
   };
 
+  const goToChatScreen = () => {
+    navigation.navigate('ChatScreen', { userId });
+  };
+
   const mountPersonalInfo = ({ topText, bottomText, onPress }: { topText?: string | number; bottomText: string, onPress: () => void }) => (
     <TouchableOpacity onPress={onPress} style={[styles.personalInfo]}>
       <Text style={[styles.personalInfoTopText, { color: theme.primary100 }]}>{topText}</Text>
@@ -202,7 +206,7 @@ export default function UserProfile({ navigation }: any) {
           <Button
             text={userProfileLocale.sendMessage}
             variant="secondary"
-            onClick={() => {}}
+            onClick={goToChatScreen}
             size="small"
             fontSize={14}
           />

@@ -4,7 +4,7 @@ import { ChatInputProps } from "./ChatInput.types";
 import { useTheme } from "@/providers/ThemeModeProvider/ThemeModeProvider";
 import { Ionicons } from "@expo/vector-icons";
 
-export default function ChatInput({ placeholder, value, onChangeText, maxLength, onSendMessage }: ChatInputProps) {
+export default function ChatInput({ placeholder, value, onChangeText, maxLength, onSendMessage, onFocus }: ChatInputProps) {
   const { theme } = useTheme();
 
   return (
@@ -16,6 +16,7 @@ export default function ChatInput({ placeholder, value, onChangeText, maxLength,
         value={value}
         onChangeText={onChangeText}
         maxLength={maxLength}
+        onFocus={onFocus}
       />
     
       <TouchableOpacity style={[styles.sendButton, { backgroundColor: theme.primary50 }]} onPress={onSendMessage}>
