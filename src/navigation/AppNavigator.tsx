@@ -10,7 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 import { NearYouScreen } from '@/screens/NearYouScreen';
 import { ChooseAlbumScreen } from '@/screens/ChooseAlbumScreen';
-import { MyAlbumsScreen } from '@/screens/MyAlbumsScreen';
+import { AlbumsScreen } from '@/screens/AlbumsScreen';
 import { PurchaseAlbumScreen } from '@/screens/PurchaseAlbumScreen';
 import { AlbumScreen } from '@/screens/AlbumScreen';
 import UserProfile from '@/screens/UserProfile/UserProfile';
@@ -19,6 +19,7 @@ import { MessagesScreen } from '@/screens/MessagesScreen';
 import { ChatScreen } from '@/screens/ChatScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Text, View } from 'react-native';
+import { FollowListScreen } from '@/screens/FollowListScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -39,7 +40,7 @@ function BottomTabNavigator() {
 
           const iconNameRules = {
             'HomeScreen': isCurrentRoute('HomeScreen') ? 'home' : 'home-outline',
-            'MyAlbumsScreen': isCurrentRoute('MyAlbumsScreen') ? 'book' : 'book-outline',
+            'AlbumsScreen': isCurrentRoute('AlbumsScreen') ? 'book' : 'book-outline',
             'MyProfileScreen': isCurrentRoute('MyProfileScreen') ? 'person' : 'person-outline',
           }
 
@@ -52,7 +53,7 @@ function BottomTabNavigator() {
       })}
     >
       <Tab.Screen name="HomeScreen" component={HomeScreen} />
-      <Tab.Screen name="MyAlbumsScreen" component={MyAlbumsScreen} />
+      <Tab.Screen name="AlbumsScreen" component={AlbumsScreen} />
       <Tab.Screen name="MyProfileScreen" component={UserProfile} />
     </Tab.Navigator>
   );
@@ -140,6 +141,8 @@ export default function AppNavigator() {
         <Stack.Screen name="AlbumScreen" component={AlbumScreen} />
         <Stack.Screen name="UserProfileScreen" component={UserProfile} />
         <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} />
+        <Stack.Screen name="FollowListScreen" component={FollowListScreen} />
+        <Stack.Screen name="ExternalUserAlbumsScreen" component={AlbumsScreen} />
         <Stack.Screen name="MessagesScreen" component={MessagesScreen} />
         <Stack.Screen name="ChatScreen" component={ChatScreen} />
       </Stack.Navigator>

@@ -18,12 +18,16 @@ export default function UserProfile({ navigation }: any) {
   const {
     summary: summaryStore,
     userAlbums: userAlbumsStore,
+    externalUserProfile: externalUserProfileStore,
     requestSummary,
     requestUserAlbums,
+    requestExternalUserProfile,
+    requestFollowUser,
+    requestUnfollowUser,
     logout
   } = useStore((state: any) => state);
 
-  const route = useRoute();
+  const route = useRoute<any>();
   const { theme } = useTheme();
   const { locale } = useContext(LocaleContext);
   const { userProfile: userProfileLocale } = locale;
@@ -31,25 +35,33 @@ export default function UserProfile({ navigation }: any) {
   const myUserId = summaryStore.data?.id;
   const userId = route?.params?.userId || myUserId;
 
+  const isExternalUser = !!route?.params?.userId && route?.params?.userId !== myUserId;
+
   const getDefaultData = useCallback(() => {
-    requestSummary();
-    requestUserAlbums();
-  }, []);
+    if (isExternalUser) {
+      requestExternalUserProfile({ userId });
+    } else {
+      requestSummary();
+      requestUserAlbums();
+    }
+  }, [isExternalUser]);
 
   useEffect(() => {
     getDefaultData()
   }, [getDefaultData])
 
-  const isExternalUser = !!route?.params?.userId && route?.params?.userId !== myUserId;
-
-  const userProfile: UserProfileProps = {
+  const myUserProfile: UserProfileProps = {
     ...summaryStore.data,
     albums: userAlbumsStore.list || [],
     youNeed: summaryStore.data?.youNeed || null,
     youHave: summaryStore.data?.youHave || null,
-  }
+  };
 
-  // const userProfile = {
+  const externalUserProfile = {
+    ...externalUserProfileStore.data,
+  };
+
+  // const externalUserProfile2 = {
   //   id: 54321,
   //   avatar: null,
   //   username: "alanpatrick",
@@ -72,6 +84,8 @@ export default function UserProfile({ navigation }: any) {
   //           { id: 3, order: 3, number: '003', category: 'BRA' },
   //           { id: 4, order: 4, number: '004', category: 'BRA' },
   //           { id: 5, order: 5, number: '005', category: 'BRA' },
+  //           { id: 6, order: 6, number: '006', category: 'BRA' },
+  //           { id: 7, order: 7, number: '007', category: 'BRA' },
   //         ],
   //       },
   //       {
@@ -115,7 +129,9 @@ export default function UserProfile({ navigation }: any) {
   //   },
   // };
 
-  const listToShow = selectedTab === TabEnum.YOU_NEED ? userProfile?.youNeed?.albumsList : userProfile?.youHave?.albumsList;
+  const userProfile = isExternalUser ? externalUserProfile : myUserProfile;
+
+  const listToShow = selectedTab === TabEnum.YOU_NEED ? userProfile?.youNeed?.list : userProfile?.youHave?.list;
 
   const mountUserAvatar = () => {
     if (userProfile.avatar) {
@@ -139,31 +155,47 @@ export default function UserProfile({ navigation }: any) {
     navigation.navigate('AlbumScreen', { albumId, userId });
   };
 
-  const goToMyAlbumsScreen = () => {
-    navigation.navigate('MyAlbumsScreen');
+  const goToExternalUserAlbumsScreen = () => {
+    navigation.navigate('ExternalUserAlbumsScreen', { userId });
   };
 
   const goToChooseAlbumScreen = () => {
     navigation.navigate('ChooseAlbumScreen');
   };
 
-  const mountPersonalInfo = ({ topText, bottomText }: { topText?: string | number; bottomText: string }) => (
-    <View style={[styles.personalInfo]}>
+  const goToFollowList = ({ type = "followers", userId }: { type: "followers" | "following", userId: number | string }) => {
+    navigation.navigate('FollowListScreen', { type, userId });
+  };
+
+  const mountPersonalInfo = ({ topText, bottomText, onPress }: { topText?: string | number; bottomText: string, onPress: () => void }) => (
+    <TouchableOpacity onPress={onPress} style={[styles.personalInfo]}>
       <Text style={[styles.personalInfoTopText, { color: theme.primary100 }]}>{topText}</Text>
       <Text style={[styles.personalInfoBottomText, { color: theme.primary100 }]}>{bottomText}</Text>
-    </View>
+    </TouchableOpacity>
   );
 
   const mountButtons = () => {
+    const handleClickFollowButton = () => {
+      if (externalUserProfileStore.data?.isFollowing) {
+        requestUnfollowUser({ userId, requestFrom: "UserProfile" });
+        return;
+      }
+
+      requestFollowUser({ userId, requestFrom: "UserProfile" });
+    };
+
+    const followButtonText = externalUserProfileStore.data?.isFollowing ? userProfileLocale.unfollow : userProfileLocale.follow;
+
     return isExternalUser ? (
       <>
         <View style={[styles.button]}>
           <Button
-            text={userProfileLocale.follow}
+            text={followButtonText}
             variant="secondary"
-            onClick={() => {}}
+            onClick={handleClickFollowButton}
             size="small"
             fontSize={14}
+            color={externalUserProfileStore.data?.isFollowing ? 'grey20' : 'primary50'}
           />
         </View>
         <View style={[styles.button]}>
@@ -192,7 +224,7 @@ export default function UserProfile({ navigation }: any) {
     );
   };
 
-  if (userAlbumsStore.loading || summaryStore.loading) {
+  if (userAlbumsStore.loading || summaryStore.loading || externalUserProfileStore.loading) {
     return (
       <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]}>
         <View style={[styles.loadingWrapper]}>
@@ -227,9 +259,9 @@ export default function UserProfile({ navigation }: any) {
         <View style={[styles.avatar, { backgroundColor: theme.primary10 }]}>
           {userAvatar}
         </View>
-        {mountPersonalInfo({ topText: userProfile?.albums?.length, bottomText: userProfileLocale.albums })}
-        {mountPersonalInfo({ topText: userProfile.followers || 0, bottomText: userProfileLocale.followers })}
-        {mountPersonalInfo({ topText: userProfile.following || 0, bottomText: userProfileLocale.following })}
+        {mountPersonalInfo({ topText: userProfile?.albums?.length, bottomText: userProfileLocale.albums, onPress: () => goToExternalUserAlbumsScreen()} )}
+        {mountPersonalInfo({ topText: userProfile.followers || 0, bottomText: userProfileLocale.followers, onPress: () => goToFollowList({ type: 'followers', userId }) })}
+        {mountPersonalInfo({ topText: userProfile.following || 0, bottomText: userProfileLocale.following, onPress: () => goToFollowList({ type: 'following', userId }) })}
       </View>
 
       <View style={[styles.buttonsContainer, { borderBottomColor: !isExternalUser ? theme.grey5 : 'transparent' }]}>
@@ -246,7 +278,7 @@ export default function UserProfile({ navigation }: any) {
                   text={userProfileLocale.seeMore}
                   variant="text"
                   fontSize={16}
-                  onClick={goToMyAlbumsScreen}
+                  onClick={goToExternalUserAlbumsScreen}
                 />
               )}
             </View>
@@ -261,7 +293,6 @@ export default function UserProfile({ navigation }: any) {
                   onClick={() => goToAlbumScreen(item.userAlbumId)}
                 />
               ))}
-
 
               {!userProfile?.albums?.length && (
                 <View style={[styles.emptyStateContainer]}>
@@ -302,14 +333,13 @@ export default function UserProfile({ navigation }: any) {
                 <View key={item.name} style={[styles.albumBlockContainer, { borderBottomColor: theme.grey5 }]}>
                   <View style={[styles.blockHead]}>
                     <Text style={[styles.albumNameTitle, { color: theme.primary100 }]}>{item.name}</Text>
-                    {item.quantity > 5 && (
-                      <Button
-                        text={userProfileLocale.externalUser.showAlbum}
-                        variant="text"
-                        fontSize={14}
-                        onClick={() => goToAlbumScreen(item.albumId)}
-                      />
-                    )}
+
+                    <Button
+                      text={userProfileLocale.externalUser.showAlbum}
+                      variant="text"
+                      fontSize={14}
+                      onClick={() => goToAlbumScreen(item.userAlbumId)}
+                    />
                   </View>
 
                   <View style={[styles.stickersContainer]}>

@@ -51,6 +51,24 @@ export type setUserAlbumsProps = {
 
 
 
+export type setExternalUserAlbumsLoadingProps = {
+  set: any;
+  loading: boolean;
+}
+
+export type requestExternalUserAlbumsProps = {
+  set: any;
+  userId: number | string;
+}
+
+export type setExternalUserAlbumsProps = {
+  set: any;
+  list?: any;
+  status?: "success" | "error" | null;
+}
+
+
+
 export type setAlbumDetailsLoadingProps = {
   set: any;
   loading: boolean;
@@ -81,6 +99,24 @@ export type requestUsersByRegionProps = {
 export type setUsersByRegionProps = {
   set: any;
   list?: any;
+  status?: "success" | "error" | null;
+}
+
+
+
+export type setExternalUserProfileLoadingProps = {
+  set: any;
+  loading: boolean;
+}
+
+export type requestExternalUserProfileProps = {
+  set: any;
+  userId: number | string;
+}
+
+export type setExternalUserProfileProps = {
+  set: any;
+  data?: any;
   status?: "success" | "error" | null;
 }
 

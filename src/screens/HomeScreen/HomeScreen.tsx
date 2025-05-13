@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo } from 'react';
 import { StyleSheet, Text, View, TouchableWithoutFeedback, Keyboard, FlatList, ScrollView, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
@@ -8,6 +8,7 @@ import { UserCard } from './components/UserCard';
 import { Album } from '@/components/Album';
 import { Ionicons } from '@expo/vector-icons';
 import useStore from '@/services/store';
+import { Skeleton } from '@/components/Skeleton';
 
 export default function HomeScreen({ navigation }: any) {
   const { theme } = useTheme();
@@ -15,45 +16,33 @@ export default function HomeScreen({ navigation }: any) {
   const { home: homeLocale } = locale;
 
   const {
+    summary: summaryStore,
+    usersByRegion: usersByRegionStore,
     userAlbums: userAlbumsStore,
+    requestUsersByRegion,
     requestUserAlbums,
   } = useStore((state: any) => state);
 
-  const users = [
-    {
-      id: 1,
-      username: 'alanpatrick',
-      trocableStickers: 6,
-      albums_in_common: [
-        'Copa do Mundo 2022',
-        'Harry Potter - e a Ordem da Fênix',
-        'Harry Potter e a Câmara Secreta',
-      ],
-      avatar: null,
-    },
-    {
-      id: 2,
-      username: 'marianajane',
-      avatar: null,
-      trocableStickers: 6,
-      albums_in_common: [
-        'Copa do Mundo 2022',
-        'Harry Potter - e a Ordem da Fênix',
-        'Harry Potter e a Câmara Secreta',
-      ],
-    },
-    {
-      id: 3,
-      username: 'carlosalberto',
-      avatar: null,
-      trocableStickers: 6,
-      albums_in_common: [
-        'Copa do Mundo 2022',
-        'Harry Potter - e a Ordem da Fênix',
-        'Harry Potter e a Câmara Secreta',
-      ],
-    },
-  ];
+  const users = useMemo(() => {
+    return usersByRegionStore.list.map(item => ({
+      ...item,
+      trocableStickers: Math.min(item.youHave ?? 0, item.youNeed ?? 0),
+    })) || []
+  }, [usersByRegionStore]);
+
+  // const users = [
+  //   {
+  //     id: 1,
+  //     username: 'alanpatrick',
+  //     trocableStickers: 6,
+  //     albumsInCommon: [
+  //       'Copa do Mundo 2022',
+  //       'Harry Potter - e a Ordem da Fênix',
+  //       'Harry Potter e a Câmara Secreta',
+  //     ],
+  //     avatar: null,
+  //   },
+  // ];
 
   const albums = userAlbumsStore.list || [];
 
@@ -68,6 +57,10 @@ export default function HomeScreen({ navigation }: any) {
   // ];
 
   const getDefaultData = useCallback(() => {
+    requestUsersByRegion();
+
+    if (!summaryStore.data?.id) return;
+
     requestUserAlbums();
   }, []);
 
@@ -79,8 +72,8 @@ export default function HomeScreen({ navigation }: any) {
     navigation.navigate('NearYouScreen');
   };
 
-  const goToMyAlbumsScreen = () => {
-    navigation.navigate('MyAlbumsScreen');
+  const goToAlbumsScreen = () => {
+    navigation.navigate('AlbumsScreen');
   };
 
   const goToChooseAlbumScreen = () => {
@@ -129,45 +122,74 @@ export default function HomeScreen({ navigation }: any) {
         </View>
 
         <ScrollView style={[styles.contentWrapper]}>
-          <View style={[styles.blockContainer]}>
+          {(<View style={[styles.blockContainer]}>
             <View style={[styles.blockHead]}>
               <Text style={[styles.blockTitle, { color: theme.primary100 }]}>{homeLocale.nearYou.nearYouTitle}</Text>
               <Button text={homeLocale.seeMoreButtonLabel} variant="text" fontSize={16} onClick={goToNearYouScreen} />
             </View>
 
-            <FlatList
-              data={users}
-              horizontal
-              keyExtractor={(item) => item.id.toString()}
-              renderItem={({ item }) => (
-                <UserCard
-                  username={item.username}
-                  trocableStickers={item.trocableStickers}
-                  albums={item.albums_in_common}
-                  onClick={() => goToUserProfileScreen(item.id)}
-                />
-              )}
-              contentContainerStyle={styles.nearYouContainer}
-              showsHorizontalScrollIndicator={false}
-            />
-          </View>
+            {usersByRegionStore.loading && (
+              <FlatList
+                data={[...Array(3)]}
+                horizontal
+                keyExtractor={(_, index) => index.toString()}
+                renderItem={({ item }) => (
+                  <Skeleton width={214} height={140} borderRadius={24} />
+                )}
+                contentContainerStyle={styles.nearYouContainer}
+                showsHorizontalScrollIndicator={false}
+              />
+            )}
+
+            {!usersByRegionStore.loading && !!usersByRegionStore.list.length && (
+              <FlatList
+                data={users}
+                horizontal
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={({ item }) => (
+                  <UserCard
+                    username={item.username}
+                    trocableStickers={item.trocableStickers}
+                    albums={item.albumsInCommon}
+                    onClick={() => goToUserProfileScreen(item.id)}
+                  />
+                )}
+                contentContainerStyle={styles.nearYouContainer}
+                showsHorizontalScrollIndicator={false}
+              />
+            )}
+
+            {!usersByRegionStore.loading && !usersByRegionStore.list.length && (
+              <View style={[styles.emptyStateContainer]}>
+                <Text style={[styles.emptyStateText, { color: theme.primary100 }]}>{homeLocale.albums.noNearUsers}</Text>
+              </View>
+            )}
+          </View>)}
 
           <View style={[styles.blockContainer]}>
             <View style={[styles.blockHead]}>
               <Text style={[styles.blockTitle, { color: theme.primary100 }]}>{homeLocale.albums.albumsTitle}</Text>
 
-              {albums.length > 2 && (
+              {albums?.length > 2 && (
                 <Button
                   text={homeLocale.seeMoreButtonLabel}
                   variant="text"
                   fontSize={16}
-                  onClick={goToMyAlbumsScreen}
+                  onClick={goToAlbumsScreen}
                 />
               )}
             </View>
 
             <View style={[styles.albumsContainer]}>
-              {albums.slice(0, 2).map((item) => (
+              {userAlbumsStore.loading && (
+                <Skeleton
+                  width="100%"
+                  height={90}
+                  borderRadius={16}
+                />
+              )}
+
+              {!userAlbumsStore.loading && albums.slice(0, 2).map((item) => (
                 <Album
                   key={item.id}
                   name={item.name}
@@ -177,7 +199,7 @@ export default function HomeScreen({ navigation }: any) {
                 />
               ))}
 
-              {!albums.length && (
+              {!userAlbumsStore.loading && !albums?.length && (
                 <View style={[styles.emptyStateContainer]}>
                   <Text style={[styles.emptyStateText, { color: theme.primary100 }]}>{homeLocale.albums.noAlbums}</Text>
                 </View>
@@ -249,7 +271,7 @@ const styles = StyleSheet.create({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: '90%',
+    width: '100%',
     height: 120,
   },
   emptyStateText: {

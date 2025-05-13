@@ -17,3 +17,8 @@ export enum ChipsTypes {
   YOU_NEED = 'you_need',
   YOU_HAVE = 'you_have',
 }
+
+export type AlbumScreenRouteParams = {
+  albumId: string;
+  userId?: string;
+}

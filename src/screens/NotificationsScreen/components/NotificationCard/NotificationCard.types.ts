@@ -1,12 +1,13 @@
 export type NotificationProps = {
   id: number;
   type: string;
-  user: {
-    id: number;
-    username: string;
-    avatar: string | null;
+  userId: number;
+  senderUser: {
+      id: number;
+      username: string;
+      avatar: null;
   };
-  date: string;
+  createdAt: string;
 }
 
 export type NotificationCardProps = {

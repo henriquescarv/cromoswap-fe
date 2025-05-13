@@ -36,13 +36,13 @@ export default function NotificationCard({ notification, goToUserProfileScreen }
   return (
     <TouchableOpacity key={notification.id} onPress={goToUserProfileScreen} style={[ styles.wrapper, { borderColor: theme.primary10 } ]}>
       <View style={[styles.avatar, { backgroundColor: theme.primary10 }]}>
-        {mountUserAvatar({ avatar: notification.user.avatar })}
+        {mountUserAvatar({ avatar: notification.senderUser.avatar })}
       </View>
 
       <Text style={[styles.notificationText, { color: theme.primary100 }]}>
-        <Text style={{ color: theme.primary100, fontFamily: 'primaryBold' }}>{notification.user.username}</Text>
+        <Text style={{ color: theme.primary100, fontFamily: 'primaryBold' }}>{notification.senderUser.username}</Text>
         {` ${notificationsLocale.newFollower} `}
-        <Text style={{ color: theme.grey15 }}>{mountTimeAgoLabel(new Date(notification.date))}</Text>
+        <Text style={{ color: theme.grey15 }}>{mountTimeAgoLabel(new Date(notification.createdAt))}</Text>
       </Text>
     </TouchableOpacity>
   );

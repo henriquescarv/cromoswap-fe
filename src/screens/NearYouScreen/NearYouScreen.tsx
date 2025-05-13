@@ -9,7 +9,7 @@ import { UserCardFull } from './components/UserCardFull';
 import { UserProps } from './NearYouScreen.types';
 import useStore from '@/services/store';
 
-export default function MyAlbumsScreen({ navigation }: any) {
+export default function NearYouScreen({ navigation }: any) {
   const [filter, setFilter] = useState('');
   const [filteredList, setFilteredList] = useState<UserProps[]>([]);
 

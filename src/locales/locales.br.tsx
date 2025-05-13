@@ -73,6 +73,7 @@ const Locales = {
 		albums: {
 			albumsTitle: 'Seus álbuns',
 			noAlbums: 'Você ainda não possui álbuns! Clique no botão abaixo para começar a colecionar!',
+			noNearUsers: 'Nenhum usuário próximo :(',
 			totalStickers: quantity => `${quantity} cromos`,
 		},
 	},
@@ -83,9 +84,11 @@ const Locales = {
 	},
 	myAlbums: {
 		albumsTitle: 'Seus álbuns',
+		externalUserAlbumsTitle: 'Álbuns do usuário',
 		seeMoreButtonLabel: 'Ver mais',
 		searchPlaceholder: 'Ex: “Copa 2026”',
 		noAlbums: 'Você ainda não possui álbuns! Clique no botão abaixo para começar a colecionar!',
+		noAlbumsExternalUser: 'O usuário ainda não possui álbuns!',
 	},
 	purchaseAlbum: {
 		stickersLabel: quantity => `${quantity} cromos`,
@@ -97,15 +100,18 @@ const Locales = {
 		searchPlaceholder: 'Pesquise por álbuns ou usuários',
 		seeProfile: 'Ver perfil',
 		message: 'Mensagem',
-		youHave: 'VOCÊ PRECISA',
-		youNeed: 'VOCÊ POSSUI',
+		youHave: 'VOCÊ POSSUI',
+		youNeed: 'VOCÊ PRECISA',
 	},
 	album: {
 		searchPlaceholder: 'Ex: “Portugal, Cristiano, 200”',
 		filterChips: {
-			have: 'Tenho',
-			missing: 'Faltam',
-			repeated: 'Repetidas',
+			iHave: 'Tenho',
+			iMissing: 'Faltam',
+			myRepeated: 'Repetidas',
+			userHave: 'Tem',
+			userMissing: 'Faltam',
+			userRepeated: 'Repetidas',
 			youNeed: 'VOCÊ PRECISA',
 			youHave: 'VOCÊ POSSUI',
 		},
@@ -150,6 +156,12 @@ const Locales = {
 	chat: {
 		title: 'Mensagens',
 		placeholder: 'Digite sua mensagem...',
+	},
+	followListScreen: {
+		followers: 'Seguidores',
+		following: 'Seguindo',
+		follow: 'Seguir',
+		unfollow: 'Deixar de seguir',
 	}
 };
 

@@ -1,14 +1,14 @@
-type setSummaryLoadingProps = {
+export type setSummaryLoadingProps = {
   set: any;
   loading: boolean;
 }
 
-type setSummaryProps = {
+export type setSummaryProps = {
   set: any;
   data?: any;
   status?: 'success' | 'error' | null;
 }
 
-type requestSummaryProps = {
+export type requestSummaryProps = {
   set: any;
 }

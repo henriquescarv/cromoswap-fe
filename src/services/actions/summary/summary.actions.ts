@@ -1,4 +1,5 @@
 import { commonActions } from "../common/common.actions";
+import { requestSummaryProps, setSummaryLoadingProps, setSummaryProps } from "./summary.actions.types";
 import { getSummary } from "./summary.request";
 
 const setSummaryLoading = ({ set, loading }: setSummaryLoadingProps) => {

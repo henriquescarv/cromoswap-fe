@@ -5,6 +5,9 @@ import { summaryActions } from './actions/summary/summary.actions';
 import { albumsActions } from './actions/albums/albums.actions';
 import { StoreState } from './store.types';
 import { StickerToUpdate } from './actions/albums/albums.actions.types';
+import { requestLoginProps, setLoginProps } from './actions/login/login.actions.types';
+import { requestRegisterProps } from './actions/register/register.actions.types';
+import { userActions } from './actions/user/user.actions';
 
 const initialState = {
   invalidToken: false,
@@ -45,6 +48,11 @@ const initialState = {
     status: null,
     list: [],
   },
+  externalUserAlbums: {
+    loading: false,
+    status: null,
+    list: [],
+  },
   albumsTemplates: {
     loading: false,
     status: null,
@@ -65,6 +73,31 @@ const initialState = {
     status: null,
     list: [],
   },
+  externalUserProfile: {
+    loading: false,
+    status: null,
+    data: null,
+  },
+  follows: {
+    loading: false,
+    status: null,
+    list: [],
+  },
+  followUser: {
+    loading: false,
+    status: null,
+    userId: null,
+  },
+  unfollowUser: {
+    loading: false,
+    status: null,
+    userId: null,
+  },
+  notifications: {
+    loading: false,
+    status: null,
+    list: [],
+  }
 };
 
 const useStore = create<StoreState>((set) => {
@@ -95,27 +128,48 @@ const useStore = create<StoreState>((set) => {
   const requestAlbumsTemplates = () => albumsActions.getAlbumsTemplates.request({ set });
   const requestPurchaseAlbum = ({ albumTemplateId }) => albumsActions.purchaseAlbum.request({ set, albumTemplateId });
   const requestUserAlbums = () => albumsActions.userAlbums.request({ set });
+  const requestExternalUserAlbums = ({ userId }) => albumsActions.externalUserAlbums.request({ set, userId });
   const requestAlbumDetails = ({ userAlbumId }) => albumsActions.albumDetails.request({ set, userAlbumId });
+  const resetAlbumDetails = () => albumsActions.albumDetails.reset({ set });
   const requestUsersByRegion = () => albumsActions.usersByRegion.request({ set });
+  const requestExternalUserProfile = ({ userId }) => albumsActions.externalUserProfile.request({ set, userId });
   const requestUpdateStickersQuantity = ({ stickersToUpdate }: { stickersToUpdate: StickerToUpdate[] }) => albumsActions.updateStickersQuantity.request({ set, stickersToUpdate });
+
+  const requestFollows = ({ userId, type }) => userActions.follows.request({ set, userId, type });
+  const requestFollowUser = ({ userId, requestFrom }) => userActions.followUser.request({ set, userId, requestFrom });
+  const requestUnfollowUser = ({ userId, requestFrom }) => userActions.unfollowUser.request({ set, userId, requestFrom });
+  const requestNotifications = () => userActions.notifications.request({ set });
 
   return {
     ...initialState,
+    // login
     requestLogin,
     setLogin,
 
+    // register
     requestRegister,
     requestIbgeStates,
     requestIbgeCities,
 
+    // summary
     requestSummary,
 
+    // albums
     requestAlbumsTemplates,
     requestPurchaseAlbum,
     requestUserAlbums,
+    requestExternalUserAlbums,
     requestAlbumDetails,
+    resetAlbumDetails,
     requestUsersByRegion,
+    requestExternalUserProfile,
     requestUpdateStickersQuantity,
+
+    // users
+    requestFollows,
+    requestFollowUser,
+    requestUnfollowUser,
+    requestNotifications,
 
     logout,
   }

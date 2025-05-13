@@ -1,4 +1,4 @@
-type setRegisterProps = {
+export type setRegisterProps = {
   set: any;
   status: 'success' | 'error' | null;
   countryState?: string | null;
@@ -6,7 +6,7 @@ type setRegisterProps = {
   city?: string | null;
 }
 
-type requestRegisterProps = {
+export type requestRegisterProps = {
   set: any;
   username: string;
   email: string;
@@ -15,17 +15,17 @@ type requestRegisterProps = {
   city: string;
 }
 
-type requestIbgeStatesProps = {
+export type requestIbgeStatesProps = {
   set: any;
 }
 
-type requestIbgeCitiesProps = {
+export type requestIbgeCitiesProps = {
   set: any;
   countryStateId: string;
 }
 
 
-type getIbgeCitiesProps = {
+export type getIbgeCitiesProps = {
   set: any;
   countryState: string;
 }

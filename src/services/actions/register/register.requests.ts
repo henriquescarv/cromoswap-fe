@@ -1,5 +1,6 @@
 import { useApi, ibge } from "@/services/api/api";
 import useStore from "@/services/store";
+import { postRegionProps, postRegisterProps } from "./register.requests.types";
 
 export const postRegister = async ({ username, email, password }: postRegisterProps) => {
   const api = useApi({ token: null });

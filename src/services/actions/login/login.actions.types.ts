@@ -1,4 +1,4 @@
-type setLoginProps = {
+export type setLoginProps = {
   set: any;
   token: string | null;
   isAuthenticated: boolean;
@@ -6,18 +6,18 @@ type setLoginProps = {
   invalidToken?: boolean;
 }
 
-type requestLoginProps = {
+export type requestLoginProps = {
   set: any;
   username: string;
   password: string;
 }
 
-type setLoadingProps = {
+export type setLoadingProps = {
   set: any;
   loading: boolean;
 }
 
-type setLoginStatusProps = {
+export type setLoginStatusProps = {
   set: any;
   status: 'success' | 'error' | null;
 }

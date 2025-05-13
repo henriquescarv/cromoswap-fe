@@ -6,21 +6,34 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Album } from '@/components/Album';
 import { Ionicons } from '@expo/vector-icons';
 import Search from '@/components/Search/Search';
-import { AlbumType } from './MyAlbumsScreen.types';
+import { AlbumType } from './AlbumsScreen.types';
 import useStore from '@/services/store';
+import { useRoute } from '@react-navigation/native';
 
-export default function MyAlbumsScreen({ navigation }: any) {
+export default function AlbumsScreen({ navigation }: any) {
   const [filter, setFilter] = useState('');
   const [filteredList, setFilteredList] = useState<AlbumType[]>([]);
+
+  const {
+    summary: summaryStore,
+    userAlbums: userAlbumsStore,
+    externalUserAlbums: externalUserAlbumsStore,
+    requestUserAlbums,
+    requestExternalUserAlbums,
+  } = useStore((state: any) => state);
 
   const { theme } = useTheme();
   const { locale } = useContext(LocaleContext);
   const { myAlbums: myAlbumsLocale } = locale;
 
-  const {
-    userAlbums: userAlbumsStore,
-    requestUserAlbums,
-  } = useStore((state: any) => state);
+  const route = useRoute<any>();
+
+  const myUserId = summaryStore.data?.id;
+  const userId = route?.params?.userId || myUserId;
+
+  const isExternalUser = userId !== myUserId;
+
+  const albumsList = isExternalUser ? externalUserAlbumsStore.list : userAlbumsStore.list || [];
 
   // const templateAlbums = [
   //   {
@@ -34,8 +47,13 @@ export default function MyAlbumsScreen({ navigation }: any) {
   // ];
 
   const getDefaultData = useCallback(() => {
+    if (isExternalUser) {
+      requestExternalUserAlbums({ userId })
+      return;
+    }
+
     requestUserAlbums();
-  }, []);
+  }, [userId, myUserId]);
 
   useEffect(() => {
     getDefaultData();
@@ -43,15 +61,15 @@ export default function MyAlbumsScreen({ navigation }: any) {
 
   const updateFilteredList = useCallback(() => {
     if (filter === '') {
-      setFilteredList(userAlbumsStore.list);
+      setFilteredList(albumsList);
       return;
     }
 
-    const filteredByName = userAlbumsStore.list.filter((item) =>
+    const filteredByName = albumsList.filter((item) =>
       item.name.toLowerCase().includes(filter.toLowerCase())
     );
   
-    const filteredByTags = userAlbumsStore.list.filter((item) =>
+    const filteredByTags = albumsList.filter((item) =>
       item.tags.some((tag) => tag.toLowerCase().includes(filter.toLowerCase()))
     );
   
@@ -61,18 +79,18 @@ export default function MyAlbumsScreen({ navigation }: any) {
     );
   
     setFilteredList(filteredByAll);
-  }, [filter]);
+  }, [filter, albumsList]);
 
   useEffect(() => {
     updateFilteredList();
   }, [updateFilteredList])
 
   const goBack = () => {
-    navigation.navigate('HomeScreen');
+    navigation.goBack();
   };
 
   const goToAlbumScreen = (albumId: number) => {
-    navigation.navigate('AlbumScreen', { albumId });
+    navigation.navigate('AlbumScreen', { albumId, userId });
   };
 
   const goToChooseAlbumScreen = () => {
@@ -105,20 +123,20 @@ export default function MyAlbumsScreen({ navigation }: any) {
             />
           </TouchableOpacity>
 
-          <Text style={[styles.blockTitle, { color: theme.primary100 }]}>{myAlbumsLocale.albumsTitle}</Text>
+          <Text style={[styles.blockTitle, { color: theme.primary100 }]}>{isExternalUser ? myAlbumsLocale.externalUserAlbumsTitle : myAlbumsLocale.albumsTitle}</Text>
         </View>
 
         <Search
           placeholder={myAlbumsLocale.searchPlaceholder}
           onChangeText={setFilter}
           value={filter}
-          disabled={!filteredList.length}
+          disabled={!filteredList?.length}
         />
       </View>
 
-      {!filteredList.length && (
+      {!filteredList?.length && (
         <View style={[styles.emptyWrapper]}>
-          <Text style={[styles.emptyStateText, { color: theme.primary100 }]}>{myAlbumsLocale.noAlbums}</Text>
+          <Text style={[styles.emptyStateText, { color: theme.primary100 }]}>{isExternalUser ? myAlbumsLocale.noAlbumsExternalUser : myAlbumsLocale.noAlbums}</Text>
 
           <TouchableOpacity style={[styles.plusButton, { borderColor: theme.primary100 }]} onPress={goToChooseAlbumScreen}>
             <Ionicons
@@ -130,7 +148,7 @@ export default function MyAlbumsScreen({ navigation }: any) {
         </View>
       )}
 
-      {!!filteredList.length && (
+      {!!filteredList?.length && (
         <ScrollView style={[styles.contentWrapper]}>
           <View style={[styles.blockContainer]}>
             <View style={[styles.albumsContainer]}>

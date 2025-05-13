@@ -16,8 +16,6 @@ export default function PurchaseAlbumScreen({ navigation }: any) {
 
   const { album } = route.params;
 
-  console.log('Album', album);
-
   const { purchaseAlbum: purchaseAlbumStore, requestPurchaseAlbum } = useStore((state: any) => state);
 
   const handlePurchaseAlbum = useCallback(async () => {

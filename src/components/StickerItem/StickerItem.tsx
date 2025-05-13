@@ -29,7 +29,9 @@ export default function StickerItem({
   const displayQuantity = showQuantity && quantity > 0;
 
   const handlePlusAction = () => {
-    plusAction && plusAction();
+    if (myAlbum) {
+      plusAction && plusAction();
+    }
   };
 
   const handleMinusAction = () => {

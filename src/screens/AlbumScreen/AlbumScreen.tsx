@@ -5,9 +5,9 @@ import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Search from '@/components/Search/Search';
-import { useRoute } from '@react-navigation/native';
+import { RouteProp, useRoute } from '@react-navigation/native';
 import { StickerItem } from '../../components/StickerItem';
-import { ChipsTypes, StickersListProps } from './AlbumScreen.types';
+import { AlbumScreenRouteParams, ChipsTypes, StickersListProps } from './AlbumScreen.types';
 import { Chip } from './components/Chip';
 import Button from '@/components/Button/Button';
 import useStore from '@/services/store';
@@ -25,21 +25,23 @@ export default function AlbumScreen({ navigation }: any) {
     albumDetails: albumDetailsStore,
     summary: summaryStore,
     requestAlbumDetails,
+    resetAlbumDetails,
     requestUpdateStickersQuantity,
   } = useStore((state: any) => state);
 
   const stickersQuantity = filteredList.reduce((acc, category) => {
-    return acc + category.length;
+    return acc + category?.length;
   }, 0);
 
-  const route = useRoute();
+  const route = useRoute<RouteProp< { params: AlbumScreenRouteParams }>>();
   const { theme } = useTheme();
   const { locale } = useContext(LocaleContext);
   const { album: albumLocale } = locale;
 
   const { albumId, userId: userIdByParam } = route.params;
 
-  const userId = userIdByParam || summaryStore?.data?.id;
+  const myUserId = summaryStore?.data?.id;
+  const userId = userIdByParam || myUserId;
 
   const checkAndSyncStickersCache = useCallback(async () => {
     const cacheKey = 'stickers_to_update_cache';
@@ -51,7 +53,7 @@ export default function AlbumScreen({ navigation }: any) {
       stickersToUpdate = JSON.parse(cacheRaw);
     }
 
-    if (stickersToUpdate.length > 0) {
+    if (stickersToUpdate?.length > 0) {
       await requestUpdateStickersQuantity({ stickersToUpdate });
     }
   }, [requestUpdateStickersQuantity]);
@@ -61,6 +63,10 @@ export default function AlbumScreen({ navigation }: any) {
   }, [checkAndSyncStickersCache]);
 
   const getDefaultData = useCallback(() => {
+    resetAlbumDetails();
+    setFilteredList([]);
+    setOriginalStickersList([]);
+    setStickersListByCategory([]);
     requestAlbumDetails({ userAlbumId: albumId });
   }, []);
 
@@ -78,7 +84,7 @@ export default function AlbumScreen({ navigation }: any) {
       stickersToUpdate = JSON.parse(cacheRaw);
     }
 
-    if (stickersToUpdate.length > 0) {
+    if (stickersToUpdate?.length > 0) {
       await requestUpdateStickersQuantity({ stickersToUpdate });
     }
   };
@@ -269,13 +275,23 @@ export default function AlbumScreen({ navigation }: any) {
   //   ],
   // }), []);
 
-  const isExternalUserAlbum = userId !== albumDetailsStore.data?.userId;
+  const isExternalUserAlbum = userId !== myUserId;
 
   const mountChipsList = useCallback(() => {
     const list = [
-      { id: ChipsTypes.HAVE, label: albumLocale.filterChips.have, value: ChipsTypes.HAVE },
-      { id: ChipsTypes.MISSING, label: albumLocale.filterChips.missing, value: ChipsTypes.MISSING },
-      { id: ChipsTypes.REPEATED, label: albumLocale.filterChips.repeated, value: ChipsTypes.REPEATED },
+      {
+        id: ChipsTypes.HAVE,
+        label: isExternalUserAlbum ? albumLocale.filterChips.userHave : albumLocale.filterChips.iHave,
+        value: ChipsTypes.HAVE
+      },
+      { id: ChipsTypes.MISSING,
+        label: isExternalUserAlbum ? albumLocale.filterChips.userMissing : albumLocale.filterChips.iMissing,
+        value: ChipsTypes.MISSING
+      },
+      { id: ChipsTypes.REPEATED,
+        label: isExternalUserAlbum ? albumLocale.filterChips.userRepeated : albumLocale.filterChips.myRepeated,
+        value: ChipsTypes.REPEATED
+      },
     ];
 
     if (isExternalUserAlbum) {
@@ -430,7 +446,7 @@ export default function AlbumScreen({ navigation }: any) {
         <Text style={[styles.stickersQty, { color: theme.grey20 }]}>{albumLocale.stickersQty(stickersQuantity)}</Text>
 
         <View style={[styles.blockContainer]}>
-          {filteredList.map((list) => !!list.length && (
+          {filteredList.map((list) => !!list?.length && (
             <View key={list[0]?.category} style={[styles.categoryListContainer]}>
               {!!list[0]?.category && <Text>{list[0]?.category}</Text>}
 

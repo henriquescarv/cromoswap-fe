@@ -3,7 +3,6 @@ import { LocaleProvider } from '@/providers/LocaleProvider/LocaleProvider';
 import { ThemeProvider } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 import AppLoading from 'expo-app-loading';
 import { useFonts } from 'expo-font';
-import { useContext } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 export default function App() {

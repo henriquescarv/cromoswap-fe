@@ -1,10 +1,10 @@
-type postRegisterProps = {
+export type postRegisterProps = {
   username: string;
   email: string;
   password: string;
 }
 
-type postRegionProps = {
+export type postRegionProps = {
   username: string;
   countryState: string;
   city: string;

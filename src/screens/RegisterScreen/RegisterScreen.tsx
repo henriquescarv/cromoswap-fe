@@ -53,7 +53,7 @@ export default function RegisterScreen({ navigation }: any) {
 
   const redirectToHome = useCallback(() => {
     if (registerStore.status === 'success' && !!loginStore.isAuthenticated) {
-      navigation.navigate('Home');
+      navigation.navigate('Main');
     }
   }, [loginStore.isAuthenticated, registerStore.status, navigation]);
 
