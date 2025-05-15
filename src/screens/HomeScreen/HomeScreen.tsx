@@ -254,6 +254,7 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     marginBottom: 30,
+    height: '100%',
   },
   headContainer: {
     flexDirection: 'row',
@@ -267,7 +268,7 @@ const styles = StyleSheet.create({
   contentWrapper: {
     display: 'flex',
     width: '100%',
-    paddingBottom: 200,
+    // paddingBottom: 200,
   },
   blockContainer: {
     display: 'flex',

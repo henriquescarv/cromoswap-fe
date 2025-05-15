@@ -40,6 +40,13 @@ export default function NotificationsScreen({ navigation }: any) {
   const markNotificationAsSeen = (notificationId: number) => {
     requestNotificationAsSeen({ notificationId });
 
+    const currentNotification = notificationsList.find((notification: any) => notification.id === notificationId);
+
+    if (!currentNotification.seen) {
+      const unreadCount = notificationsUnreadCountStore.quantity - 1;
+      setNotificationsUnreadCount({ quantity: unreadCount, status: 'success' });
+    }
+
     const updatedList = notificationsList.map((notification: any) =>
       notification.id === notificationId
         ? { ...notification, seen: true }
@@ -47,9 +54,6 @@ export default function NotificationsScreen({ navigation }: any) {
     );
 
     setNotifications({ list: updatedList, status: 'success' });
-
-    const unreadCount = notificationsUnreadCountStore.quantity - 1;
-    setNotificationsUnreadCount({ quantity: unreadCount, status: 'success' });
   };
 
   const goToUserProfileScreen = (userId: number) => {
