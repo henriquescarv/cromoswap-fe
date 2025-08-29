@@ -20,6 +20,7 @@ import { ChatScreen } from '@/screens/ChatScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Text, View } from 'react-native';
 import { FollowListScreen } from '@/screens/FollowListScreen';
+import AlbumScreenV2 from '@/screens/AlbumScreenV2/AlbumScreenV2';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -138,7 +139,7 @@ export default function AppNavigator() {
         <Stack.Screen name="NearYouScreen" component={NearYouScreen} />
         <Stack.Screen name="ChooseAlbumScreen" component={ChooseAlbumScreen} />
         <Stack.Screen name="PurchaseAlbumScreen" component={PurchaseAlbumScreen} />
-        <Stack.Screen name="AlbumScreen" component={AlbumScreen} />
+        <Stack.Screen name="AlbumScreen" component={AlbumScreenV2} />
         <Stack.Screen name="UserProfileScreen" component={UserProfile} />
         <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} />
         <Stack.Screen name="FollowListScreen" component={FollowListScreen} />

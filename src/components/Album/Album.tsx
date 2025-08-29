@@ -69,7 +69,7 @@ export default function Album({
               </View>
             )}
 
-            {totalStickers && (
+            {!!totalStickers && (
               <Text
                 style={[styles.totalStickers, { color: theme.grey20 }]}
                 numberOfLines={1}
