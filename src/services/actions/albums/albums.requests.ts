@@ -54,12 +54,12 @@ export const getExternalUserAlbums = async ({ userId }) => {
   }
 };
 
-export const getAlbumDetails = async ({ userAlbumId }) => {
+export const getAlbumDetails = async ({ userAlbumId, page = 1, maxStickers = 100 }) => {
   const state = useStore.getState();
   const api = useApi({ token: state.login.token });
 
   try {
-    const response = await api.get(`/album-details/${userAlbumId}`);
+    const response = await api.get(`/album-details/${userAlbumId}?page=${page}&maxStickers=${maxStickers}`);
 
     return response.data;
   } catch (error) {
@@ -94,14 +94,18 @@ export const getExternalUserProfile = async ({ userId }) => {
 };
 
 export const postStickersQuantity = async ({ stickersToUpdate }) => {
+  console.log('postStickersQuantity called with:', stickersToUpdate);
   const state = useStore.getState();
   const api = useApi({ token: state.login.token });
 
   try {
+    console.log('Making API request to /user-sticker/batch-update');
     const response = await api.post('/user-sticker/batch-update', { stickersToUpdate });
+    console.log('API response:', response.data);
 
     return response.data;
   } catch (error) {
+    console.error('Error in postStickersQuantity:', error);
     throw error;
   }
 };
