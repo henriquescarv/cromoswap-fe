@@ -79,9 +79,43 @@ export default function AlbumScreenV2({ navigation }: any) {
   // Atualiza os stickers quando os dados chegam
   useEffect(() => {
     if (albumDetailsStore.data?.stickersList) {
-      setStickers([...albumDetailsStore.data.stickersList]);
+      const stickersCopy = [...albumDetailsStore.data.stickersList];
+      setStickers(stickersCopy);
+      setOriginalStickers([...albumDetailsStore.data.stickersList]); // Salva uma cópia dos dados originais
     }
   }, [albumDetailsStore.data?.stickersList]);
+
+  // Função para identificar e enviar mudanças quando sair da tela
+  const cleanUpFunction = useCallback(async () => {
+    const stickersToUpdate: { id: number; quantity: number }[] = [];
+
+    // Compara o estado atual com o original para identificar mudanças
+    stickers.forEach(currentSticker => {
+      const originalSticker = originalStickers.find(orig => orig.id === currentSticker.id);
+      
+      if (originalSticker && currentSticker.quantity !== originalSticker.quantity) {
+        stickersToUpdate.push({
+          id: currentSticker.id,
+          quantity: currentSticker.quantity
+        });
+      }
+    });
+
+    // Se houver mudanças, envia para a API
+    if (stickersToUpdate.length > 0) {
+      console.log('Enviando atualizações:', stickersToUpdate);
+      await requestUpdateStickersQuantity({ stickersToUpdate });
+    }
+
+    resetAlbumDetails();
+  }, [stickers, originalStickers, requestUpdateStickersQuantity, resetAlbumDetails]);
+
+  // Chama cleanup quando o componente for desmontado
+  useEffect(() => {
+    return () => {
+      cleanUpFunction();
+    };
+  }, [cleanUpFunction]);
 
   const incrementQuantity = useCallback((id: number) => {
     setStickers(prevStickers =>
@@ -113,21 +147,21 @@ export default function AlbumScreenV2({ navigation }: any) {
   ), [incrementQuantity, decrementQuantity, theme]);
 
   // Loading state
-  if (albumDetailsStore.loading || !albumDetailsStore.data) {
-    return (
-      <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]}>
-        <View style={[styles.loadingWrapper]}>
-          <ActivityIndicator
-            size="large"
-            color={theme.primary50}
-          />
-          <Text style={[styles.loadingText, { color: theme.primary100 }]}>
-            Carregando stickers...
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  // if (!albumDetailsStore.loading || !albumDetailsStore.data) {
+  //   return (
+  //     <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]}>
+  //       <View style={[styles.loadingWrapper]}>
+  //         <ActivityIndicator
+  //           size="large"
+  //           color={theme.primary50}
+  //         />
+  //         <Text style={[styles.loadingText, { color: theme.primary100 }]}>
+  //           Carregando stickers...
+  //         </Text>
+  //       </View>
+  //     </SafeAreaView>
+  //   );
+  // }
 
   return (
     <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]}>
@@ -141,19 +175,28 @@ export default function AlbumScreenV2({ navigation }: any) {
         data={stickers}
         renderItem={renderStickerButton}
         keyExtractor={(item) => item.id.toString()}
-        numColumns={6}
+        numColumns={5}
         contentContainerStyle={styles.gridContainer}
         style={styles.flatList}
         removeClippedSubviews={true}
-        maxToRenderPerBatch={50}
-        windowSize={10}
-        initialNumToRender={30}
-        updateCellsBatchingPeriod={16}
+        maxToRenderPerBatch={25}
+        windowSize={5}
+        initialNumToRender={25}
+        updateCellsBatchingPeriod={30}
         getItemLayout={(data, index) => ({
           length: 94, // altura do item + margin (60 + 24 + 2 + 8 margin)
-          offset: 94 * Math.floor(index / 6),
+          offset: 94 * Math.floor(index / 5),
           index,
         })}
+        viewabilityConfig={{
+          waitForInteraction: false,
+          itemVisiblePercentThreshold: 25,
+        }}
+        scrollEventThrottle={16}
+        maintainVisibleContentPosition={{
+          minIndexForVisible: 0,
+          autoscrollToTopThreshold: 10,
+        }}
       />
     </SafeAreaView>
   );
