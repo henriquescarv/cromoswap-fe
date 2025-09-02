@@ -1,11 +1,17 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, FlatList, ActivityIndicator, Dimensions } from 'react-native';
+import React, { useState, useCallback, useEffect, useContext } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, FlatList, ActivityIndicator, Dimensions, TouchableWithoutFeedback } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
+import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
 import useStore from '@/services/store';
 import { useRoute } from '@react-navigation/native';
 import { Pagination } from '@/components/Pagination';
 import StickerButton from '@/components/StickerButton';
+import Search from '@/components/Search/Search';
+import Button from '@/components/Button/Button';
+import { Chip } from '../AlbumScreen/components/Chip';
+import { ChipsTypes } from '../AlbumScreen/AlbumScreen.types';
 import { 
   RealStickerType, 
   AlbumScreenV2Props, 
@@ -21,7 +27,15 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
   const [screenData, setScreenData] = useState<ScreenDimensions>(Dimensions.get('window'));
   const [isSendingChanges, setIsSendingChanges] = useState(false);
   
+  // Estados para filtros (sem funcionalidade por enquanto)
+  const [filter, setFilter] = useState('');
+  const [debouncedFilter, setDebouncedFilter] = useState('');
+  const [selectedChip, setSelectedChip] = useState<ChipsTypes | null>(null);
+  const [displayFilter, setDisplayFilter] = useState(true);
+  
   const { theme } = useTheme();
+  const { locale } = useContext(LocaleContext);
+  const { album: albumLocale } = locale;
   const route = useRoute<any>();
   const { numColumns: actualNumColumns, itemWidth, buttonHeight } = useLayoutCalculations(screenData);
 
@@ -33,6 +47,15 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
     return () => subscription?.remove();
   }, []);
 
+  // Debounce para o filtro de texto
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedFilter(filter);
+    }, 500); // 500ms de delay
+
+    return () => clearTimeout(timer);
+  }, [filter]);
+
   const {
     albumDetails: albumDetailsStore,
     summary: summaryStore,
@@ -43,11 +66,91 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
 
   const { albumId } = route.params || {};
 
+  // Funções para gerenciar filtros (sem funcionalidade por enquanto)
+  const mountChipsList = useCallback(() => {
+    const isExternalUserAlbum = false; // Por enquanto sempre false
+    
+    const list = [
+      {
+        id: ChipsTypes.HAVE,
+        label: isExternalUserAlbum ? albumLocale.filterChips.userHave : albumLocale.filterChips.iHave,
+        value: ChipsTypes.HAVE
+      },
+      { 
+        id: ChipsTypes.MISSING,
+        label: isExternalUserAlbum ? albumLocale.filterChips.userMissing : albumLocale.filterChips.iMissing,
+        value: ChipsTypes.MISSING
+      },
+      { 
+        id: ChipsTypes.REPEATED,
+        label: isExternalUserAlbum ? albumLocale.filterChips.userRepeated : albumLocale.filterChips.myRepeated,
+        value: ChipsTypes.REPEATED
+      },
+    ];
+
+    if (isExternalUserAlbum) {
+      list.push({ id: ChipsTypes.YOU_NEED, label: albumLocale.filterChips.youNeed, value: ChipsTypes.YOU_NEED });
+      list.push({ id: ChipsTypes.YOU_HAVE, label: albumLocale.filterChips.youHave, value: ChipsTypes.YOU_HAVE });
+    }
+
+    return list;
+  }, [albumLocale]);
+
+  const chipsList = mountChipsList();
+
+  const handleSelectChip = useCallback((chip: any) => {
+    if (selectedChip === chip.value) {
+      setSelectedChip(null);
+    } else {
+      setSelectedChip(chip.value);
+    }
+    setCurrentPage(1);
+  }, [selectedChip]);
+
+  const handleClearFilters = useCallback(() => {
+    setFilter('');
+    setDebouncedFilter('');
+    setSelectedChip(null);
+    setCurrentPage(1);
+  }, []);
+
+  // Função para mapear o chip selecionado para o valor da API
+  const getOwnershipValue = useCallback((chipValue: ChipsTypes | null) => {
+    switch (chipValue) {
+      case ChipsTypes.HAVE:
+        return 'collected';
+      case ChipsTypes.MISSING:
+        return 'missing';
+      case ChipsTypes.REPEATED:
+        return 'duplicate';
+      default:
+        return undefined;
+    }
+  }, []);
+
   useEffect(() => {
     if (albumId) {
-      requestAlbumDetails({ userAlbumId: albumId, page: currentPage, maxStickers: 100 });
+      const ownership = getOwnershipValue(selectedChip);
+      const terms = debouncedFilter.trim() || undefined;
+
+      console.log(ownership);
+
+      requestAlbumDetails({
+        userAlbumId: albumId,
+        page: currentPage,
+        maxStickers: 100,
+        ownership,
+        terms
+      });
     }
-  }, [albumId, currentPage, requestAlbumDetails]);
+  }, [albumId, currentPage, requestAlbumDetails, selectedChip, debouncedFilter, getOwnershipValue]);
+
+  // Reset da página quando os filtros mudam
+  useEffect(() => {
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    }
+  }, [selectedChip, debouncedFilter]);
 
   useEffect(() => {
     if (albumDetailsStore.data?.stickersList) {
@@ -115,8 +218,6 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
 
     return unsubscribe;
   }, [navigation, changedStickers.size, cleanUpFunction]);
-
-  console.log("changedStickers", changedStickers);
 
   const incrementQuantity = useCallback((id: number) => {
     setStickers(prevStickers =>
@@ -200,6 +301,10 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
     />
   ), [incrementQuantity, decrementQuantity, theme, itemWidth, buttonHeight]);
 
+  const goBack = useCallback(() => {
+    navigation.goBack();
+  }, [navigation]);
+
   if (albumDetailsStore.loading || !albumDetailsStore.data) {
     return (
       <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]}>
@@ -218,10 +323,61 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
 
   return (
     <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]}>
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: theme.primary100 }]}>
-          {albumDetailsStore.data?.name || 'Album Screen V2'}
-        </Text>
+      <View style={[styles.headBlock, { borderColor: theme.grey5 }]}>
+        <View style={[styles.headContainer]}>
+          <TouchableOpacity onPress={goBack} style={[styles.goBackIconWrapper]}>
+            <Ionicons
+              name={"chevron-back-outline"}
+              size={32}
+              color={theme.primary50}
+            />
+          </TouchableOpacity>
+
+          <View style={[styles.albumInfos]}>
+            <Text style={[styles.albumName, { color: theme.primary100 }]}>
+              {albumDetailsStore.data?.name || 'Album Screen V2'}
+              <Text style={[styles.stickersCount, { color: theme.grey20 }]}>{` (${albumDetailsStore.data?.totalStickers || 0})`}</Text>
+            </Text>
+          </View>
+
+          <TouchableOpacity onPress={() => setDisplayFilter(!displayFilter)} style={[styles.filterButton]}>
+            <Ionicons
+              name={`funnel${displayFilter ? '' : '-outline'}`}
+              size={24}
+              color={theme.primary50}
+            />
+          </TouchableOpacity>
+        </View>
+
+        {displayFilter && (
+          <View style={[styles.filter]}>
+            <Search
+              placeholder={albumLocale.searchPlaceholder}
+              onChangeText={setFilter}
+              value={filter}
+            />
+
+            <View style={[styles.chipsContainer]}>
+              {chipsList.map((chip) => (
+                <Chip
+                  key={chip.id}
+                  label={chip.label}
+                  selected={selectedChip === chip.value}
+                  onPress={() => handleSelectChip(chip)}
+                />
+              ))}
+            </View>
+
+            <View style={[styles.buttonContainer]}>
+              <Button
+                text={albumLocale.clearFilters}
+                variant="text"
+                onClick={handleClearFilters}
+                fontSize={14}
+              />
+            </View>
+          </View>
+        )}
       </View>
       
       <FlatList
@@ -288,6 +444,67 @@ const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
     width: '100%',
+  },
+  headBlock: {
+    paddingLeft: 16,
+    paddingRight: 16,
+    paddingTop: 16,
+    borderBottomWidth: 1,
+    gap: 16,
+  },
+  headContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    width: '100%',
+    marginBottom: 16,
+  },
+  goBackIconWrapper: {
+    position: 'absolute',
+  },
+  filterButton: {
+    position: 'absolute',
+    right: 0,
+    marginRight: 8,
+  },
+  filter: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 16,
+  },
+  chipsContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  buttonContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+    marginTop: 8,
+  },
+  albumInfos: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+    width: '100%',
+    marginHorizontal: 48,
+  },
+  albumName: {
+    fontSize: 16,
+    fontFamily: 'primaryBold',
+    flex: 1,
+    textAlign: 'center',
+  },
+  stickersCount: {
+    fontSize: 16,
+    fontFamily: 'primaryRegular',
   },
   header: {
     padding: 16,

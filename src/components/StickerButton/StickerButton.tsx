@@ -59,7 +59,7 @@ const StickerButton = React.memo(({
           )}
 
           <Text style={[styles.numberText, { color: theme.primary100 }]}>
-            {item.number}
+            {item.category ? `${item.category} ${item.number}` : item.number}
           </Text>
         </TouchableOpacity>
         
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   numberText: {
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: 'primaryBold',
     position: 'absolute',
     bottom: 40,

@@ -79,6 +79,8 @@ export type requestAlbumDetailsProps = {
   userAlbumId: number | string;
   page?: number;
   maxStickers?: number;
+  ownership?: string;
+  terms?: string;
 }
 
 export type setAlbumDetailsProps = {

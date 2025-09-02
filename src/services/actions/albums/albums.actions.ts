@@ -198,11 +198,13 @@ const setAlbumDetails = ({ set, data, status }: setAlbumDetailsProps) => {
   }));
 };
 
-const requestAlbumDetails = async ({ set, userAlbumId, page = 1, maxStickers = 100 }: requestAlbumDetailsProps) => {
+const requestAlbumDetails = async ({ set, userAlbumId, page = 1, maxStickers = 100, ownership, terms }: requestAlbumDetailsProps) => {
   try {
     setAlbumDetailsLoading({ set, loading: true });
 
-    const data = await getAlbumDetails({ userAlbumId, page, maxStickers });
+    console.log(ownership)
+
+    const data = await getAlbumDetails({ userAlbumId, page, maxStickers, ownership, terms });
 
     setAlbumDetails({ set, status: 'success', data });
   } catch (error: any) {

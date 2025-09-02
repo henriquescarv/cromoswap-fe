@@ -163,7 +163,7 @@ const useStore = create<StoreState>((set) => {
   const requestPurchaseAlbum = ({ albumTemplateId }) => albumsActions.purchaseAlbum.request({ set, albumTemplateId });
   const requestUserAlbums = () => albumsActions.userAlbums.request({ set });
   const requestExternalUserAlbums = ({ userId }) => albumsActions.externalUserAlbums.request({ set, userId });
-  const requestAlbumDetails = ({ userAlbumId, page, maxStickers }) => albumsActions.albumDetails.request({ set, userAlbumId, page, maxStickers });
+  const requestAlbumDetails = ({ userAlbumId, page, maxStickers, ownership, terms }) => albumsActions.albumDetails.request({ set, userAlbumId, page, maxStickers, ownership, terms });
   const resetAlbumDetails = () => albumsActions.albumDetails.reset({ set });
   const requestUsersByRegion = () => albumsActions.usersByRegion.request({ set });
   const requestExternalUserProfile = ({ userId }) => albumsActions.externalUserProfile.request({ set, userId });

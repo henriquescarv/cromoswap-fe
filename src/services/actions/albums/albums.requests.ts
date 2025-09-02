@@ -54,12 +54,24 @@ export const getExternalUserAlbums = async ({ userId }) => {
   }
 };
 
-export const getAlbumDetails = async ({ userAlbumId, page = 1, maxStickers = 100 }) => {
+export const getAlbumDetails = async ({ userAlbumId, page = 1, maxStickers = 100, ownership, terms }) => {
   const state = useStore.getState();
   const api = useApi({ token: state.login.token });
 
   try {
-    const response = await api.get(`/album-details/${userAlbumId}?page=${page}&maxStickers=${maxStickers}`);
+    let url = `/album-details/${userAlbumId}?page=${page}&maxStickers=${maxStickers}`;
+    
+    if (ownership) {
+      url += `&ownership=${ownership}`;
+    }
+    
+    if (terms && terms.trim()) {
+      url += `&terms=${encodeURIComponent(terms.trim())}`;
+    }
+
+      console.log(ownership)
+
+    const response = await api.get(url);
 
     return response.data;
   } catch (error) {
