@@ -65,12 +65,14 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
     requestUpdateStickersQuantity,
   } = useStore((state: any) => state);
 
-  const { albumId } = route.params || {};
+  const { albumId, userId: userIdByParam } = route.params || {};
+
+  const myUserId = summaryStore?.data?.id;
+  const userId = userIdByParam || myUserId;
+  const isExternalUserAlbum = userId !== myUserId;
 
   // Funções para gerenciar filtros (sem funcionalidade por enquanto)
   const mountChipsList = useCallback(() => {
-    const isExternalUserAlbum = false; // Por enquanto sempre false
-    
     const list = [
       {
         id: ChipsTypes.HAVE,
@@ -95,7 +97,7 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
     }
 
     return list;
-  }, [albumLocale]);
+  }, [isExternalUserAlbum, albumLocale]);
 
   const chipsList = mountChipsList();
 
@@ -159,7 +161,7 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
         requestAlbumDetails({
           userAlbumId: albumId,
           page: currentPage,
-          maxStickers: 100,
+          maxStickers: 70,
           ownership,
           terms
         });
@@ -233,7 +235,7 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', (e) => {
-      if (changedStickers.size === 0) {
+      if (changedStickers.size === 0 || isExternalUserAlbum) {
         return;
       }
 
@@ -249,9 +251,11 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
     });
 
     return unsubscribe;
-  }, [navigation, changedStickers.size, cleanUpFunction]);
+  }, [navigation, changedStickers.size, cleanUpFunction, isExternalUserAlbum]);
 
   const incrementQuantity = useCallback((id: number) => {
+    if (isExternalUserAlbum) return; // Não permite edição em álbuns externos
+    
     setStickers(prevStickers =>
       prevStickers.map(sticker =>
         sticker.id === id
@@ -268,9 +272,11 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
       }
       return newMap;
     });
-  }, [stickers]);
+  }, [stickers, isExternalUserAlbum]);
 
   const decrementQuantity = useCallback((id: number) => {
+    if (isExternalUserAlbum) return; // Não permite edição em álbuns externos
+    
     setStickers(prevStickers =>
       prevStickers.map(sticker =>
         sticker.id === id && sticker.quantity > 0
@@ -287,7 +293,7 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
       }
       return newMap;
     });
-  }, [stickers]);
+  }, [stickers, isExternalUserAlbum]);
 
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
@@ -330,8 +336,9 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
       theme={theme}
       itemWidth={itemWidth}
       buttonHeight={buttonHeight}
+      myAlbum={!isExternalUserAlbum}
     />
-  ), [incrementQuantity, decrementQuantity, theme, itemWidth, buttonHeight]);
+  ), [incrementQuantity, decrementQuantity, theme, itemWidth, buttonHeight, isExternalUserAlbum]);
 
   const goBack = useCallback(() => {
     navigation.goBack();
@@ -420,18 +427,18 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
         numColumns={actualNumColumns}
         contentContainerStyle={[
           styles.gridContainer,
-          { paddingBottom: changedStickers.size > 0 ? 120 : 16 }
+          { paddingBottom: (changedStickers.size > 0 && !isExternalUserAlbum) ? 120 : 16 }
         ]}
         style={styles.flatList}
         ListFooterComponent={renderPagination}
         removeClippedSubviews={true}
-        maxToRenderPerBatch={25}
-        windowSize={5}
-        initialNumToRender={25}
+        maxToRenderPerBatch={12}
+        windowSize={3}
+        initialNumToRender={12}
         updateCellsBatchingPeriod={30}
         viewabilityConfig={{
           waitForInteraction: false,
-          itemVisiblePercentThreshold: 25,
+          itemVisiblePercentThreshold: 12,
         }}
         scrollEventThrottle={16}
         maintainVisibleContentPosition={{
@@ -440,7 +447,7 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
         }}
       />
       
-      {changedStickers.size > 0 && (
+      {changedStickers.size > 0 && !isExternalUserAlbum && (
         <View style={[styles.bottomButtonContainer, { backgroundColor: theme.highLight }]}>
           <TouchableOpacity 
             style={[

@@ -16,6 +16,7 @@ interface StickerButtonProps {
   theme: any;
   itemWidth: number;
   buttonHeight: number;
+  myAlbum?: boolean;
 }
 
 const StickerButton = React.memo(({ 
@@ -24,9 +25,10 @@ const StickerButton = React.memo(({
   onMinusPress,
   theme,
   itemWidth,
-  buttonHeight 
+  buttonHeight,
+  myAlbum = true
 }: StickerButtonProps) => {
-  const displayMinusButton = item.quantity > 0;
+  const displayMinusButton = item.quantity > 0 && myAlbum;
 
   const colorRules = {
     0: 'transparent',
@@ -36,6 +38,18 @@ const StickerButton = React.memo(({
 
   const backgroundColor = colorRules[item.quantity] || theme.grey5;
   const displayQuantity = item.quantity > 0;
+
+  const handlePlusAction = () => {
+    if (myAlbum) {
+      onPlusPress(item.id);
+    }
+  };
+
+  const handleMinusAction = () => {
+    if (myAlbum) {
+      onMinusPress(item.id);
+    }
+  };
 
   return (
     <View style={[styles.stickerContainer, { width: itemWidth }]}>
@@ -49,7 +63,7 @@ const StickerButton = React.memo(({
       ]}>
         <TouchableOpacity
           style={styles.plusArea}
-          onPress={() => onPlusPress(item.id)}
+          onPress={handlePlusAction}
           activeOpacity={1}
         >
           {displayQuantity && (
@@ -66,7 +80,7 @@ const StickerButton = React.memo(({
         {displayMinusButton && (
           <TouchableOpacity
             style={[styles.minusWrapper, { borderColor: theme.grey10 }]}
-            onPress={() => onMinusPress(item.id)}
+            onPress={handleMinusAction}
             activeOpacity={1}
           >
             <Text style={[styles.minusText, { color: theme.primaryRed }]}>
