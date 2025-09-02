@@ -28,7 +28,6 @@ const StickerButton = React.memo(({
 }: StickerButtonProps) => {
   const displayMinusButton = item.quantity > 0;
 
-  // Regras de cor similares ao StickerItem
   const colorRules = {
     0: 'transparent',
     1: theme.primary10,
@@ -51,6 +50,7 @@ const StickerButton = React.memo(({
         <TouchableOpacity
           style={styles.plusArea}
           onPress={() => onPlusPress(item.id)}
+          activeOpacity={1}
         >
           {displayQuantity && (
             <Text style={[styles.quantityText, { color: theme.grey15 }]}>
@@ -58,22 +58,16 @@ const StickerButton = React.memo(({
             </Text>
           )}
 
-          <View style={[
-            styles.numberWrapper,
-            { 
-              bottom: displayMinusButton ? 0 : 0, // Ajuste dinâmico baseado na presença do botão
-            }
-          ]}>
-            <Text style={[styles.numberText, { color: theme.primary100 }]}>
-              {item.number}
-            </Text>
-          </View>
+          <Text style={[styles.numberText, { color: theme.primary100 }]}>
+            {item.number}
+          </Text>
         </TouchableOpacity>
         
         {displayMinusButton && (
           <TouchableOpacity
             style={[styles.minusWrapper, { borderColor: theme.grey10 }]}
             onPress={() => onMinusPress(item.id)}
+            activeOpacity={1}
           >
             <Text style={[styles.minusText, { color: theme.primaryRed }]}>
               -
@@ -91,8 +85,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   stickerWrapper: {
-    display: 'flex',
-    justifyContent: 'space-between',
     width: '100%',
     borderRadius: 16,
     borderWidth: 1,
@@ -110,7 +102,7 @@ const styles = StyleSheet.create({
   },
   quantityText: {
     fontSize: 14,
-    fontFamily: 'primaryBold',
+    fontFamily: 'primaryRegular',
     position: 'absolute',
     top: 6,
     left: 0,
@@ -118,22 +110,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     zIndex: 1,
   },
-  numberWrapper: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-  },
   numberText: {
-    fontSize: 18,
-    fontFamily: 'primaryMedium',
-    lineHeight: 20,
+    fontSize: 16,
+    fontFamily: 'primaryBold',
+    position: 'absolute',
+    bottom: 40,
+    textAlign: 'center',
+    zIndex: 1,
   },
   minusWrapper: {
+    position: 'absolute',
+    width: '100%',
+    bottom: 0,
     alignItems: 'center',
     justifyContent: 'center',
     borderTopWidth: 1,

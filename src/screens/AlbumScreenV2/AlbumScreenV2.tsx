@@ -1,51 +1,30 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, FlatList, ActivityIndicator, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, FlatList, ActivityIndicator, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
-import { createStickersArray, StickerType } from '@/data/stickersData';
 import useStore from '@/services/store';
 import { useRoute } from '@react-navigation/native';
 import { Pagination } from '@/components/Pagination';
 import StickerButton from '@/components/StickerButton';
+import { 
+  RealStickerType, 
+  AlbumScreenV2Props, 
+  ScreenDimensions, 
+  StickerUpdate 
+} from './AlbumScreenV2.types';
+import { useLayoutCalculations } from './useLayoutCalculations';
 
-// Tipo para sticker real da API
-interface RealStickerType {
-  id: number;
-  order: number;
-  number: string;
-  category: string | null;
-  quantity: number;
-}
-
-export default function AlbumScreenV2({ navigation }: any) {
+export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
   const [stickers, setStickers] = useState<RealStickerType[]>([]);
-  const [originalStickers, setOriginalStickers] = useState<RealStickerType[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [changedStickers, setChangedStickers] = useState<Map<number, number>>(new Map()); // Map<stickerId, newQuantity>
-  const [screenData, setScreenData] = useState(Dimensions.get('window'));
+  const [changedStickers, setChangedStickers] = useState<Map<number, number>>(new Map());
+  const [screenData, setScreenData] = useState<ScreenDimensions>(Dimensions.get('window'));
   const [isSendingChanges, setIsSendingChanges] = useState(false);
+  
   const { theme } = useTheme();
   const route = useRoute<any>();
+  const { numColumns: actualNumColumns, itemWidth, buttonHeight } = useLayoutCalculations(screenData);
 
-  // Calcula dimensões dinâmicas
-  const screenWidth = screenData.width;
-  const minItemWidth = 70; // largura mínima desejada para cada item
-  const horizontalPadding = 16; // 8px de cada lado do FlatList
-  const itemMargin = 8; // 4px de cada lado do item (total 8px por item)
-  const availableWidth = screenWidth - horizontalPadding;
-  
-  // Calcula número de colunas baseado na largura disponível
-  const numColumns = Math.floor(availableWidth / (minItemWidth + itemMargin));
-  const actualNumColumns = Math.max(3, Math.min(numColumns, 6)); // entre 3 e 6 colunas
-  
-  // Calcula largura fixa para cada item (descontando as margens)
-  const itemWidth = (availableWidth - (itemMargin * actualNumColumns)) / actualNumColumns;
-  const buttonHeight = 90; // Altura original aumentada (1.5x)
-  const minusButtonHeight = 36; // Altura original do botão de menos (1.5x)
-  const itemHeight = buttonHeight + minusButtonHeight + 2; // altura total do item
-  const rowHeight = itemHeight + itemMargin;
-
-  // Escuta mudanças de dimensões (rotação de tela, etc.)
   useEffect(() => {
     const subscription = Dimensions.addEventListener('change', ({ window }) => {
       setScreenData(window);
@@ -64,19 +43,16 @@ export default function AlbumScreenV2({ navigation }: any) {
 
   const { albumId } = route.params || {};
 
-  // Carrega os dados do álbum
   useEffect(() => {
     if (albumId) {
       requestAlbumDetails({ userAlbumId: albumId, page: currentPage, maxStickers: 100 });
     }
   }, [albumId, currentPage, requestAlbumDetails]);
 
-  // Atualiza os stickers quando os dados chegam
   useEffect(() => {
     if (albumDetailsStore.data?.stickersList) {
       const stickersCopy = [...albumDetailsStore.data.stickersList];
       
-      // Aplica mudanças locais aos novos dados
       stickersCopy.forEach(sticker => {
         if (changedStickers.has(sticker.id)) {
           sticker.quantity = changedStickers.get(sticker.id)!;
@@ -84,13 +60,9 @@ export default function AlbumScreenV2({ navigation }: any) {
       });
       
       setStickers(stickersCopy);
-      
-      // Sempre atualiza originalStickers com os dados frescos da API
-      setOriginalStickers([...albumDetailsStore.data.stickersList]);
     }
   }, [albumDetailsStore.data?.stickersList]);
 
-  // Aplica mudanças locais quando changedStickers muda
   useEffect(() => {
     if (albumDetailsStore.data?.stickersList && changedStickers.size > 0) {
       const stickersCopy = [...albumDetailsStore.data.stickersList];
@@ -105,43 +77,37 @@ export default function AlbumScreenV2({ navigation }: any) {
     }
   }, [changedStickers, albumDetailsStore.data?.stickersList]);
 
-  // Função para identificar e enviar mudanças quando sair da tela
   const cleanUpFunction = useCallback(async () => {
-    console.log('cleanUpFunction called with changes:', changedStickers.size);
-    
     if (changedStickers.size === 0) {
-      return; // Nenhuma mudança para enviar
+      return;
     }
 
-    const stickersToUpdate: { id: number; quantity: number }[] = [];
+    const stickersToUpdate: StickerUpdate[] = [];
 
-    // Converte o Map de mudanças para o formato esperado pela API
     changedStickers.forEach((quantity, id) => {
       stickersToUpdate.push({ id, quantity });
     });
 
-    console.log('Sending stickers to API:', stickersToUpdate);
-
-    // Envia para a API
     if (stickersToUpdate.length > 0) {
-      await requestUpdateStickersQuantity({ stickersToUpdate });
-      console.log('API call completed successfully');
+      try {
+        await requestUpdateStickersQuantity({ stickersToUpdate });
+        
+        setChangedStickers(new Map());
+      } catch (error) {
+        console.error('Error updating stickers:', error);
+        throw error;
+      }
     }
-
-    setChangedStickers(new Map()); // Limpa as mudanças locais
   }, [changedStickers, requestUpdateStickersQuantity]);
 
-  // Hook para detectar quando o usuário está saindo da tela
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', (e) => {
       if (changedStickers.size === 0) {
-        return; // Nenhuma mudança para enviar, permite a navegação
+        return;
       }
 
-      // Previne a navegação padrão
       e.preventDefault();
 
-      // Executa a função de limpeza e depois permite a navegação
       cleanUpFunction().then(() => {
         navigation.dispatch(e.data.action);
       });
@@ -150,9 +116,9 @@ export default function AlbumScreenV2({ navigation }: any) {
     return unsubscribe;
   }, [navigation, changedStickers.size, cleanUpFunction]);
 
+  console.log("changedStickers", changedStickers);
+
   const incrementQuantity = useCallback((id: number) => {
-    console.log('incrementQuantity called for id:', id, 'current changes:', changedStickers.size);
-    
     setStickers(prevStickers =>
       prevStickers.map(sticker =>
         sticker.id === id
@@ -161,21 +127,17 @@ export default function AlbumScreenV2({ navigation }: any) {
       )
     );
 
-    // Atualiza o Map de mudanças
     setChangedStickers(prev => {
       const newMap = new Map(prev);
       const currentSticker = stickers.find(s => s.id === id);
       if (currentSticker) {
         newMap.set(id, currentSticker.quantity + 1);
-        console.log('New changes map size:', newMap.size);
       }
       return newMap;
     });
   }, [stickers]);
 
   const decrementQuantity = useCallback((id: number) => {
-    console.log('decrementQuantity called for id:', id, 'current changes:', changedStickers.size);
-    
     setStickers(prevStickers =>
       prevStickers.map(sticker =>
         sticker.id === id && sticker.quantity > 0
@@ -184,13 +146,11 @@ export default function AlbumScreenV2({ navigation }: any) {
       )
     );
 
-    // Atualiza o Map de mudanças
     setChangedStickers(prev => {
       const newMap = new Map(prev);
       const currentSticker = stickers.find(s => s.id === id);
       if (currentSticker && currentSticker.quantity > 0) {
         newMap.set(id, currentSticker.quantity - 1);
-        console.log('New changes map size:', newMap.size);
       }
       return newMap;
     });
@@ -200,11 +160,9 @@ export default function AlbumScreenV2({ navigation }: any) {
     setCurrentPage(page);
   }, []);
 
-  // Função de teste para enviar mudanças manualmente
   const testSendChanges = useCallback(async () => {
-    if (isSendingChanges) return; // Evita cliques múltiplos
+    if (isSendingChanges) return;
     
-    console.log('Test button pressed - sending changes manually');
     setIsSendingChanges(true);
     
     try {
@@ -242,7 +200,6 @@ export default function AlbumScreenV2({ navigation }: any) {
     />
   ), [incrementQuantity, decrementQuantity, theme, itemWidth, buttonHeight]);
 
-  // Loading state
   if (albumDetailsStore.loading || !albumDetailsStore.data) {
     return (
       <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]}>
@@ -268,14 +225,14 @@ export default function AlbumScreenV2({ navigation }: any) {
       </View>
       
       <FlatList
-        key={`${screenData.width}-${screenData.height}`} // Force re-render on screen change
+        key={`${screenData.width}-${screenData.height}`}
         data={stickers}
         renderItem={renderStickerButton}
         keyExtractor={(item) => item.id.toString()}
         numColumns={actualNumColumns}
         contentContainerStyle={[
           styles.gridContainer,
-          { paddingBottom: changedStickers.size > 0 ? 120 : 16 } // Espaço extra quando o botão está visível
+          { paddingBottom: changedStickers.size > 0 ? 120 : 16 }
         ]}
         style={styles.flatList}
         ListFooterComponent={renderPagination}
@@ -295,7 +252,6 @@ export default function AlbumScreenV2({ navigation }: any) {
         }}
       />
       
-      {/* Botão fixo na parte inferior */}
       {changedStickers.size > 0 && (
         <View style={[styles.bottomButtonContainer, { backgroundColor: theme.highLight }]}>
           <TouchableOpacity 
@@ -359,25 +315,13 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     justifyContent: 'flex-start',
   },
-  testButton: {
-    backgroundColor: '#007AFF',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-    marginTop: 8,
-  },
-  testButtonText: {
-    fontSize: 14,
-    fontFamily: 'primaryMedium',
-    textAlign: 'center',
-  },
   bottomButtonContainer: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
     padding: 16,
-    paddingBottom: 34, // Espaço extra para safe area
+    paddingBottom: 34,
     borderTopWidth: 1,
     borderTopColor: '#E5E5E5',
     shadowColor: '#000',
