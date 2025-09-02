@@ -133,8 +133,6 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
       const ownership = getOwnershipValue(selectedChip);
       const terms = debouncedFilter.trim() || undefined;
 
-      console.log(ownership);
-
       requestAlbumDetails({
         userAlbumId: albumId,
         page: currentPage,
@@ -430,7 +428,7 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
               </View>
             ) : (
               <Text style={[styles.bottomButtonText, { color: theme.highLight }]}>
-                Enviar Mudanças ({changedStickers.size})
+                Enviar Mudanças
               </Text>
             )}
           </TouchableOpacity>

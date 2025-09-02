@@ -202,8 +202,6 @@ const requestAlbumDetails = async ({ set, userAlbumId, page = 1, maxStickers = 1
   try {
     setAlbumDetailsLoading({ set, loading: true });
 
-    console.log(ownership)
-
     const data = await getAlbumDetails({ userAlbumId, page, maxStickers, ownership, terms });
 
     setAlbumDetails({ set, status: 'success', data });

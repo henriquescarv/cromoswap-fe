@@ -34,15 +34,11 @@ function BottomTabNavigator() {
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarShowLabel: false,
-        tabBarIcon: ({ color, size }) => {
-          const isCurrentRoute = (routeName) => {
-            return routeName === route.name;
-          };
-
+        tabBarIcon: ({ color, size, focused }) => {
           const iconNameRules = {
-            'HomeScreen': isCurrentRoute('HomeScreen') ? 'home' : 'home-outline',
-            'AlbumsScreen': isCurrentRoute('AlbumsScreen') ? 'book' : 'book-outline',
-            'MyProfileScreen': isCurrentRoute('MyProfileScreen') ? 'person' : 'person-outline',
+            'HomeScreen': focused ? 'home' : 'home-outline',
+            'AlbumsScreen': focused ? 'book' : 'book-outline',
+            'MyProfileScreen': focused ? 'person' : 'person-outline',
           }
 
           const iconName = iconNameRules[route.name];

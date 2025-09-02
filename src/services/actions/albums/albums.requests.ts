@@ -69,8 +69,6 @@ export const getAlbumDetails = async ({ userAlbumId, page = 1, maxStickers = 100
       url += `&terms=${encodeURIComponent(terms.trim())}`;
     }
 
-      console.log(ownership)
-
     const response = await api.get(url);
 
     return response.data;

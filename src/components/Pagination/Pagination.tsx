@@ -27,7 +27,7 @@ export const Pagination: React.FC<PaginationProps> = ({
       style={[
         styles.pageButton,
         {
-          backgroundColor: isActive ? theme.primary50 : theme.grey10,
+          backgroundColor: isActive ? theme.primary50 : '#FFFFFF',
           borderColor: theme.primary50,
         }
       ]}
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
   pageButton: {
     width: 36,
     height: 36,
-    borderRadius: 18,
+    borderRadius: 6,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
