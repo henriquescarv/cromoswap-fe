@@ -32,6 +32,7 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
   const [debouncedFilter, setDebouncedFilter] = useState('');
   const [selectedChip, setSelectedChip] = useState<ChipsTypes | null>(null);
   const [displayFilter, setDisplayFilter] = useState(true);
+  const [isExitingWithChanges, setIsExitingWithChanges] = useState(false);
   
   const { theme } = useTheme();
   const { locale } = useContext(LocaleContext);
@@ -130,18 +131,43 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
 
   useEffect(() => {
     if (albumId) {
-      const ownership = getOwnershipValue(selectedChip);
-      const terms = debouncedFilter.trim() || undefined;
+      const applyFiltersAndFetch = async () => {
+        // Se há mudanças pendentes, envia primeiro
+        if (changedStickers.size > 0) {
+          setIsSendingChanges(true); // Ativa loading
+          
+          const stickersToUpdate: StickerUpdate[] = [];
+          changedStickers.forEach((quantity, id) => {
+            stickersToUpdate.push({ id, quantity });
+          });
 
-      requestAlbumDetails({
-        userAlbumId: albumId,
-        page: currentPage,
-        maxStickers: 100,
-        ownership,
-        terms
-      });
+          try {
+            await requestUpdateStickersQuantity({ stickersToUpdate });
+            setChangedStickers(new Map()); // Limpa as mudanças após enviar
+          } catch (error) {
+            console.error('Error updating stickers before filtering:', error);
+            // Continua com o filtro mesmo se houver erro
+          } finally {
+            setIsSendingChanges(false); // Desativa loading
+          }
+        }
+
+        // Aplica os filtros
+        const ownership = getOwnershipValue(selectedChip);
+        const terms = debouncedFilter.trim() || undefined;
+
+        requestAlbumDetails({
+          userAlbumId: albumId,
+          page: currentPage,
+          maxStickers: 100,
+          ownership,
+          terms
+        });
+      };
+
+      applyFiltersAndFetch();
     }
-  }, [albumId, currentPage, requestAlbumDetails, selectedChip, debouncedFilter, getOwnershipValue]);
+  }, [albumId, currentPage, requestAlbumDetails, selectedChip, debouncedFilter, getOwnershipValue, requestUpdateStickersQuantity]);
 
   // Reset da página quando os filtros mudam
   useEffect(() => {
@@ -183,6 +209,8 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
       return;
     }
 
+    setIsSendingChanges(true); // Ativa loading
+
     const stickersToUpdate: StickerUpdate[] = [];
 
     changedStickers.forEach((quantity, id) => {
@@ -197,6 +225,8 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
       } catch (error) {
         console.error('Error updating stickers:', error);
         throw error;
+      } finally {
+        setIsSendingChanges(false); // Desativa loading
       }
     }
   }, [changedStickers, requestUpdateStickersQuantity]);
@@ -208,9 +238,13 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
       }
 
       e.preventDefault();
+      setIsExitingWithChanges(true);
 
       cleanUpFunction().then(() => {
+        setIsExitingWithChanges(false);
         navigation.dispatch(e.data.action);
+      }).catch(() => {
+        setIsExitingWithChanges(false);
       });
     });
 
@@ -423,12 +457,12 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="small" color={theme.highLight} />
                 <Text style={[styles.bottomButtonText, { color: theme.highLight }]}>
-                  Enviando...
+                  {isExitingWithChanges ? 'Salvando para sair...' : 'Enviando...'}
                 </Text>
               </View>
             ) : (
               <Text style={[styles.bottomButtonText, { color: theme.highLight }]}>
-                Enviar Mudanças
+                Enviar Mudanças ({changedStickers.size})
               </Text>
             )}
           </TouchableOpacity>

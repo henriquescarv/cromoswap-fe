@@ -135,7 +135,7 @@ export default function AppNavigator() {
         <Stack.Screen name="NearYouScreen" component={NearYouScreen} />
         <Stack.Screen name="ChooseAlbumScreen" component={ChooseAlbumScreen} />
         <Stack.Screen name="PurchaseAlbumScreen" component={PurchaseAlbumScreen} />
-        <Stack.Screen name="AlbumScreen" component={AlbumScreenV2} />
+        <Stack.Screen name="AlbumScreen" component={AlbumScreenV2} options={{ gestureEnabled: false }} />
         <Stack.Screen name="UserProfileScreen" component={UserProfile} />
         <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} />
         <Stack.Screen name="FollowListScreen" component={FollowListScreen} />
