@@ -1,11 +1,15 @@
 import AppNavigator from '@/navigation/AppNavigator';
 import { LocaleProvider } from '@/providers/LocaleProvider/LocaleProvider';
 import { ThemeProvider } from '@/providers/ThemeModeProvider/ThemeModeProvider';
+import { SplashScreen } from '@/components/SplashScreen';
 import AppLoading from 'expo-app-loading';
 import { useFonts } from 'expo-font';
 import { StyleSheet, View } from 'react-native';
+import { useState } from 'react';
 
 export default function App() {
+  const [showSplash, setShowSplash] = useState(true);
+
   let [fontsLoaded] = useFonts({
     'primaryRegular': require('./assets/fonts/GalanoGrotesqueRegular.otf'),
     'primaryMedium': require('./assets/fonts/GalanoGrotesqueMedium.otf'),
@@ -13,15 +17,15 @@ export default function App() {
     'primaryBold': require('./assets/fonts/GalanoGrotesqueBold.otf'),
   });
 
-  if (!fontsLoaded) {
-    return <AppLoading />;
+  if (!fontsLoaded || showSplash) {
+    return <SplashScreen onFinish={() => setShowSplash(false)} />;
   }
 
   return (
-		<ThemeProvider>
+    <ThemeProvider>
       <LocaleProvider>
         <View style={styles.container}>
-          <AppNavigator />
+          <AppNavigator onFinishSplash={() => setShowSplash(false)} />
         </View>
       </LocaleProvider>
     </ThemeProvider>

@@ -4,35 +4,41 @@ import lightTheme from '@/styles/themes/light';
 import darkTheme from '@/styles/themes/dark';
 
 interface ThemeContextProps {
-    theme: typeof lightTheme;
-    toggleTheme: () => void;
+  theme: typeof lightTheme;
+  toggleTheme: () => void;
+  getSystemTheme: () => 'light' | 'dark' | null | undefined;
 }
 
 const ThemeContext = createContext<ThemeContextProps>({
-    theme: lightTheme,
-    toggleTheme: () => {},
+  theme: lightTheme,
+  toggleTheme: () => { },
+  getSystemTheme: () => undefined,
 });
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-    const [theme, setTheme] = useState(Appearance.getColorScheme() === 'dark' ? darkTheme : lightTheme);
+  const [theme, setTheme] = useState(Appearance.getColorScheme() === 'dark' ? darkTheme : lightTheme);
 
-    useEffect(() => {
-        const subscription = Appearance.addChangeListener(({ colorScheme }) => {
-            setTheme(colorScheme === 'dark' ? darkTheme : lightTheme);
-        });
+  useEffect(() => {
+    const subscription = Appearance.addChangeListener(({ colorScheme }) => {
+      setTheme(colorScheme === 'dark' ? darkTheme : lightTheme);
+    });
 
-        return () => subscription.remove();
-    }, []);
+    return () => subscription.remove();
+  }, []);
 
-    const toggleTheme = () => {
-        setTheme((prevTheme) => (prevTheme === lightTheme ? darkTheme : lightTheme));
-    };
+  const toggleTheme = () => {
+    setTheme((prevTheme) => (prevTheme === lightTheme ? darkTheme : lightTheme));
+  };
 
-    return (
-        <ThemeContext.Provider value={{ theme, toggleTheme }}>
-            {children}
-        </ThemeContext.Provider>
-    );
+  const getSystemTheme = () => {
+    return Appearance.getColorScheme();
+  };
+
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme, getSystemTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
 };
 
 export const useTheme = () => useContext(ThemeContext);
