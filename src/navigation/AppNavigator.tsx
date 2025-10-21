@@ -19,9 +19,6 @@ import { MessagesScreen } from '@/screens/MessagesScreen';
 import { ChatScreen } from '@/screens/ChatScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FollowListScreen } from '@/screens/FollowListScreen';
-import { Text, View } from 'react-native';
-import AlbumScreenV2 from '@/screens/AlbumScreenV2/AlbumScreenV2';
-import { SplashScreen } from '@/components/SplashScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();

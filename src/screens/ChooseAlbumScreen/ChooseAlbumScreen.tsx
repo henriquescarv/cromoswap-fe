@@ -32,17 +32,6 @@ export default function ChooseAlbumScreen({ navigation }: any) {
 
   const templateAlbums = albumsTemplatesStore.list || [];
 
-  // const templateAlbums2 = [
-  //   {
-  //     id: 1,
-  //     name: 'Copa do Mundo 2022',
-  //     image: 'https://cdn.conmebol.com/wp-content/uploads/2019/09/fwc_2022_square_portrait1080x1080-1024x1024.png',
-  //     totalStickers: 600,
-  //     percentCompleted: 50,
-  //     tags: ['Futebol', 'Copa do Mundo 2022', 'Copa', '2022', 'FIFA', 'Copa 2022'],
-  //   },
-  // ];
-
   const updateFilteredList = useCallback(() => {
     if (filter === '') {
       setFilteredList(templateAlbums);

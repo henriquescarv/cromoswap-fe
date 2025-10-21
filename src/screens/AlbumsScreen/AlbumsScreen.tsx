@@ -36,17 +36,6 @@ export default function AlbumsScreen({ navigation }: any) {
 
   const albumsList = isExternalUser ? externalUserAlbumsStore.list : userAlbumsStore.list || [];
 
-  // const templateAlbums = [
-  //   {
-  //     id: 1,
-  //     name: 'Copa do Mundo 2022',
-  //     image: 'https://cdn.conmebol.com/wp-content/uploads/2019/09/fwc_2022_square_portrait1080x1080-1024x1024.png',
-  //     totalStickers: 600,
-  //     percentCompleted: 50,
-  //     tags: ['Futebol', 'Copa do Mundo 2022', 'Copa', '2022', 'FIFA', 'Copa 2022'],
-  //   },
-  // ];
-
   const getDefaultData = useCallback(() => {
     if (isExternalUser) {
       requestExternalUserAlbums({ userId })

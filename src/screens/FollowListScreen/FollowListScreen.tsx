@@ -28,12 +28,6 @@ export default function FollowListScreen({ navigation }: any) {
     requestNotifications,
   } = useStore((state: any) => state);
 
-  // const notificationsList = [
-  //   { id: 1, type: 'new_follower', user: { id: 1, username: 'alanpatrick', avatar: null }, date: '2025-04-12 13:17:00' },
-  //   { id: 2, type: 'new_follower', user: { id: 2, username: 'julianomachado', avatar: null }, date: '2025-04-15 17:17:00' },
-  //   { id: 3, type: 'new_follower', user: { id: 3, username: 'achadinhosdashopee2.0', avatar: null }, date: '2025-04-15 13:17:00' },
-  // ];
-
   const getDefaultData = useCallback(() => {
     requestFollows({ userId, type });
     requestNotifications();
