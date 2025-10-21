@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, TouchableWithoutFeedback, Keyboard, FlatList, S
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
 import Button from '@/components/Button/Button';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserCard } from './components/UserCard';
 import { Album } from '@/components/Album';
 import { Ionicons } from '@expo/vector-icons';
@@ -113,17 +113,9 @@ export default function HomeScreen({ navigation }: any) {
     navigation.navigate('UserProfileScreen', { userId });
   };
 
-  const insets = useSafeAreaInsets();
-
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={[
-        styles.wrapper,
-        {
-          backgroundColor: theme.highLight,
-          paddingTop: insets.top
-        }
-      ]}>
+      <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]}>
         <View style={[styles.headContainer, { borderColor: theme.grey5 }]}>
           <Text style={[styles.title, { color: theme.primary100 }]}>{homeLocale.title}</Text>
 
@@ -252,7 +244,7 @@ export default function HomeScreen({ navigation }: any) {
             </View>
           </View>
         </ScrollView>
-      </View>
+      </SafeAreaView>
     </TouchableWithoutFeedback>
   );
 }

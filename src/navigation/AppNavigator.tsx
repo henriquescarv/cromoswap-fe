@@ -65,7 +65,6 @@ const getLoginStoreCache = async () => {
 
 export default function AppNavigator({ onFinishSplash }: { onFinishSplash: () => void }) {
   const [initialRouteName, setInitialRouteName] = useState<'Login' | 'Main'>('Login');
-  const [hasInitialized, setHasInitialized] = useState(false);
 
   const navigationRef = useNavigationContainerRef();
 
@@ -75,60 +74,39 @@ export default function AppNavigator({ onFinishSplash }: { onFinishSplash: () =>
     summary: summaryStore,
     setLogin: setLoginStore,
     requestSummary,
-    requestUserAlbums,
   } = useStore((state: any) => state);
 
-  const navigateToMain = useCallback(() => {
-    if (navigationRef.isReady()) {
-      navigationRef.reset({
-        index: 0,
-        routes: [{ name: 'Main' }],
-      });
-    }
-  }, [navigationRef]);
+  const loadBaseRequests = useCallback(() => {
+    const checkLogin = async () => {
+      const loginCacheData = await getLoginStoreCache();
 
-  const navigateToLogin = useCallback(() => {
-    if (navigationRef.isReady()) {
-      navigationRef.reset({
-        index: 0,
-        routes: [{ name: 'Login' }],
-      });
-    }
-  }, [navigationRef]);
-
-  useEffect(() => {
-    if (hasInitialized) {
-      if (!loginStore.isAuthenticated) {
-        navigateToLogin();
+      if (loginCacheData && loginCacheData.isAuthenticated) {
+        setLoginStore({ token: loginCacheData.token, isAuthenticated: true });
       }
-    }
-  }, [loginStore.isAuthenticated, hasInitialized]);
 
-  const loadBaseRequests = useCallback(async () => {
-    if (hasInitialized) return;
-
-    const loginCacheData = await getLoginStoreCache();
-
-    if (loginCacheData && loginCacheData.isAuthenticated) {
-      setLoginStore({ token: loginCacheData.token, isAuthenticated: true });
-
-      if (!invalidToken) {
+      if (loginStore.isAuthenticated && !invalidToken) {
         await requestSummary();
-        await requestUserAlbums();
-      }
-    }
-
-    if (navigationRef.isReady()) {
-      if ((loginStore.isAuthenticated || (loginCacheData && loginCacheData.isAuthenticated)) && !invalidToken) {
-        navigateToMain();
-      } else {
-        navigateToLogin();
       }
 
-      setHasInitialized(true);
+      if (navigationRef.isReady()) {
+        if (loginStore.isAuthenticated && !invalidToken) {
+          navigationRef.reset({
+            index: 0,
+            routes: [{ name: 'Main' }],
+          });
+        } else {
+          navigationRef.reset({
+            index: 0,
+            routes: [{ name: 'Login' }],
+          });
+        }
+      }
+
       onFinishSplash();
-    }
-  }, [invalidToken, navigateToMain, navigateToLogin]);
+    };
+
+    checkLogin();
+  }, [loginStore.isAuthenticated, summaryStore.status, invalidToken]);
 
   useEffect(() => {
     loadBaseRequests();

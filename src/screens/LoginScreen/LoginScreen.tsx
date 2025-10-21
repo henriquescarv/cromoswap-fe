@@ -16,7 +16,7 @@ export default function LoginScreen({ navigation }: any) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const { login: loginStore, requestLogin, requestSummary, requestUserAlbums } = useStore((state: any) => state);
+  const { login: loginStore, requestLogin, requestSummary } = useStore((state: any) => state);
 
   const { theme } = useTheme();
   const { locale } = useContext(LocaleContext);
@@ -25,7 +25,6 @@ export default function LoginScreen({ navigation }: any) {
   const redirectToHome = useCallback(() => {
     if (!!loginStore.isAuthenticated && loginStore.status === 'success') {
       requestSummary();
-      requestUserAlbums();
       navigation.navigate('Main');
     }
   }, [loginStore.isAuthenticated, loginStore.status, navigation]);
