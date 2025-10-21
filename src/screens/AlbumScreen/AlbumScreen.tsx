@@ -75,7 +75,6 @@ export default function AlbumScreen({ navigation }: any) {
 
     if (stickersToUpdate?.length > 0) {
       await requestUpdateStickersQuantity({ stickersToUpdate });
-      // Limpa o cache após enviar
       await AsyncStorage.removeItem(cacheKey);
     }
   }, [requestUpdateStickersQuantity]);
@@ -183,7 +182,6 @@ export default function AlbumScreen({ navigation }: any) {
       const stickerQuantity = sticker.quantity || 0;
       const newStickerQuantity = stickerQuantity + 1;
 
-      // Atualiza o estado local
       setStickers(prevStickers =>
         prevStickers.map(s =>
           s.id === stickerId
@@ -192,7 +190,6 @@ export default function AlbumScreen({ navigation }: any) {
         )
       );
 
-      // Atualiza o AsyncStorage
       try {
         const cacheKey = 'stickers_to_update_cache';
         const cacheRaw = await AsyncStorage.getItem(cacheKey);
@@ -201,7 +198,6 @@ export default function AlbumScreen({ navigation }: any) {
           cache = JSON.parse(cacheRaw);
         }
 
-        // Verifica se já existe no cache
         const existingIndex = cache.findIndex(item => item.id === stickerId);
 
         if (existingIndex !== -1) {
@@ -224,7 +220,6 @@ export default function AlbumScreen({ navigation }: any) {
       const stickerQuantity = sticker.quantity || 0;
       const newStickerQuantity = stickerQuantity - 1;
 
-      // Atualiza o estado local
       setStickers(prevStickers =>
         prevStickers.map(s =>
           s.id === stickerId && s.quantity > 0
@@ -233,7 +228,6 @@ export default function AlbumScreen({ navigation }: any) {
         )
       );
 
-      // Atualiza o AsyncStorage
       try {
         const cacheKey = 'stickers_to_update_cache';
         const cacheRaw = await AsyncStorage.getItem(cacheKey);
@@ -290,7 +284,6 @@ export default function AlbumScreen({ navigation }: any) {
   const chipsList = mountChipsList();
 
   const handleSelectChip = async (chip) => {
-    // Sincroniza o cache antes de aplicar o filtro
     await syncCacheBeforeAction();
 
     if (selectedChip === chip.value) {
@@ -303,7 +296,6 @@ export default function AlbumScreen({ navigation }: any) {
   }
 
   const handleClearFilters = async () => {
-    // Sincroniza o cache antes de limpar os filtros
     await syncCacheBeforeAction();
 
     setFilter('');
@@ -313,7 +305,6 @@ export default function AlbumScreen({ navigation }: any) {
   };
 
   const handlePageChange = useCallback(async (page: number) => {
-    // Sincroniza o cache antes de trocar de página
     await syncCacheBeforeAction();
 
     setCurrentPage(page);
@@ -450,10 +441,8 @@ export default function AlbumScreen({ navigation }: any) {
           itemVisiblePercentThreshold: 12,
         }}
         scrollEventThrottle={16}
-        maintainVisibleContentPosition={{
-          minIndexForVisible: 0,
-          autoscrollToTopThreshold: 10,
-        }}
+        automaticallyAdjustContentInsets={false}
+        onContentSizeChange={() => { }}
       />
     </SafeAreaView>
   );
