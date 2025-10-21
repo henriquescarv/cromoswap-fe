@@ -198,11 +198,11 @@ const setAlbumDetails = ({ set, data, status }: setAlbumDetailsProps) => {
   }));
 };
 
-const requestAlbumDetails = async ({ set, userAlbumId }: requestAlbumDetailsProps) => {
+const requestAlbumDetails = async ({ set, userAlbumId, page = 1, maxStickers = 50, ownership, terms }: requestAlbumDetailsProps) => {
   try {
     setAlbumDetailsLoading({ set, loading: true });
 
-    const data = await getAlbumDetails({ userAlbumId });
+    const data = await getAlbumDetails({ userAlbumId, page, maxStickers, ownership, terms });
 
     setAlbumDetails({ set, status: 'success', data });
   } catch (error: any) {
@@ -339,10 +339,13 @@ const setUpdateStickersQuantity = ({ set, status }: setUpdateStickersQuantityPro
 };
 
 const requestUpdateStickersQuantity = async ({ set, stickersToUpdate }: requestUpdateStickersQuantityProps) => {
+  console.log('requestUpdateStickersQuantity called with:', stickersToUpdate);
   try {
     setUpdateStickersQuantityLoading({ set, loading: true });
 
+    console.log('Calling postStickersQuantity...');
     await postStickersQuantity({ stickersToUpdate });
+    console.log('postStickersQuantity completed successfully');
 
     await AsyncStorage.removeItem('stickers_to_update_cache');
 

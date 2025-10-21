@@ -77,6 +77,10 @@ export type setAlbumDetailsLoadingProps = {
 export type requestAlbumDetailsProps = {
   set: any;
   userAlbumId: number | string;
+  page?: number;
+  maxStickers?: number;
+  ownership?: string;
+  terms?: string;
 }
 
 export type setAlbumDetailsProps = {

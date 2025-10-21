@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
   },
   stickerOrder: {
     fontFamily: 'semiBold',
-    fontSize: 16,
+    fontSize: 14,
     lineHeight: 20,
   },
   minusWrapper: {

@@ -233,7 +233,7 @@ export default function HomeScreen({ navigation }: any) {
                   <Text style={[styles.emptyStateText, { color: theme.primary100 }]}>{homeLocale.albums.noAlbums}</Text>
                 </View>
               )}
-              
+
               <TouchableOpacity style={[styles.plusButton, { borderColor: theme.primary100 }]} onPress={goToChooseAlbumScreen}>
                 <Ionicons
                   name={"add"}

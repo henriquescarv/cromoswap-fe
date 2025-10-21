@@ -116,9 +116,9 @@ export default function ChooseAlbumScreen({ navigation }: any) {
         <ScrollView style={[styles.contentWrapper]}>
           <View style={[styles.blockContainer]}>
             <View style={[styles.albumsContainer]}>
-              {filteredList.map((item, index) => (
+              {filteredList.map((item) => (
                 <Album
-                  key={index} // trocar isso depois para item.id
+                  key={item.id}
                   name={item.name}
                   image={item.image}
                   totalStickers={item.totalStickers}
