@@ -21,6 +21,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FollowListScreen } from '@/screens/FollowListScreen';
 import { Text, View } from 'react-native';
 import AlbumScreenV2 from '@/screens/AlbumScreenV2/AlbumScreenV2';
+import { SplashScreen } from '@/components/SplashScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -65,8 +66,7 @@ const getLoginStoreCache = async () => {
   }
 }
 
-export default function AppNavigator() {
-  const [loadingSplash, setLoadingSplash] = useState(true);
+export default function AppNavigator({ onFinishSplash }: { onFinishSplash: () => void }) {
   const [initialRouteName, setInitialRouteName] = useState<'Login' | 'Main'>('Login');
 
   const navigationRef = useNavigationContainerRef();
@@ -78,8 +78,6 @@ export default function AppNavigator() {
     setLogin: setLoginStore,
     requestSummary,
   } = useStore((state: any) => state);
-
-  const { theme } = useTheme();
 
   const loadBaseRequests = useCallback(() => {
     const checkLogin = async () => {
@@ -107,7 +105,7 @@ export default function AppNavigator() {
         }
       }
 
-      setLoadingSplash(false);
+      onFinishSplash();
     };
 
     checkLogin();
@@ -116,14 +114,6 @@ export default function AppNavigator() {
   useEffect(() => {
     loadBaseRequests();
   }, [loadBaseRequests]);
-
-  if (loadingSplash) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.highLight }}>
-        <Text style={{ fontFamily: 'primaryBold', fontSize: 20, color: theme.primary100 }}>Carregando...</Text>
-      </View>
-    );
-  }
 
   return (
     <NavigationContainer ref={navigationRef}>
@@ -134,7 +124,7 @@ export default function AppNavigator() {
         <Stack.Screen name="NearYouScreen" component={NearYouScreen} />
         <Stack.Screen name="ChooseAlbumScreen" component={ChooseAlbumScreen} />
         <Stack.Screen name="PurchaseAlbumScreen" component={PurchaseAlbumScreen} />
-        <Stack.Screen name="AlbumScreen" component={AlbumScreenV2} options={{ gestureEnabled: false }} />
+        <Stack.Screen name="AlbumScreen" component={AlbumScreen} options={{ gestureEnabled: false }} />
         <Stack.Screen name="UserProfileScreen" component={UserProfile} />
         <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} />
         <Stack.Screen name="FollowListScreen" component={FollowListScreen} />
