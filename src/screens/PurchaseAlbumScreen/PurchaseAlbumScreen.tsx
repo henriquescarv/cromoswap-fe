@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { StyleSheet, Text, View, TouchableWithoutFeedback, Keyboard, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRoute } from '@react-navigation/native';
 import Button from '@/components/Button/Button';
 import useStore from '@/services/store';
@@ -11,10 +11,11 @@ export default function PurchaseAlbumScreen({ navigation }: any) {
   const { theme } = useTheme();
   const { locale } = useContext(LocaleContext);
   const route = useRoute();
+  const insets = useSafeAreaInsets();
 
   const { purchaseAlbum: purchaseAlbumLocale } = locale;
 
-  const { album } = route.params;
+  const { album } = route.params as any;
 
   const { purchaseAlbum: purchaseAlbumStore, requestPurchaseAlbum } = useStore((state: any) => state);
 
@@ -30,38 +31,44 @@ export default function PurchaseAlbumScreen({ navigation }: any) {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]}>
-        <Image
-          source={typeof album.image === 'string' ? { uri: album.image } : album.image}
-          style={[styles.image, { borderColor: theme.grey5 }]}
-          resizeMode="cover"
-        />
+      <View style={[styles.safeArea, { backgroundColor: theme.highLight, paddingTop: insets.top }]}>
+        <View style={styles.wrapper}>
+          <Image
+            source={typeof album.image === 'string' ? { uri: album.image } : album.image}
+            style={[styles.image, { borderColor: theme.grey5 }]}
+            resizeMode="cover"
+          />
 
-        <View style={[styles.purchaseWrapper]}>
-          <View style={[styles.textsWrapper]}>
-            <Text style={[styles.stickersLabel, { color: theme.primary100 }]}>{purchaseAlbumLocale.stickersLabel(album.totalStickers || 0)}</Text>
-            <Text style={[styles.albumName, { color: theme.primary100 }]} numberOfLines={2}>{album.name}</Text>
-          </View>
+          <View style={[styles.purchaseWrapper]}>
+            <View style={[styles.textsWrapper]}>
+              <Text style={[styles.stickersLabel, { color: theme.primary100 }]}>{purchaseAlbumLocale.stickersLabel(album.totalStickers || 0)}</Text>
+              <Text style={[styles.albumName, { color: theme.primary100 }]} numberOfLines={2}>{album.name}</Text>
+            </View>
 
-          <View style={[styles.buttonsWrapper]}>
-            <Button
-              text={purchaseAlbumLocale.collectAlbumButtonLabel}
-              onClick={handlePurchaseAlbum}
-              loading={purchaseAlbumStore.loading}
-            />
-            <Button
-              text={purchaseAlbumLocale.goBackButtonLabel}
-              onClick={goBack}
-              variant='secondary'
-            />
+            <View style={[styles.buttonsWrapper]}>
+              <Button
+                text={purchaseAlbumLocale.collectAlbumButtonLabel}
+                onClick={handlePurchaseAlbum}
+                loading={purchaseAlbumStore.loading}
+              />
+              <Button
+                text={purchaseAlbumLocale.goBackButtonLabel}
+                onClick={goBack}
+                variant='secondary'
+              />
+            </View>
           </View>
         </View>
-      </SafeAreaView>
+      </View>
     </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
   wrapper: {
     width: '100%',
     height: '100%',

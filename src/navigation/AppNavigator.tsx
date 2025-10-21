@@ -18,8 +18,8 @@ import { NotificationsScreen } from '@/screens/NotificationsScreen';
 import { MessagesScreen } from '@/screens/MessagesScreen';
 import { ChatScreen } from '@/screens/ChatScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Text, View } from 'react-native';
 import { FollowListScreen } from '@/screens/FollowListScreen';
+import { Text, View } from 'react-native';
 import AlbumScreenV2 from '@/screens/AlbumScreenV2/AlbumScreenV2';
 
 const Stack = createStackNavigator();
@@ -27,7 +27,6 @@ const Tab = createBottomTabNavigator();
 
 function BottomTabNavigator() {
   const { theme } = useTheme();
-  const navigation = useNavigation();
 
   return (
     <Tab.Navigator

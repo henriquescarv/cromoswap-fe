@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useContext } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, FlatList, ActivityIndicator, Dimensions, TouchableWithoutFeedback } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, Text, View, TouchableOpacity, FlatList, ActivityIndicator, Dimensions, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
@@ -12,11 +12,11 @@ import Search from '@/components/Search/Search';
 import Button from '@/components/Button/Button';
 import { Chip } from '../AlbumScreen/components/Chip';
 import { ChipsTypes } from '../AlbumScreen/AlbumScreen.types';
-import { 
-  RealStickerType, 
-  AlbumScreenV2Props, 
-  ScreenDimensions, 
-  StickerUpdate 
+import {
+  RealStickerType,
+  AlbumScreenV2Props,
+  ScreenDimensions,
+  StickerUpdate
 } from './AlbumScreenV2.types';
 import { useLayoutCalculations } from './useLayoutCalculations';
 
@@ -26,14 +26,15 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
   const [changedStickers, setChangedStickers] = useState<Map<number, number>>(new Map());
   const [screenData, setScreenData] = useState<ScreenDimensions>(Dimensions.get('window'));
   const [isSendingChanges, setIsSendingChanges] = useState(false);
-  
-  // Estados para filtros (sem funcionalidade por enquanto)
+
   const [filter, setFilter] = useState('');
   const [debouncedFilter, setDebouncedFilter] = useState('');
   const [selectedChip, setSelectedChip] = useState<ChipsTypes | null>(null);
   const [displayFilter, setDisplayFilter] = useState(true);
   const [isExitingWithChanges, setIsExitingWithChanges] = useState(false);
-  
+
+  const insets = useSafeAreaInsets();
+
   const { theme } = useTheme();
   const { locale } = useContext(LocaleContext);
   const { album: albumLocale } = locale;
@@ -79,12 +80,12 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
         label: isExternalUserAlbum ? albumLocale.filterChips.userHave : albumLocale.filterChips.iHave,
         value: ChipsTypes.HAVE
       },
-      { 
+      {
         id: ChipsTypes.MISSING,
         label: isExternalUserAlbum ? albumLocale.filterChips.userMissing : albumLocale.filterChips.iMissing,
         value: ChipsTypes.MISSING
       },
-      { 
+      {
         id: ChipsTypes.REPEATED,
         label: isExternalUserAlbum ? albumLocale.filterChips.userRepeated : albumLocale.filterChips.myRepeated,
         value: ChipsTypes.REPEATED
@@ -137,7 +138,7 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
         // Se há mudanças pendentes, envia primeiro
         if (changedStickers.size > 0) {
           setIsSendingChanges(true); // Ativa loading
-          
+
           const stickersToUpdate: StickerUpdate[] = [];
           changedStickers.forEach((quantity, id) => {
             stickersToUpdate.push({ id, quantity });
@@ -181,13 +182,13 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
   useEffect(() => {
     if (albumDetailsStore.data?.stickersList) {
       const stickersCopy = [...albumDetailsStore.data.stickersList];
-      
+
       stickersCopy.forEach(sticker => {
         if (changedStickers.has(sticker.id)) {
           sticker.quantity = changedStickers.get(sticker.id)!;
         }
       });
-      
+
       setStickers(stickersCopy);
     }
   }, [albumDetailsStore.data?.stickersList]);
@@ -195,13 +196,13 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
   useEffect(() => {
     if (albumDetailsStore.data?.stickersList && changedStickers.size > 0) {
       const stickersCopy = [...albumDetailsStore.data.stickersList];
-      
+
       stickersCopy.forEach(sticker => {
         if (changedStickers.has(sticker.id)) {
           sticker.quantity = changedStickers.get(sticker.id)!;
         }
       });
-      
+
       setStickers(stickersCopy);
     }
   }, [changedStickers, albumDetailsStore.data?.stickersList]);
@@ -222,7 +223,7 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
     if (stickersToUpdate.length > 0) {
       try {
         await requestUpdateStickersQuantity({ stickersToUpdate });
-        
+
         setChangedStickers(new Map());
       } catch (error) {
         console.error('Error updating stickers:', error);
@@ -255,7 +256,7 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
 
   const incrementQuantity = useCallback((id: number) => {
     if (isExternalUserAlbum) return; // Não permite edição em álbuns externos
-    
+
     setStickers(prevStickers =>
       prevStickers.map(sticker =>
         sticker.id === id
@@ -276,7 +277,7 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
 
   const decrementQuantity = useCallback((id: number) => {
     if (isExternalUserAlbum) return; // Não permite edição em álbuns externos
-    
+
     setStickers(prevStickers =>
       prevStickers.map(sticker =>
         sticker.id === id && sticker.quantity > 0
@@ -301,9 +302,9 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
 
   const testSendChanges = useCallback(async () => {
     if (isSendingChanges) return;
-    
+
     setIsSendingChanges(true);
-    
+
     try {
       await cleanUpFunction();
     } catch (error) {
@@ -317,7 +318,7 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
     if (!albumDetailsStore.data?.pagination) {
       return null;
     }
-    
+
     return (
       <Pagination
         currentPage={albumDetailsStore.data.pagination.currentPage}
@@ -329,9 +330,9 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
   }, [albumDetailsStore.data?.pagination, handlePageChange]);
 
   const renderStickerButton = useCallback(({ item }: { item: RealStickerType }) => (
-    <StickerButton 
-      item={item} 
-      onPlusPress={incrementQuantity} 
+    <StickerButton
+      item={item}
+      onPlusPress={incrementQuantity}
       onMinusPress={decrementQuantity}
       theme={theme}
       itemWidth={itemWidth}
@@ -346,140 +347,150 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
 
   if (albumDetailsStore.loading || !albumDetailsStore.data) {
     return (
-      <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]}>
-        <View style={[styles.loadingWrapper]}>
-          <ActivityIndicator
-            size="large"
-            color={theme.primary50}
-          />
-          <Text style={[styles.loadingText, { color: theme.primary100 }]}>
-            Carregando stickers...
-          </Text>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={[styles.safeArea, { backgroundColor: theme.highLight, paddingTop: insets.top }]}>
+          <View style={[styles.loadingWrapper]}>
+            <ActivityIndicator
+              size="large"
+              color={theme.primary50}
+            />
+            <Text style={[styles.loadingText, { color: theme.primary100 }]}>
+              Carregando stickers...
+            </Text>
+          </View>
         </View>
-      </SafeAreaView>
+      </TouchableWithoutFeedback>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]}>
-      <View style={[styles.headBlock, { borderColor: theme.grey5 }]}>
-        <View style={[styles.headContainer]}>
-          <TouchableOpacity onPress={goBack} style={[styles.goBackIconWrapper]}>
-            <Ionicons
-              name={"chevron-back-outline"}
-              size={32}
-              color={theme.primary50}
-            />
-          </TouchableOpacity>
-
-          <View style={[styles.albumInfos]}>
-            <Text style={[styles.albumName, { color: theme.primary100 }]}>
-              {albumDetailsStore.data?.name || 'Album Screen V2'}
-              <Text style={[styles.stickersCount, { color: theme.grey20 }]}>{` (${albumDetailsStore.data?.totalStickers || 0})`}</Text>
-            </Text>
-          </View>
-
-          <TouchableOpacity onPress={() => setDisplayFilter(!displayFilter)} style={[styles.filterButton]}>
-            <Ionicons
-              name={`funnel${displayFilter ? '' : '-outline'}`}
-              size={24}
-              color={theme.primary50}
-            />
-          </TouchableOpacity>
-        </View>
-
-        {displayFilter && (
-          <View style={[styles.filter]}>
-            <Search
-              placeholder={albumLocale.searchPlaceholder}
-              onChangeText={setFilter}
-              value={filter}
-            />
-
-            <View style={[styles.chipsContainer]}>
-              {chipsList.map((chip) => (
-                <Chip
-                  key={chip.id}
-                  label={chip.label}
-                  selected={selectedChip === chip.value}
-                  onPress={() => handleSelectChip(chip)}
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={[styles.safeArea, { backgroundColor: theme.highLight, paddingTop: insets.top }]}>
+        <View style={styles.wrapper}>
+          <View style={[styles.headBlock, { borderColor: theme.grey5 }]}>
+            <View style={[styles.headContainer]}>
+              <TouchableOpacity onPress={goBack} style={[styles.goBackIconWrapper]}>
+                <Ionicons
+                  name={"chevron-back-outline"}
+                  size={32}
+                  color={theme.primary50}
                 />
-              ))}
-            </View>
+              </TouchableOpacity>
 
-            <View style={[styles.buttonContainer]}>
-              <Button
-                text={albumLocale.clearFilters}
-                variant="text"
-                onClick={handleClearFilters}
-                fontSize={14}
-              />
-            </View>
-          </View>
-        )}
-      </View>
-      
-      <FlatList
-        key={`${screenData.width}-${screenData.height}`}
-        data={stickers}
-        renderItem={renderStickerButton}
-        keyExtractor={(item) => item.id.toString()}
-        numColumns={actualNumColumns}
-        contentContainerStyle={[
-          styles.gridContainer,
-          { paddingBottom: (changedStickers.size > 0 && !isExternalUserAlbum) ? 120 : 16 }
-        ]}
-        style={styles.flatList}
-        ListFooterComponent={renderPagination}
-        removeClippedSubviews={true}
-        maxToRenderPerBatch={12}
-        windowSize={3}
-        initialNumToRender={12}
-        updateCellsBatchingPeriod={30}
-        viewabilityConfig={{
-          waitForInteraction: false,
-          itemVisiblePercentThreshold: 12,
-        }}
-        scrollEventThrottle={16}
-        maintainVisibleContentPosition={{
-          minIndexForVisible: 0,
-          autoscrollToTopThreshold: 10,
-        }}
-      />
-      
-      {changedStickers.size > 0 && !isExternalUserAlbum && (
-        <View style={[styles.bottomButtonContainer, { backgroundColor: theme.highLight }]}>
-          <TouchableOpacity 
-            style={[
-              styles.bottomButton, 
-              { 
-                backgroundColor: isSendingChanges ? theme.grey20 : theme.primary50,
-                opacity: isSendingChanges ? 0.7 : 1 
-              }
-            ]}
-            onPress={testSendChanges}
-            disabled={isSendingChanges}
-          >
-            {isSendingChanges ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="small" color={theme.highLight} />
-                <Text style={[styles.bottomButtonText, { color: theme.highLight }]}>
-                  {isExitingWithChanges ? 'Salvando para sair...' : 'Enviando...'}
+              <View style={[styles.albumInfos]}>
+                <Text style={[styles.albumName, { color: theme.primary100 }]}>
+                  {albumDetailsStore.data?.name || 'Album Screen V2'}
+                  <Text style={[styles.stickersCount, { color: theme.grey20 }]}>{` (${albumDetailsStore.data?.totalStickers || 0})`}</Text>
                 </Text>
               </View>
-            ) : (
-              <Text style={[styles.bottomButtonText, { color: theme.highLight }]}>
-                Enviar Mudanças ({changedStickers.size})
-              </Text>
+
+              <TouchableOpacity onPress={() => setDisplayFilter(!displayFilter)} style={[styles.filterButton]}>
+                <Ionicons
+                  name={`funnel${displayFilter ? '' : '-outline'}`}
+                  size={24}
+                  color={theme.primary50}
+                />
+              </TouchableOpacity>
+            </View>
+
+            {displayFilter && (
+              <View style={[styles.filter]}>
+                <Search
+                  placeholder={albumLocale.searchPlaceholder}
+                  onChangeText={setFilter}
+                  value={filter}
+                />
+
+                <View style={[styles.chipsContainer]}>
+                  {chipsList.map((chip) => (
+                    <Chip
+                      key={chip.id}
+                      label={chip.label}
+                      selected={selectedChip === chip.value}
+                      onPress={() => handleSelectChip(chip)}
+                    />
+                  ))}
+                </View>
+
+                <View style={[styles.buttonContainer]}>
+                  <Button
+                    text={albumLocale.clearFilters}
+                    variant="text"
+                    onClick={handleClearFilters}
+                    fontSize={14}
+                  />
+                </View>
+              </View>
             )}
-          </TouchableOpacity>
+          </View>
+
+          <FlatList
+            key={`${screenData.width}-${screenData.height}`}
+            data={stickers}
+            renderItem={renderStickerButton}
+            keyExtractor={(item) => item.id.toString()}
+            numColumns={actualNumColumns}
+            contentContainerStyle={[
+              styles.gridContainer,
+              { paddingBottom: (changedStickers.size > 0 && !isExternalUserAlbum) ? 120 : 16 }
+            ]}
+            style={styles.flatList}
+            ListFooterComponent={renderPagination}
+            removeClippedSubviews={true}
+            maxToRenderPerBatch={12}
+            windowSize={3}
+            initialNumToRender={12}
+            updateCellsBatchingPeriod={30}
+            viewabilityConfig={{
+              waitForInteraction: false,
+              itemVisiblePercentThreshold: 12,
+            }}
+            scrollEventThrottle={16}
+            maintainVisibleContentPosition={{
+              minIndexForVisible: 0,
+              autoscrollToTopThreshold: 10,
+            }}
+          />
+
+          {changedStickers.size > 0 && !isExternalUserAlbum && (
+            <View style={[styles.bottomButtonContainer, { backgroundColor: theme.highLight }]}>
+              <TouchableOpacity
+                style={[
+                  styles.bottomButton,
+                  {
+                    backgroundColor: isSendingChanges ? theme.grey20 : theme.primary50,
+                    opacity: isSendingChanges ? 0.7 : 1
+                  }
+                ]}
+                onPress={testSendChanges}
+                disabled={isSendingChanges}
+              >
+                {isSendingChanges ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="small" color={theme.highLight} />
+                    <Text style={[styles.bottomButtonText, { color: theme.highLight }]}>
+                      {isExitingWithChanges ? 'Salvando para sair...' : 'Enviando...'}
+                    </Text>
+                  </View>
+                ) : (
+                  <Text style={[styles.bottomButtonText, { color: theme.highLight }]}>
+                    Enviar Mudanças ({changedStickers.size})
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
-      )}
-    </SafeAreaView>
+      </View>
+    </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
   wrapper: {
     flex: 1,
     width: '100%',

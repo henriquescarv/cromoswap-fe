@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useEffect, useRef, useState } from 'rea
 import { StyleSheet, Text, View, TouchableWithoutFeedback, Keyboard, FlatList, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Image, ActivityIndicator } from 'react-native';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Message } from './components/Message';
 import { useRoute } from '@react-navigation/native';
@@ -12,6 +12,7 @@ import { connectSocket, disconnectSocket, getSocket } from '@/services/socket/so
 
 export default function ChatScreen({ navigation }: any) {
   const [newMessageContent, setNewMessageContent] = useState('');
+  const insets = useSafeAreaInsets();
 
   const {
     messages: messagesStore,
@@ -127,10 +128,10 @@ export default function ChatScreen({ navigation }: any) {
     if (chatData?.otherUser?.avatar) {
       return chatData.otherUser.avatar;
     }
-    
+
     return <Ionicons name="person" size={16} color={theme.primary100} />;
   };
-  
+
   const userAvatar = mountUserAvatar();
 
   const goBack = () => {
@@ -175,76 +176,84 @@ export default function ChatScreen({ navigation }: any) {
 
   if (!chatData || messagesStore.withUser.loading) {
     return (
-      <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]}>
-        <View style={[styles.loadingWrapper]}>
-          <ActivityIndicator
-            size="large"
-            color={theme.primary50}
-            style={[ styles.wrapper ]}
-          />
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={[styles.safeArea, { backgroundColor: theme.highLight, paddingTop: insets.top }]}>
+          <View style={[styles.loadingWrapper]}>
+            <ActivityIndicator
+              size="large"
+              color={theme.primary50}
+              style={[styles.wrapper]}
+            />
+          </View>
         </View>
-      </SafeAreaView>
+      </TouchableWithoutFeedback>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]}>
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
-      >
-        <View style={[styles.headBlock, { borderColor: theme.primary10 }]}>
-          <View style={[styles.headContainer]}>
-            <TouchableOpacity onPress={goBack}>
-              <Ionicons
-                name={"chevron-back-outline"}
-                size={32}
-                color={theme.primary50}
-              />
-            </TouchableOpacity>
-
-            <TouchableOpacity style={[styles.headContainer]} onPress={goToUserProfile}>
-              <View style={[styles.avatar, { backgroundColor: theme.primary10 }]}>
-                {userAvatar}
-              </View>
-
-              <Text style={[styles.blockTitle, { color: theme.primary100 }]}>{chatData?.otherUser?.username}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <ScrollView
-          contentContainerStyle={styles.contentWrapper}
-          ref={scrollViewRef}
-          onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={[styles.safeArea, { backgroundColor: theme.highLight, paddingTop: insets.top }]}>
+        <KeyboardAvoidingView
+          style={styles.container}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
         >
-          {chatData?.messages?.map((message) => (
-            <View style={[styles.messageContainer, { alignItems: messagePosition(message.senderId) }]} key={message.id}>
-              <Message
-                key={message.id}
-                message={message.content}
-                sender={getSenderById(message.senderId)}
-              />
-            </View>
-          ))}
-        </ScrollView>
+          <View style={[styles.headBlock, { borderColor: theme.primary10 }]}>
+            <View style={[styles.headContainer]}>
+              <TouchableOpacity onPress={goBack}>
+                <Ionicons
+                  name={"chevron-back-outline"}
+                  size={32}
+                  color={theme.primary50}
+                />
+              </TouchableOpacity>
 
-        <View style={[styles.chatInputContainer]}>
-          <ChatInput
-            placeholder={chatLocale.placeholder}
-            value={newMessageContent}
-            onChangeText={setNewMessageContent}
-            onSendMessage={() => sendMessage(newMessageContent)}
-            onFocus={() => scrollViewRef.current?.scrollToEnd({ animated: false })}
-          />
-        </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+              <TouchableOpacity style={[styles.headContainer]} onPress={goToUserProfile}>
+                <View style={[styles.avatar, { backgroundColor: theme.primary10 }]}>
+                  {userAvatar}
+                </View>
+
+                <Text style={[styles.blockTitle, { color: theme.primary100 }]}>{chatData?.otherUser?.username}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <ScrollView
+            contentContainerStyle={styles.contentWrapper}
+            ref={scrollViewRef}
+            onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+          >
+            {chatData?.messages?.map((message) => (
+              <View style={[styles.messageContainer, { alignItems: messagePosition(message.senderId) }]} key={message.id}>
+                <Message
+                  key={message.id}
+                  message={message.content}
+                  sender={getSenderById(message.senderId)}
+                />
+              </View>
+            ))}
+          </ScrollView>
+
+          <View style={[styles.chatInputContainer]}>
+            <ChatInput
+              placeholder={chatLocale.placeholder}
+              value={newMessageContent}
+              onChangeText={setNewMessageContent}
+              onSendMessage={() => sendMessage(newMessageContent)}
+              onFocus={() => scrollViewRef.current?.scrollToEnd({ animated: false })}
+            />
+          </View>
+        </KeyboardAvoidingView>
+      </View>
+    </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
   wrapper: {
     width: '100%',
     height: '100%',

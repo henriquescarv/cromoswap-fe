@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { StyleSheet, Text, View, TouchableWithoutFeedback, Keyboard, FlatList, ScrollView, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import NotificationCard from './components/NotificationCard/FollowCard';
 import { useRoute } from '@react-navigation/native';
@@ -13,6 +13,7 @@ export default function FollowListScreen({ navigation }: any) {
   const { theme } = useTheme();
   const { locale } = useContext(LocaleContext);
   const { followListScreen: followListScreenLocale } = locale;
+  const insets = useSafeAreaInsets();
 
   const route = useRoute<any>();
   const type = route?.params?.type || 'followers';
@@ -60,43 +61,50 @@ export default function FollowListScreen({ navigation }: any) {
   };
 
   return (
-    <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]}>
-      <View style={[styles.headBlock, { borderColor: theme.primary10 }]}>
-        <View style={[styles.headContainer]}>
-          <TouchableOpacity onPress={goBack}>
-            <Ionicons
-              name={"chevron-back-outline"}
-              size={32}
-              color={theme.primary50}
-            />
-          </TouchableOpacity>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={[styles.safeArea, { backgroundColor: theme.highLight, paddingTop: insets.top }]}>
+        <View style={styles.wrapper}>
+          <View style={[styles.headBlock, { borderColor: theme.primary10 }]}>
+            <View style={[styles.headContainer]}>
+              <TouchableOpacity onPress={goBack}>
+                <Ionicons
+                  name={"chevron-back-outline"}
+                  size={32}
+                  color={theme.primary50}
+                />
+              </TouchableOpacity>
 
-          <Text style={[styles.blockTitle, { color: theme.primary100 }]}>{followListScreenLocale[type]}</Text>
+              <Text style={[styles.blockTitle, { color: theme.primary100 }]}>{followListScreenLocale[type]}</Text>
+            </View>
+          </View>
+
+          <ScrollView style={[styles.contentWrapper]}>
+            <View style={[styles.listContainer]}>
+              {followsStore.list?.map((user) => (
+                <FollowCard
+                  key={user.id}
+                  user={user}
+                  isExternalUser={summaryStore.data?.id !== user.id}
+                  goToUserProfileScreen={() => goToUserProfileScreen(user.id)}
+                  handleClickFollow={() => handleClickFollowButton({ userId: user.id, following: user.following })}
+                />
+              ))}
+            </View>
+          </ScrollView>
         </View>
       </View>
-
-      <ScrollView style={[styles.contentWrapper]}>
-        <View style={[styles.listContainer]}>
-          {followsStore.list?.map((user) => (
-            <FollowCard
-              key={user.id}
-              user={user}
-              isExternalUser={summaryStore.data?.id !== user.id}
-              goToUserProfileScreen={() => goToUserProfileScreen(user.id)}
-              handleClickFollow={() => handleClickFollowButton({ userId: user.id, following: user.following })}
-            />
-          ))}
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
   wrapper: {
-    flex: 0,
+    flex: 1,
     width: '100%',
-    height: 'auto',
   },
   headBlock: {
     padding: 16,
@@ -113,7 +121,7 @@ const styles = StyleSheet.create({
   contentWrapper: {
     display: 'flex',
     width: '100%',
-    height: '100%',
+    flex: 1,
   },
   blockTitle: {
     fontSize: 20,

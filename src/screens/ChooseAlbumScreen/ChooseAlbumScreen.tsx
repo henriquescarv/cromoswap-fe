@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { StyleSheet, Text, View, TouchableWithoutFeedback, Keyboard, FlatList, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Album } from '@/components/Album';
 import { Ionicons } from '@expo/vector-icons';
 import Search from '@/components/Search/Search';
@@ -12,6 +12,7 @@ import useStore from '@/services/store';
 export default function ChooseAlbumScreen({ navigation }: any) {
   const [filter, setFilter] = useState('');
   const [filteredList, setFilteredList] = useState<AlbumType[]>([]);
+  const insets = useSafeAreaInsets();
 
   const { albumsTemplates: albumsTemplatesStore, requestAlbumsTemplates } = useStore((state: any) => state);
 
@@ -51,16 +52,16 @@ export default function ChooseAlbumScreen({ navigation }: any) {
     const filteredByName = templateAlbums.filter((item) =>
       item.name.toLowerCase().includes(filter.toLowerCase())
     );
-  
+
     const filteredByTags = templateAlbums.filter((item) =>
       item.tags.some((tag) => tag.toLowerCase().includes(filter.toLowerCase()))
     );
-  
+
     const filteredByAll = [...filteredByName, ...filteredByTags].filter(
       (item, index, self) =>
         index === self.findIndex((t) => t.id === item.id)
     );
-  
+
     setFilteredList(filteredByAll);
   }, [filter, albumsTemplatesStore.list]);
 
@@ -78,66 +79,73 @@ export default function ChooseAlbumScreen({ navigation }: any) {
 
   if (albumsTemplatesStore.loading) {
     return (
-      <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]}>
-        <View style={[styles.loadingWrapper]}>
-          <ActivityIndicator
-            size="large"
-            color={theme.primary50}
-            style={[ styles.wrapper ]}
-          />
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={[styles.safeArea, { backgroundColor: theme.highLight, paddingTop: insets.top }]}>
+          <View style={[styles.loadingWrapper]}>
+            <ActivityIndicator
+              size="large"
+              color={theme.primary50}
+              style={[styles.wrapper]}
+            />
+          </View>
         </View>
-      </SafeAreaView>
+      </TouchableWithoutFeedback>
     );
   }
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]}>
-        <View style={[styles.headBlock]}>
-          <View style={[styles.headContainer]}>
-            <TouchableOpacity onPress={goBack}>
-              <Ionicons
-                name={"chevron-back-outline"}
-                size={32}
-                color={theme.primary50}
-              />
-            </TouchableOpacity>
-
-            <Text style={[styles.blockTitle, { color: theme.primary100 }]}>{chooseAlbumLocale.albumsTitle}</Text>
-          </View>
-
-          <Search
-            placeholder={chooseAlbumLocale.searchPlaceholder}
-            onChangeText={setFilter}
-            value={filter}
-          />
-        </View>
-
-        <ScrollView style={[styles.contentWrapper]}>
-          <View style={[styles.blockContainer]}>
-            <View style={[styles.albumsContainer]}>
-              {filteredList.map((item) => (
-                <Album
-                  key={item.id}
-                  name={item.name}
-                  image={item.image}
-                  totalStickers={item.totalStickers}
-                  onClick={() => goToPurchaseAlbum(item)}
+      <View style={[styles.safeArea, { backgroundColor: theme.highLight, paddingTop: insets.top }]}>
+        <View style={styles.wrapper}>
+          <View style={[styles.headBlock]}>
+            <View style={[styles.headContainer]}>
+              <TouchableOpacity onPress={goBack}>
+                <Ionicons
+                  name={"chevron-back-outline"}
+                  size={32}
+                  color={theme.primary50}
                 />
-              ))}
+              </TouchableOpacity>
+
+              <Text style={[styles.blockTitle, { color: theme.primary100 }]}>{chooseAlbumLocale.albumsTitle}</Text>
             </View>
+
+            <Search
+              placeholder={chooseAlbumLocale.searchPlaceholder}
+              onChangeText={setFilter}
+              value={filter}
+            />
           </View>
-        </ScrollView>
-      </SafeAreaView>
+
+          <ScrollView style={[styles.contentWrapper]}>
+            <View style={[styles.blockContainer]}>
+              <View style={[styles.albumsContainer]}>
+                {filteredList.map((item) => (
+                  <Album
+                    key={item.id}
+                    name={item.name}
+                    image={item.image}
+                    totalStickers={item.totalStickers}
+                    onClick={() => goToPurchaseAlbum(item)}
+                  />
+                ))}
+              </View>
+            </View>
+          </ScrollView>
+        </View>
+      </View>
     </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
   wrapper: {
-    flex: 0,
+    flex: 1,
     width: '100%',
-    height: 'auto',
   },
   loadingWrapper: {
     display: 'flex',
@@ -160,7 +168,7 @@ const styles = StyleSheet.create({
   contentWrapper: {
     display: 'flex',
     width: '100%',
-    height: '100%',
+    flex: 1,
   },
   blockContainer: {
     display: 'flex',

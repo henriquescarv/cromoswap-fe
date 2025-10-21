@@ -32,21 +32,6 @@ export default function NearYouScreen({ navigation }: any) {
 
   const users = usersByRegionStore.list || [];
 
-  // const users = [
-  //   {
-  //     id: 1,
-  //     username: 'alanpatrick',
-  //     youNeed: 6,
-  //     youHave: 6,
-  //     albumsInCommon: [
-  //       'Copa do Mundo 2022',
-  //       'Harry Potter - e a Ordem da Fênix',
-  //       'Harry Potter e a Câmara Secreta',
-  //     ],
-  //     avatar: null,
-  //   },
-  // ];
-
   const updateFilteredList = useCallback(() => {
     if (filter === '') {
       setFilteredList(users);
@@ -56,16 +41,16 @@ export default function NearYouScreen({ navigation }: any) {
     const filteredByName = users.filter((item) =>
       item.username.toLowerCase().includes(filter.toLowerCase())
     );
-  
+
     const filteredByTags = users.filter((item) =>
       item.albumsInCommon.some((tag) => tag.toLowerCase().includes(filter.toLowerCase()))
     );
-  
+
     const filteredByAll = [...filteredByName, ...filteredByTags].filter(
       (item, index, self) =>
         index === self.findIndex((t) => t.id === item.id)
     );
-  
+
     setFilteredList(filteredByAll);
   }, [filter, usersByRegionStore.list]);
 
@@ -83,21 +68,22 @@ export default function NearYouScreen({ navigation }: any) {
 
   if (usersByRegionStore.loading) {
     return (
-      <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]}>
-        <View style={[styles.loadingWrapper]}>
-          <ActivityIndicator
-            size="large"
-            color={theme.primary50}
-            style={[ styles.wrapper ]}
-          />
-        </View>
-      </SafeAreaView>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]} edges={['top', 'left', 'right']}>
+          <View style={[styles.loadingWrapper]}>
+            <ActivityIndicator
+              size="large"
+              color={theme.primary50}
+            />
+          </View>
+        </SafeAreaView>
+      </TouchableWithoutFeedback>
     );
   }
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]}>
+      <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]} edges={['top', 'left', 'right']}>
         <View style={[styles.headBlock]}>
           <View style={[styles.headContainer]}>
             <TouchableOpacity onPress={goBack}>
@@ -145,9 +131,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   loadingWrapper: {
-    display: 'flex',
-    width: '100%',
-    height: '100%',
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
