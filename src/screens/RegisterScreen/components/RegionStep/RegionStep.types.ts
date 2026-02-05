@@ -4,7 +4,6 @@ export type RegionStepProps = {
   statesList: [];
   citiesList: [];
   handleClickRegister: () => void;
-  handleVerifyRegionErrors: () => void;
   handleGoToBasicInfosStep: () => void;
   regionButtonIsDisabled?: boolean;
   city: string;
@@ -14,4 +13,7 @@ export type RegionStepProps = {
   setCountryState: React.Dispatch<React.SetStateAction<string>>;
   regionErrors: DefaultRegionErrorsProps;
   setRegionErrors: React.Dispatch<React.SetStateAction<DefaultRegionErrorsProps>>;
+  customTitle?: string;
+  customDescription?: string;
+  customButtonText?: string;
 }

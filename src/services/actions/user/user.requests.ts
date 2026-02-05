@@ -79,3 +79,23 @@ export const postNotificationsAsSeen = async ({ notificationId }) => {
     throw error;
   }
 };
+
+export const putChangeUserData = async ({ dataToChange, oldValue, newValue }) => {
+  const state = useStore.getState();
+  const api = useApi({ token: state.login.token });
+  try {
+    const payload: any = {};
+
+    payload[dataToChange] = newValue;
+
+    if (oldValue) {
+      payload['oldValue'] = oldValue;
+    }
+
+    const response = await api.put(`/update-profile`, payload);
+
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

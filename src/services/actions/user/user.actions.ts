@@ -1,6 +1,6 @@
 import { commonActions } from "../common/common.actions";
-import { requestFollowsProps, requestFollowUserProps, requestNotificationAsSeenProps, requestNotificationsProps, requestNotificationsUnreadCountProps, requestUnfollowUserProps, setFollowsLoadingProps, setFollowsProps, setFollowUserLoadingProps, setFollowUserProps, setNotificationAsSeenLoadingProps, setNotificationAsSeenProps, setNotificationsLoadingProps, setNotificationsProps, setNotificationsUnreadCountLoadingProps, setNotificationsUnreadCountProps, setUnfollowUserLoadingProps, setUnfollowUserProps } from "./user.actions.types";
-import { getNotifications, getNotificationsUnreadCount, postFollows, postFollowUser, postNotificationsAsSeen, postUnfollowUser } from "./user.requests";
+import { changeUserDataProps, requestFollowsProps, requestFollowUserProps, requestNotificationAsSeenProps, requestNotificationsProps, requestNotificationsUnreadCountProps, requestUnfollowUserProps, setFollowsLoadingProps, setFollowsProps, setFollowUserLoadingProps, setFollowUserProps, setNotificationAsSeenLoadingProps, setNotificationAsSeenProps, setNotificationsLoadingProps, setNotificationsProps, setNotificationsUnreadCountLoadingProps, setNotificationsUnreadCountProps, setUnfollowUserLoadingProps, setUnfollowUserProps } from "./user.actions.types";
+import { getNotifications, getNotificationsUnreadCount, postFollows, postFollowUser, postNotificationsAsSeen, postUnfollowUser, putChangeUserData } from "./user.requests";
 
 const setFollowsLoading = ({ set, loading }: setFollowsLoadingProps) => {
   set((state: any) => ({
@@ -113,8 +113,6 @@ const requestFollowUser = async ({ set, userId, requestFrom }: requestFollowUser
     console.log('requestFollowUser', 'Something went wrong');
   }
 }
-
-
 
 const setUnfollowUserLoading = ({ set, loading }: setUnfollowUserLoadingProps) => {
   set((state: any) => ({
@@ -326,6 +324,46 @@ const requestNotificationAsSeen = async ({ set, notificationId }: requestNotific
   }
 };
 
+const setChangeUserDataLoading = ({ set, loading }: any) => {
+  set((state: any) => ({
+    ...state,
+    changeUserData: {
+      ...state.changeUserData,
+      loading,
+    }
+  }));
+}
+
+const setChangeUserData = ({ set, status = null }: any) => {
+  set((state: any) => ({
+    ...state,
+    changeUserData: {
+      ...state.changeUserData,
+      loading: false,
+      status,
+    },
+  }));
+}
+
+const requestChangeUserData = async ({ set, dataToChange, oldValue, newValue }: changeUserDataProps) => {
+  try {
+    setChangeUserDataLoading({ set, loading: true });
+
+    await putChangeUserData({ dataToChange, oldValue, newValue });
+
+    setChangeUserData({ set, status: 'success' });
+  } catch (error: any) {
+    setChangeUserDataLoading({ set, loading: false });
+
+    setChangeUserData({ set, status: 'error' });
+
+    if (error.response?.data?.message === 'INVALID_TOKEN') {
+      commonActions.setInvalidToken({ set, invalidToken: true });
+    }
+
+    console.log('requestChangeUserData', 'Something went wrong');
+  }
+}
 
 
 export const userActions = {
@@ -350,4 +388,7 @@ export const userActions = {
   notificationAsSeen: {
     request: requestNotificationAsSeen,
   },
+  changeData: {
+    request: requestChangeUserData,
+  }
 };

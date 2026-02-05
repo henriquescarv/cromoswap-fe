@@ -16,6 +16,10 @@ const Locales = {
     continueButton: 'Continuar',
     registerButton: 'Cadastre-se!',
     goBackButton: 'Voltar',
+    termsText: 'Ao se cadastrar, você concorda com nossos ',
+    termsLink: 'Termos de Uso',
+    termsAnd: ' e ',
+    privacyLink: 'Políticas de Privacidade',
     inputs: {
       nameTitle: 'Nome de usuário',
       namePlaceholder: 'Digite seu nome de usuário',
@@ -165,6 +169,29 @@ const Locales = {
     following: 'Seguindo',
     follow: 'Seguir',
     unfollow: 'Deixar de seguir',
+  },
+  editProfile: {
+    title: 'Editar Perfil',
+    usernameLabel: 'Nome de usuário',
+    emailLabel: 'E-mail',
+    regionLabel: 'Localização',
+    passwordLabel: 'Senha',
+    changePasswordButton: 'Alterar senha',
+  },
+  editRegion: {
+    title: 'Alterar localização',
+    description: 'para encontrar colecionadores próximos a você e facilitar suas trocas :)',
+    saveButton: 'Salvar',
+  },
+  editField: {
+    placeholder: 'Digite a nova senha',
+    newPasswordLabel: 'Nova senha',
+    confirmPasswordLabel: 'Confirme a nova senha',
+    confirmPasswordPlaceholder: 'Repita a nova senha',
+    saveButton: 'Salvar',
+    passwordMismatch: 'As senhas não coincidem',
+    selectStatePlaceholder: 'Selecione seu estado',
+    selectCityPlaceholder: 'Selecione sua cidade',
   }
 };
 

@@ -29,7 +29,7 @@ const Select = <T extends string>({
           .normalize("NFD")
           .replace(/[\u0300-\u036f]/g, "")
           .toLowerCase()
-    )
+      )
   );
 
   const { theme } = useTheme();
@@ -44,7 +44,7 @@ const Select = <T extends string>({
     <View style={styles.container}>
       {label && <Text style={styles.label}>{label}</Text>}
       <TouchableOpacity
-        style={[styles.selectButton, { borderColor: inputBorderColor}]}
+        style={[styles.selectButton, { borderColor: inputBorderColor }]}
         onPress={() => setModalVisible(true)}
       >
         {selectedValue && (

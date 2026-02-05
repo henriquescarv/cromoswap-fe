@@ -24,6 +24,7 @@ export default function UserProfile({ navigation }: any) {
     requestSummary,
     requestUserAlbums,
     requestExternalUserProfile,
+    requestChangeUserData,
     requestFollowUser,
     requestUnfollowUser,
     logout
@@ -80,6 +81,10 @@ export default function UserProfile({ navigation }: any) {
   const handleLogout = useCallback(() => {
     logout();
   }, [])
+
+  const handleEditProfile = () => {
+    navigation.navigate('EditProfileScreen');
+  };
 
   const goBack = () => {
     navigation.goBack();
@@ -148,7 +153,15 @@ export default function UserProfile({ navigation }: any) {
       </>
     ) : (
       <>
-        <View style={[styles.button]} />
+        <View style={[styles.button]}>
+          <Button
+            text={userProfileLocale.editProfile}
+            variant="secondary"
+            onClick={handleEditProfile}
+            size="small"
+            color="primary50"
+          />
+        </View>
         <View style={[styles.button]}>
           <Button
             text={userProfileLocale.leave}

@@ -120,3 +120,11 @@ export type setNotificationAsSeenProps = {
   status?: string | null;
   notificationId?: number | null;
 }
+
+
+export type changeUserDataProps = {
+  set: any;
+  dataToChange: "username" | "email" | "password" | "avatar" | "countryState" | "city";
+  oldValue?: string;
+  newValue: string;
+}

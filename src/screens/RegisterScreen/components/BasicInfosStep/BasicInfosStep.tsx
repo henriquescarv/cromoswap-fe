@@ -3,7 +3,7 @@ import Button from "@/components/Button/Button"
 import Input from "@/components/Input/Input"
 import { LocaleContext } from "@/providers/LocaleProvider/LocaleProvider"
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import { StyleSheet, Text, TouchableOpacity, View, Linking } from "react-native"
 import { BasicInfosStepProps } from "./BasicInfosStep.types";
 import { Ionicons } from '@expo/vector-icons';
 
@@ -95,6 +95,24 @@ const BasicInfosStep = ({
           errorMessage={inputErrors.confirmPassword ? locale.register.inputErrors.password[inputErrors.confirmPassword] : null}
         />
       </View>
+      <View style={styles.termsContainer}>
+        <Text style={[styles.termsText, { color: theme.grey20 }]}>
+          {registerLocale.termsText}
+          <Text
+            style={[styles.termsLink, { color: theme.primary50 }]}
+            onPress={() => Linking.openURL('https://www.cromoswap.app/pt-br/termos')}
+          >
+            {registerLocale.termsLink}
+          </Text>
+          {registerLocale.termsAnd}
+          <Text
+            style={[styles.termsLink, { color: theme.primary50 }]}
+            onPress={() => Linking.openURL('https://www.cromoswap.app/pt-br/privacidade')}
+          >
+            {registerLocale.privacyLink}
+          </Text>
+        </Text>
+      </View>
       <View style={[styles.buttonsContainer]}>
         <Button
           onClick={handleGoToRegionStep}
@@ -134,7 +152,22 @@ const styles = StyleSheet.create({
   inputsContainer: {
     width: '90%',
     marginTop: 68,
-    marginBottom: 68,
+    marginBottom: 32,
+  },
+  termsContainer: {
+    width: '90%',
+    marginBottom: 32,
+    alignItems: 'center',
+  },
+  termsText: {
+    fontSize: 12,
+    fontFamily: 'primaryRegular',
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+  termsLink: {
+    fontSize: 12,
+    fontFamily: 'semiBold',
   },
   buttonsContainer: {
     width: '90%',

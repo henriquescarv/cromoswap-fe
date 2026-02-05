@@ -1,4 +1,4 @@
-import {create} from 'zustand';
+import { create } from 'zustand';
 import { loginActions } from './actions/login/login.actions';
 import { registerActions } from './actions/register/register.actions';
 import { summaryActions } from './actions/summary/summary.actions';
@@ -109,6 +109,10 @@ const initialState = {
     status: null,
     quantity: 0,
   },
+  changeUserData: {
+    loading: false,
+    status: null,
+  },
   messages: {
     lastMessages: {
       loading: false,
@@ -145,7 +149,7 @@ const useStore = create<StoreState>((set) => {
     password,
     countryState,
     city
-  }: requestRegisterProps) => registerActions.register.request({ 
+  }: requestRegisterProps) => registerActions.register.request({
     set,
     username,
     email,
@@ -178,6 +182,7 @@ const useStore = create<StoreState>((set) => {
   const resetNotificationsUnreadCount = () => userActions.notificationsUnreadCount.reset({ set });
   const setNotificationsUnreadCount = ({ status, quantity }) => userActions.notificationsUnreadCount.set({ set, status, quantity });
   const requestNotificationAsSeen = ({ notificationId }) => userActions.notificationAsSeen.request({ set, notificationId });
+  const requestChangeUserData = ({ dataToChange, oldValue, newValue }) => userActions.changeData.request({ set, dataToChange, oldValue, newValue });
 
   const requestLastMessages = () => messagesActions.lastMessages.request({ set });
   const resetLastMessages = () => messagesActions.lastMessages.reset({ set });
@@ -222,6 +227,7 @@ const useStore = create<StoreState>((set) => {
     resetNotificationsUnreadCount,
     setNotificationsUnreadCount,
     requestNotificationAsSeen,
+    requestChangeUserData,
 
     // messages
     requestLastMessages,

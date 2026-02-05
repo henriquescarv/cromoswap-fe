@@ -16,11 +16,13 @@ const RegionStep = ({
   statesList = [],
   handleClickRegister,
   handleGoToBasicInfosStep,
-  handleVerifyRegionErrors,
   regionButtonIsDisabled = false,
   buttonIsLoading,
   regionErrors,
   setRegionErrors,
+  customTitle,
+  customDescription,
+  customButtonText,
 }: RegionStepProps) => {
   const { theme } = useTheme();
   const { locale } = useContext(LocaleContext);
@@ -58,8 +60,14 @@ const RegionStep = ({
           />
         </TouchableOpacity>
         <View style={styles.headTextContainer}>
-          <Text style={[styles.title, { color: theme.primary100 }]}>{registerLocale.regionStep.title}</Text>
-          <Text style={[styles.description, { color: theme.grey20 }]}>{registerLocale.regionStep.description}</Text>
+          <Text style={[styles.title, { color: theme.primary100 }]}>
+            {customTitle || registerLocale.regionStep.title}
+          </Text>
+          {customDescription !== "" && (
+            <Text style={[styles.description, { color: theme.grey20 }]}>
+              {customDescription || registerLocale.regionStep.description}
+            </Text>
+          )}
         </View>
       </View>
       <View style={[styles.inputsContainer]}>
@@ -83,8 +91,7 @@ const RegionStep = ({
       <View style={styles.buttonsContainer}>
         <Button
           onClick={handleClickRegister}
-          onClickDisabled={handleVerifyRegionErrors}
-          text={registerLocale.registerButton}
+          text={customButtonText || registerLocale.registerButton}
           widthFull
           loading={buttonIsLoading}
           disabled={regionButtonIsDisabled}
@@ -101,12 +108,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingBottom: 200,
-    paddingTop: 140,
   },
   headContainer: {
     width: '100%',
     display: 'flex',
     flexDirection: 'row',
+    padding: 16,
     gap: 16,
   },
   headTextContainer: {
