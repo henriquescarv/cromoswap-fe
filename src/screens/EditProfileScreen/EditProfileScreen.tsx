@@ -125,6 +125,7 @@ export default function EditProfileScreen({ navigation }: any) {
                 variant="secondary"
                 onClick={goToChangePassword}
                 widthFull
+                color='primaryRed'
               />
             </View>
           </View>

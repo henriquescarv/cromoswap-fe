@@ -22,6 +22,7 @@ import { FollowListScreen } from '@/screens/FollowListScreen';
 import EditProfileScreen from '@/screens/EditProfileScreen';
 import EditFieldScreen from '@/screens/EditFieldScreen';
 import EditRegionScreen from '@/screens/EditRegionScreen';
+import AboutScreen from '@/screens/AboutScreen/AboutScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -134,6 +135,7 @@ export default function AppNavigator({ onFinishSplash }: { onFinishSplash: () =>
         <Stack.Screen name="EditProfileScreen" component={EditProfileScreen} />
         <Stack.Screen name="EditFieldScreen" component={EditFieldScreen} />
         <Stack.Screen name="EditRegionScreen" component={EditRegionScreen} />
+        <Stack.Screen name="AboutScreen" component={AboutScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

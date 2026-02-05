@@ -5,6 +5,7 @@ import {
   View,
   TouchableWithoutFeedback,
   Keyboard,
+  TouchableOpacity,
 } from 'react-native';
 import Input from '@/components/Input/Input';
 import Button from '@/components/Button/Button';
@@ -60,12 +61,11 @@ export default function LoginScreen({ navigation }: any) {
             <Text style={[styles.text, { color: theme.grey20 }]}>
               {loginLocale.noAccountLabel}
             </Text>
-            <Button
-              text={loginLocale.registerButton}
-              variant="text"
-              onClick={() => navigation.navigate('Register')}
-              loading={loginStore.loading}
-            />
+            <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+              <Text style={[styles.text, styles.registerLink, { color: theme.primary50 }]}>
+                {loginLocale.registerButton}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -94,6 +94,7 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     marginTop: 12,
+    alignItems: 'center',
   },
   title: {
     fontSize: 36,
@@ -103,5 +104,9 @@ const styles = StyleSheet.create({
   },
   text: {
     fontFamily: 'primaryRegular',
+    fontSize: 14,
+  },
+  registerLink: {
+    fontFamily: 'semiBold',
   },
 });

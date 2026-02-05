@@ -110,6 +110,10 @@ export default function UserProfile({ navigation }: any) {
     navigation.navigate('ChatScreen', { userId });
   };
 
+  const goToAboutScreen = () => {
+    navigation.navigate('AboutScreen');
+  };
+
   const mountPersonalInfo = ({ topText, bottomText, onPress }: { topText?: string | number; bottomText: string, onPress: () => void }) => (
     <TouchableOpacity onPress={onPress} style={[styles.personalInfo]}>
       <Text style={[styles.personalInfoTopText, { color: theme.primary100 }]}>{topText}</Text>
@@ -207,6 +211,16 @@ export default function UserProfile({ navigation }: any) {
               </TouchableOpacity>
 
               <Text style={[styles.blockTitle, { color: theme.primary100 }]}>{userProfile.username}</Text>
+
+              {!isExternalUser && (
+                <TouchableOpacity onPress={goToAboutScreen} style={styles.menuButton}>
+                  <Ionicons
+                    name={"menu-outline"}
+                    size={32}
+                    color={theme.primary50}
+                  />
+                </TouchableOpacity>
+              )}
             </View>
           </View>
 
@@ -366,6 +380,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     width: '100%',
+  },
+  menuButton: {
+    marginLeft: 'auto',
   },
   blockTitle: {
     fontSize: 20,

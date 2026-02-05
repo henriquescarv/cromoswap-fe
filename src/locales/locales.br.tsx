@@ -20,6 +20,10 @@ const Locales = {
     termsLink: 'Termos de Uso',
     termsAnd: ' e ',
     privacyLink: 'Políticas de Privacidade',
+    links: {
+      terms: 'https://www.cromoswap.app/pt-br/termos',
+      privacy: 'https://www.cromoswap.app/pt-br/privacidade',
+    },
     inputs: {
       nameTitle: 'Nome de usuário',
       namePlaceholder: 'Digite seu nome de usuário',
@@ -142,6 +146,19 @@ const Locales = {
         [TabEnum.YOU_HAVE]: qty => `Você possui (${qty})`,
       },
       showAlbum: 'Ver álbum',
+    }
+  },
+  about: {
+    title: 'Sobre',
+    support: 'Suporte',
+    privacy: 'Política de privacidade',
+    terms: 'Termos de uso',
+    deleteAccount: 'Deletar conta',
+    links: {
+      support: 'https://www.cromoswap.app/pt-br/suporte',
+      privacy: 'https://www.cromoswap.app/pt-br/privacidade',
+      terms: 'https://www.cromoswap.app/pt-br/termos',
+      deleteAccount: 'https://www.cromoswap.app/pt-br/deletar-conta',
     }
   },
   notifications: {

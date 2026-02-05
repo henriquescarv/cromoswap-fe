@@ -100,14 +100,14 @@ const BasicInfosStep = ({
           {registerLocale.termsText}
           <Text
             style={[styles.termsLink, { color: theme.primary50 }]}
-            onPress={() => Linking.openURL('https://www.cromoswap.app/pt-br/termos')}
+            onPress={() => Linking.openURL(registerLocale.links.terms)}
           >
             {registerLocale.termsLink}
           </Text>
           {registerLocale.termsAnd}
           <Text
             style={[styles.termsLink, { color: theme.primary50 }]}
-            onPress={() => Linking.openURL('https://www.cromoswap.app/pt-br/privacidade')}
+            onPress={() => Linking.openURL(registerLocale.links.privacy)}
           >
             {registerLocale.privacyLink}
           </Text>
