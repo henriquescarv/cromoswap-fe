@@ -19,6 +19,10 @@ const darkTheme = {
   primary100: '#F8F0FF',
 
   primaryRed: '#DD2B49',
+
+  success: '#22C55E',
+  warning: '#F97316',
+  toastBackground: '#2A2A2A',
 }
 
 export default darkTheme;

@@ -15,11 +15,13 @@ import Button from '@/components/Button/Button';
 import useStore from '@/services/store';
 import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
+import { useToast } from '@/providers/ToastProvider';
 
 export default function EditFieldScreen({ navigation }: any) {
   const insets = useSafeAreaInsets();
   const route = useRoute<any>();
   const { theme } = useTheme();
+  const { showToast } = useToast();
   const { locale } = useContext(LocaleContext);
   const { editField: editFieldLocale } = locale;
 
@@ -31,10 +33,7 @@ export default function EditFieldScreen({ navigation }: any) {
   } = useStore((state: any) => state);
 
   const [value, setValue] = useState(currentValue || '');
-  const [confirmValue, setConfirmValue] = useState('');
   const [loading, setLoading] = useState(false);
-
-  const isPasswordField = field === 'password';
 
   useEffect(() => {
     // No additional data loading needed for simple fields
@@ -45,11 +44,6 @@ export default function EditFieldScreen({ navigation }: any) {
   };
 
   const handleSave = async () => {
-    if (isPasswordField && value !== confirmValue) {
-      alert(editFieldLocale.passwordMismatch);
-      return;
-    }
-
     setLoading(true);
     try {
       await requestChangeUserData({
@@ -58,9 +52,11 @@ export default function EditFieldScreen({ navigation }: any) {
         newValue: value,
       });
       await requestSummary();
+      showToast('success', 'Campo atualizado com sucesso!');
       goBack();
     } catch (error) {
       console.error('Error updating field:', error);
+      showToast('warning', 'Erro ao atualizar campo. Tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -72,12 +68,11 @@ export default function EditFieldScreen({ navigation }: any) {
         placeholder={editFieldLocale.placeholder}
         value={value}
         onChangeText={setValue}
-        password={isPasswordField}
       />
     );
   };
 
-  const isSaveDisabled = !value || (isPasswordField && (!confirmValue || value !== confirmValue));
+  const isSaveDisabled = !value;
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -103,24 +98,10 @@ export default function EditFieldScreen({ navigation }: any) {
             <View style={[styles.formContainer]}>
               <View style={[styles.inputGroup]}>
                 <Text style={[styles.label, { color: theme.primary100 }]}>
-                  {isPasswordField ? editFieldLocale.newPasswordLabel : label}
+                  {label}
                 </Text>
                 {renderInput()}
               </View>
-
-              {isPasswordField && (
-                <View style={[styles.inputGroup]}>
-                  <Text style={[styles.label, { color: theme.primary100 }]}>
-                    {editFieldLocale.confirmPasswordLabel}
-                  </Text>
-                  <Input
-                    placeholder={editFieldLocale.confirmPasswordPlaceholder}
-                    value={confirmValue}
-                    onChangeText={setConfirmValue}
-                    password
-                  />
-                </View>
-              )}
 
               <View style={[styles.buttonContainer]}>
                 <Button

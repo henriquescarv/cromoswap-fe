@@ -12,6 +12,7 @@ import Button from '@/components/Button/Button';
 import useStore from '@/services/store';
 import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
+import { useToast } from '@/providers/ToastProvider';
 
 export default function LoginScreen({ navigation }: any) {
   const [username, setUsername] = useState('');
@@ -20,6 +21,7 @@ export default function LoginScreen({ navigation }: any) {
   const { login: loginStore, requestLogin, requestSummary } = useStore((state: any) => state);
 
   const { theme } = useTheme();
+  const { showToast } = useToast();
   const { locale } = useContext(LocaleContext);
   const { login: loginLocale } = locale;
 
@@ -35,7 +37,19 @@ export default function LoginScreen({ navigation }: any) {
   }, [redirectToHome]);
 
   const handleLogin = async () => {
-    requestLogin({ username, password });
+    const result = await requestLogin({ username, password });
+
+    if (result && !result.success) {
+      if (result.errorType === 'credentials') {
+        showToast('warning', 'Nome de usuário ou senha incorretos. Tente novamente');
+      } else {
+        showToast('warning', 'Erro ao fazer login. Tente novamente mais tarde.');
+      }
+    }
+  };
+
+  const handleForgotPassword = () => {
+    navigation.navigate('ChangePasswordScreen');
   };
 
   return (
@@ -55,6 +69,11 @@ export default function LoginScreen({ navigation }: any) {
               password
               onChangeText={setPassword}
             />
+            <TouchableOpacity onPress={handleForgotPassword} style={styles.forgotPasswordContainer}>
+              <Text style={[styles.text, styles.forgotPasswordLink, { color: theme.primary50 }]}>
+                Esqueci minha senha
+              </Text>
+            </TouchableOpacity>
           </View>
           <Button onClick={handleLogin} text={loginLocale.loginButton} loading={loginStore.loading} widthFull />
           <View style={styles.registerContainer}>
@@ -107,6 +126,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   registerLink: {
+    fontFamily: 'semiBold',
+  },
+  forgotPasswordContainer: {
+    alignSelf: 'center',
+  },
+  forgotPasswordLink: {
     fontFamily: 'semiBold',
   },
 });

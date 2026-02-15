@@ -11,7 +11,7 @@ const setLoading = ({ set, loading }: setLoadingProps) => {
   }));
 }
 
-const setLogin = ({set, token, isAuthenticated, invalidToken}: setLoginProps) => {
+const setLogin = ({ set, token, isAuthenticated, invalidToken }: setLoginProps) => {
   set((state: any) => ({
     ...state,
     invalidToken: invalidToken || state.invalidToken,
@@ -23,7 +23,7 @@ const setLogin = ({set, token, isAuthenticated, invalidToken}: setLoginProps) =>
   }));
 };
 
-const setStatus = ({set, status}: setLoginStatusProps) => {
+const setStatus = ({ set, status }: setLoginStatusProps) => {
   set((state: any) => ({
     ...state,
     login: {
@@ -33,7 +33,7 @@ const setStatus = ({set, status}: setLoginStatusProps) => {
   }));
 }
 
-const requestLogin = async ({set, username, password}: requestLoginProps) => {
+const requestLogin = async ({ set, username, password }: requestLoginProps) => {
   try {
     setLoading({ set, loading: true });
 
@@ -51,11 +51,20 @@ const requestLogin = async ({set, username, password}: requestLoginProps) => {
     console.log('Login successful', `Message: ${data.message}`);
 
     setLoading({ set, loading: false });
-  } catch (error) {
+    return { success: true };
+  } catch (error: any) {
     setStatus({ set, status: 'error' });
     console.log('requestLogin', 'Something went wrong');
 
     setLoading({ set, loading: false });
+
+    // Verificar se é erro de credenciais (401/403/404) ou erro de servidor (500+)
+    const statusCode = error?.response?.status;
+    if (statusCode === 401 || statusCode === 403 || statusCode === 404) {
+      return { success: false, errorType: 'credentials' };
+    } else {
+      return { success: false, errorType: 'server' };
+    }
   }
 };
 

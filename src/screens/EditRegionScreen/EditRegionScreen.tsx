@@ -1,6 +1,7 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { Keyboard, StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
+import { useToast } from '@/providers/ToastProvider';
 import { DefaultRegionErrorsProps } from '@/validators/forms/forms.types';
 import useStore from '@/services/store';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -15,6 +16,7 @@ const defaultRegionErrors: DefaultRegionErrorsProps = {
 export default function EditRegionScreen({ navigation }: any) {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
+  const { showToast } = useToast();
   const { locale } = useContext(LocaleContext);
 
   const [countryState, setCountryState] = useState('');
@@ -75,9 +77,11 @@ export default function EditRegionScreen({ navigation }: any) {
       });
 
       await requestSummary();
+      showToast('success', 'Região atualizada com sucesso!');
       goBack();
     } catch (error) {
       console.error('Error updating region:', error);
+      showToast('warning', 'Erro ao atualizar região. Tente novamente.');
     } finally {
       setLoading(false);
     }

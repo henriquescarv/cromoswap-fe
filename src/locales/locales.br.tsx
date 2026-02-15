@@ -42,11 +42,11 @@ const Locales = {
       username: {
         [DefaultErrors.EMPTY]: 'Campo obrigatório',
         [UsernameErrors.MIN_LENGTH]: 'O nome de usuário deve ter no mínimo 3 caracteres',
-        [UsernameErrors.ALREADY_EXISTS]: 'Nome de usuário já existe',
+        [UsernameErrors.ALREADY_EXISTS]: 'Este nome de usuário já existe',
         [UsernameErrors.INVALID]: 'Nome de usuário inválido',
       },
       email: {
-        [UsernameErrors.INVALID]: 'E-mail inválido',
+        [EmailErrors.INVALID]: 'E-mail inválido',
         [DefaultErrors.EMPTY]: 'Campo obrigatório',
         [EmailErrors.ALREADY_EXISTS]: 'Já existe uma conta com este e-mail',
       },

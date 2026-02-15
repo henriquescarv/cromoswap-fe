@@ -1,6 +1,7 @@
 import AppNavigator from '@/navigation/AppNavigator';
 import { LocaleProvider } from '@/providers/LocaleProvider/LocaleProvider';
 import { ThemeProvider } from '@/providers/ThemeModeProvider/ThemeModeProvider';
+import { ToastProvider } from '@/providers/ToastProvider';
 import { SplashScreen } from '@/components/SplashScreen';
 import AppLoading from 'expo-app-loading';
 import { useFonts } from 'expo-font';
@@ -24,9 +25,11 @@ export default function App() {
   return (
     <ThemeProvider>
       <LocaleProvider>
-        <View style={styles.container}>
-          <AppNavigator onFinishSplash={() => setShowSplash(false)} />
-        </View>
+        <ToastProvider>
+          <View style={styles.container}>
+            <AppNavigator onFinishSplash={() => setShowSplash(false)} />
+          </View>
+        </ToastProvider>
       </LocaleProvider>
     </ThemeProvider>
   );

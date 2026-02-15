@@ -21,6 +21,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FollowListScreen } from '@/screens/FollowListScreen';
 import EditProfileScreen from '@/screens/EditProfileScreen';
 import EditFieldScreen from '@/screens/EditFieldScreen';
+import ChangePasswordScreen from '@/screens/ChangePasswordScreen';
 import EditRegionScreen from '@/screens/EditRegionScreen';
 import AboutScreen from '@/screens/AboutScreen/AboutScreen';
 
@@ -134,6 +135,7 @@ export default function AppNavigator({ onFinishSplash }: { onFinishSplash: () =>
         <Stack.Screen name="ChatScreen" component={ChatScreen} />
         <Stack.Screen name="EditProfileScreen" component={EditProfileScreen} />
         <Stack.Screen name="EditFieldScreen" component={EditFieldScreen} />
+        <Stack.Screen name="ChangePasswordScreen" component={ChangePasswordScreen} />
         <Stack.Screen name="EditRegionScreen" component={EditRegionScreen} />
         <Stack.Screen name="AboutScreen" component={AboutScreen} />
       </Stack.Navigator>

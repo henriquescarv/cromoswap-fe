@@ -39,7 +39,7 @@ export default function EditProfileScreen({ navigation }: any) {
   };
 
   const goToChangePassword = () => {
-    navigation.navigate('EditFieldScreen', { field: 'password', label: editProfileLocale.passwordLabel });
+    navigation.navigate('ChangePasswordScreen');
   };
 
   const goToEditRegion = () => {

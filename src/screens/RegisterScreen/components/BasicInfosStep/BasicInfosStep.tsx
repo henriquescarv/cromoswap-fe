@@ -1,11 +1,14 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import Button from "@/components/Button/Button"
 import Input from "@/components/Input/Input"
 import { LocaleContext } from "@/providers/LocaleProvider/LocaleProvider"
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
+import { useToast } from '@/providers/ToastProvider';
 import { StyleSheet, Text, TouchableOpacity, View, Linking } from "react-native"
 import { BasicInfosStepProps } from "./BasicInfosStep.types";
 import { Ionicons } from '@expo/vector-icons';
+import { checkUserExists } from '@/services/api/api';
+import { UsernameErrors, EmailErrors } from '@/validators/forms/forms.types';
 
 const BasicInfosStep = ({
   username,
@@ -24,16 +27,60 @@ const BasicInfosStep = ({
   basicInfosButtonIsDisabled,
 }: BasicInfosStepProps) => {
   const { theme } = useTheme();
+  const { showToast } = useToast();
   const { locale } = useContext(LocaleContext);
   const { register: registerLocale } = locale;
+
+  const [usernameExists, setUsernameExists] = useState(false);
+  const [emailExists, setEmailExists] = useState(false);
+  const [checkingUsername, setCheckingUsername] = useState(false);
+  const [checkingEmail, setCheckingEmail] = useState(false);
+
+  const handleCheckUsername = async () => {
+    if (!username || username.length < 3) return;
+
+    setCheckingUsername(true);
+    try {
+      const response = await checkUserExists('USERNAME', username);
+      setUsernameExists(response.data.exists);
+      if (response.data.exists) {
+        setInputErrors({ ...inputErrors, username: UsernameErrors.ALREADY_EXISTS });
+      }
+    } catch (error) {
+      console.error('Error checking username:', error);
+      showToast('warning', 'Erro ao verificar nome de usuário. Tente novamente.');
+    } finally {
+      setCheckingUsername(false);
+    }
+  };
+
+  const handleCheckEmail = async () => {
+    if (!email || !email.includes('@')) return;
+
+    setCheckingEmail(true);
+    try {
+      const response = await checkUserExists('EMAIL', email);
+      setEmailExists(response.data.exists);
+      if (response.data.exists) {
+        setInputErrors({ ...inputErrors, email: EmailErrors.ALREADY_EXISTS });
+      }
+    } catch (error) {
+      console.error('Error checking email:', error);
+      showToast('warning', 'Erro ao verificar e-mail. Tente novamente.');
+    } finally {
+      setCheckingEmail(false);
+    }
+  };
 
   const onChangeUsername = (username: string) => {
     setUsername(username);
     setInputErrors({ ...inputErrors, username: null });
+    setUsernameExists(false);
   }
   const onChangeEmail = (email: string) => {
     setEmail(email);
     setInputErrors({ ...inputErrors, email: null });
+    setEmailExists(false);
   }
   const onChangePassword = (password: string) => {
     setPassword(password);
@@ -66,6 +113,7 @@ const BasicInfosStep = ({
           placeholder={registerLocale.inputs.namePlaceholder}
           value={username}
           onChangeText={onChangeUsername}
+          onBlur={handleCheckUsername}
           maxLength={32}
           errorMessage={inputErrors.username ? locale.register.inputErrors.username[inputErrors.username] : null}
         />
@@ -75,6 +123,7 @@ const BasicInfosStep = ({
           value={email}
           maxLength={128}
           onChangeText={onChangeEmail}
+          onBlur={handleCheckEmail}
           errorMessage={inputErrors.email ? locale.register.inputErrors.email[inputErrors.email] : null}
         />
         <Input
@@ -119,7 +168,7 @@ const BasicInfosStep = ({
           onClickDisabled={handleVerifyErrors}
           text={registerLocale.continueButton}
           widthFull
-          disabled={basicInfosButtonIsDisabled}
+          disabled={basicInfosButtonIsDisabled || usernameExists || emailExists}
         />
       </View>
     </View>

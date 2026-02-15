@@ -4,13 +4,13 @@ import { InputProps } from "./Input.types";
 import { useTheme } from "@/providers/ThemeModeProvider/ThemeModeProvider";
 import { Ionicons } from "@expo/vector-icons";
 
-export default function Input({title, placeholder, value, onChangeText, password, maxLength, errorMessage}: InputProps) {
+export default function Input({ title, placeholder, value, onChangeText, onBlur, password, maxLength, errorMessage }: InputProps) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   const { theme } = useTheme();
 
   const inputBorderColor = errorMessage ? theme.primaryRed : theme.grey10;
-  
+
   return (
     <View style={styles.inputContainer}>
       {title && <Text style={[styles.inputTitle, { color: theme.primary100 }]}>{title}</Text>}
@@ -22,10 +22,11 @@ export default function Input({title, placeholder, value, onChangeText, password
         secureTextEntry={password && !isPasswordVisible}
         value={value}
         onChangeText={onChangeText}
+        onBlur={onBlur}
         maxLength={maxLength}
       />
       <View style={[styles.inputError]}>
-        {errorMessage && <Text style={[styles.inputErrorText, { color: theme.primaryRed }]}>{errorMessage}</Text>}	
+        {errorMessage && <Text style={[styles.inputErrorText, { color: theme.primaryRed }]}>{errorMessage}</Text>}
       </View>
       {password && (
         <TouchableOpacity onPress={() => setIsPasswordVisible(!isPasswordVisible)} style={styles.inputIcon}>

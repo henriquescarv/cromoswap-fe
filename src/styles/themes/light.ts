@@ -19,6 +19,10 @@ const lightTheme = {
   primary100: '#381A51',
 
   primaryRed: '#DD2B49',
+
+  success: '#22C55E',
+  warning: '#F97316',
+  toastBackground: '#F5F5F5',
 }
 
 export default lightTheme;

@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RegionStepProps } from './RegionStep.types';
 import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
 import Button from '@/components/Button/Button';
@@ -24,6 +25,7 @@ const RegionStep = ({
   customDescription,
   customButtonText,
 }: RegionStepProps) => {
+  const insets = useSafeAreaInsets();
   const { theme } = useTheme();
   const { locale } = useContext(LocaleContext);
   const { register: registerLocale } = locale;
@@ -50,7 +52,7 @@ const RegionStep = ({
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.headContainer}>
         <TouchableOpacity onPress={() => handleGoToBasicInfosStep()}>
           <Ionicons
