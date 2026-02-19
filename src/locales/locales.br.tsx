@@ -13,6 +13,7 @@ const Locales = {
   register: {
     title: 'Cadastre-se!',
     description: 'Crie uma conta para continuar',
+    passwordStepTitle: 'Crie uma senha',
     continueButton: 'Continuar',
     registerButton: 'Cadastre-se!',
     goBackButton: 'Voltar',
@@ -201,6 +202,7 @@ const Locales = {
     saveButton: 'Salvar',
   },
   editField: {
+    passwordLabel: 'Senha',
     placeholder: 'Digite a nova senha',
     newPasswordLabel: 'Nova senha',
     confirmPasswordLabel: 'Confirme a nova senha',
@@ -209,6 +211,13 @@ const Locales = {
     passwordMismatch: 'As senhas não coincidem',
     selectStatePlaceholder: 'Selecione seu estado',
     selectCityPlaceholder: 'Selecione sua cidade',
+    passwordRequirements: {
+      minLength: 'Mínimo de 8 caracteres',
+      uppercase: 'Letra maiúscula (A-Z)',
+      lowercase: 'Letra minúscula (a-z)',
+      number: 'Número (0-9)',
+      special: 'Caractere especial (!@#$%...)',
+    },
   }
 };
 

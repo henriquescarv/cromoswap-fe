@@ -4,6 +4,7 @@ const Locales = {
   register: {
     title: 'Sign Up!',
     description: 'Create an account to continue',
+    passwordStepTitle: 'Create a password',
     continueButton: 'Continue',
     registerButton: 'Sign Up!',
     goBackButton: 'Go Back',
@@ -29,6 +30,24 @@ const Locales = {
       deleteAccount: 'https://www.cromoswap.app/en/deletar-conta',
     }
   },
+  editField: {
+    passwordLabel: 'Password',
+    placeholder: 'Enter new password',
+    newPasswordLabel: 'New password',
+    confirmPasswordLabel: 'Confirm new password',
+    confirmPasswordPlaceholder: 'Repeat new password',
+    saveButton: 'Save',
+    passwordMismatch: 'Passwords do not match',
+    selectStatePlaceholder: 'Select your state',
+    selectCityPlaceholder: 'Select your city',
+    passwordRequirements: {
+      minLength: 'Minimum 8 characters',
+      uppercase: 'Uppercase letter (A-Z)',
+      lowercase: 'Lowercase letter (a-z)',
+      number: 'Number (0-9)',
+      special: 'Special character (!@#$%...)',
+    },
+  }
 };
 
 export default Locales;

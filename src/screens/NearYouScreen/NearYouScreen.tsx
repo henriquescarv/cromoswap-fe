@@ -66,6 +66,10 @@ export default function NearYouScreen({ navigation }: any) {
     navigation.navigate('UserProfileScreen', { userId });
   };
 
+  const goToChat = (userId: number) => {
+    navigation.navigate('ChatScreen', { userId });
+  };
+
   if (usersByRegionStore.loading) {
     return (
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -115,6 +119,7 @@ export default function NearYouScreen({ navigation }: any) {
                   youHave={item.youHave}
                   albums={item.albumsInCommon}
                   onClick={() => goToUserProfile(item.id)}
+                  onSendMessage={() => goToChat(item.id)}
                 />
               ))}
             </View>

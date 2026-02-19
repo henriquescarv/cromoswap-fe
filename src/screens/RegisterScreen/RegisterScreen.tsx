@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Keyboard, StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 import { CityErrors, DefaultErrorsProps, DefaultRegionErrorsProps, StateErrors } from '@/validators/forms/forms.types';
 import formsValidators from '@/validators/forms/forms';
 import { STEPS, StepProps } from './RegisterScreen.types';
 import { BasicInfosStep } from './components/BasicInfosStep';
+import { PasswordStep } from './components/PasswordStep';
 import { RegionStep } from './components/RegionStep';
 import useStore from '@/services/store';
 
@@ -48,7 +50,8 @@ export default function RegisterScreen({ navigation }: any) {
 
   const { theme } = useTheme();
 
-  const basicInfosButtonIsDisabled = !username || !email || !password || password !== confirmPassword;
+  const basicInfosButtonIsDisabled = !username || !email;
+  const passwordButtonIsDisabled = !password || password !== confirmPassword;
   const regionButtonIsDisabled = !countryState || !city;
 
   const redirectToHome = useCallback(() => {
@@ -76,12 +79,23 @@ export default function RegisterScreen({ navigation }: any) {
   const handleVerifyErrors = () => {
     const usernameError = verifyUsername(username);
     const emailError = verifyEmail(email);
+
+    setInputErrors({
+      ...inputErrors,
+      username: usernameError,
+      email: emailError,
+    });
+
+    // Retorna true se houver algum erro
+    return !!(usernameError || emailError);
+  }
+
+  const handleVerifyPasswordErrors = () => {
     const passwordError = verifyPassword(password);
     const confirmPasswordError = comparePassowrd(password, confirmPassword);
 
     setInputErrors({
-      username: usernameError,
-      email: emailError,
+      ...inputErrors,
       password: passwordError,
       confirmPassword: confirmPasswordError,
     });
@@ -95,6 +109,10 @@ export default function RegisterScreen({ navigation }: any) {
       countryState: countryStateError,
       city: cityError,
     });
+  }
+
+  const handleGoToPasswordStep = () => {
+    setCurrentStep(STEPS.PASSWORD);
   }
 
   const handleGoToRegionStep = () => {
@@ -128,16 +146,22 @@ export default function RegisterScreen({ navigation }: any) {
     setUsername,
     email,
     setEmail,
+    inputErrors,
+    setInputErrors,
+    handleVerifyErrors,
+    handleGoToPasswordStep,
+    handleBackToLoginStep,
+    basicInfosButtonIsDisabled,
+  };
+
+  const passwordStepProps = {
     password,
     setPassword,
     confirmPassword,
     setConfirmPassword,
-    inputErrors,
-    setInputErrors,
-    handleVerifyErrors,
-    handleGoToRegionStep,
-    handleBackToLoginStep,
-    basicInfosButtonIsDisabled,
+    handleGoBack: handleGoToBasicInfosStep,
+    handleContinue: handleGoToRegionStep,
+    buttonIsDisabled: passwordButtonIsDisabled,
   };
 
   const regionStepProps = {
@@ -148,7 +172,7 @@ export default function RegisterScreen({ navigation }: any) {
     citiesList,
     statesList,
     handleVerifyRegionErrors,
-    handleGoToBasicInfosStep,
+    handleGoToBasicInfosStep: handleGoToPasswordStep,
     handleClickRegister,
     regionButtonIsDisabled,
     buttonIsLoading: registerStore.loading,
@@ -158,14 +182,15 @@ export default function RegisterScreen({ navigation }: any) {
 
   const stepRules = {
     [STEPS.BASIC_INFOS]: <BasicInfosStep {...basicInfosStepProps} />,
+    [STEPS.PASSWORD]: <PasswordStep {...passwordStepProps} />,
     [STEPS.REGION]: <RegionStep {...regionStepProps} />,
   }
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={[styles.wrapper, { backgroundColor: theme.highLight }]}>
+      <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]} edges={['top', 'left', 'right']}>
         {stepRules[currentStep]}
-      </View>
+      </SafeAreaView>
     </TouchableWithoutFeedback>
   );
 }
@@ -174,8 +199,6 @@ const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingBottom: 50,
     width: '100%',
   },
   container: {

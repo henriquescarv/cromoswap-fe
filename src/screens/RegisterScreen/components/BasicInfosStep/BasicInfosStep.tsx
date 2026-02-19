@@ -15,14 +15,10 @@ const BasicInfosStep = ({
   setUsername,
   email,
   setEmail,
-  password,
-  setPassword,
-  confirmPassword,
-  setConfirmPassword,
   inputErrors,
   setInputErrors,
   handleVerifyErrors,
-  handleGoToRegionStep,
+  handleGoToPasswordStep,
   handleBackToLoginStep,
   basicInfosButtonIsDisabled,
 }: BasicInfosStepProps) => {
@@ -44,7 +40,7 @@ const BasicInfosStep = ({
       const response = await checkUserExists('USERNAME', username);
       setUsernameExists(response.data.exists);
       if (response.data.exists) {
-        setInputErrors({ ...inputErrors, username: UsernameErrors.ALREADY_EXISTS });
+        setInputErrors(prev => ({ ...prev, username: UsernameErrors.ALREADY_EXISTS }));
       }
     } catch (error) {
       console.error('Error checking username:', error);
@@ -62,7 +58,7 @@ const BasicInfosStep = ({
       const response = await checkUserExists('EMAIL', email);
       setEmailExists(response.data.exists);
       if (response.data.exists) {
-        setInputErrors({ ...inputErrors, email: EmailErrors.ALREADY_EXISTS });
+        setInputErrors(prev => ({ ...prev, email: EmailErrors.ALREADY_EXISTS }));
       }
     } catch (error) {
       console.error('Error checking email:', error);
@@ -74,22 +70,61 @@ const BasicInfosStep = ({
 
   const onChangeUsername = (username: string) => {
     setUsername(username);
-    setInputErrors({ ...inputErrors, username: null });
+    setInputErrors(prev => ({ ...prev, username: null }));
     setUsernameExists(false);
   }
   const onChangeEmail = (email: string) => {
     setEmail(email);
-    setInputErrors({ ...inputErrors, email: null });
+    setInputErrors(prev => ({ ...prev, email: null }));
     setEmailExists(false);
   }
-  const onChangePassword = (password: string) => {
-    setPassword(password);
-    setInputErrors({ ...inputErrors, password: null });
-  }
-  const onChangeConfirmPassword = (confirmPassword: string) => {
-    setConfirmPassword(confirmPassword);
-    setInputErrors({ ...inputErrors, confirmPassword: null });
-  }
+
+  const handleContinue = async () => {
+    const hasFormatErrors = handleVerifyErrors();
+    if (hasFormatErrors) {
+      return;
+    }
+
+    if (username && username.length >= 3) {
+      setCheckingUsername(true);
+      try {
+        const response = await checkUserExists('USERNAME', username);
+        if (response.data.exists) {
+          setUsernameExists(true);
+          setInputErrors(prev => ({ ...prev, username: UsernameErrors.ALREADY_EXISTS }));
+          setCheckingUsername(false);
+          return;
+        }
+      } catch (error) {
+        console.error('Error checking username:', error);
+        showToast('warning', 'Erro ao verificar nome de usuário. Tente novamente.');
+        setCheckingUsername(false);
+        return;
+      }
+      setCheckingUsername(false);
+    }
+
+    if (email && email.includes('@')) {
+      setCheckingEmail(true);
+      try {
+        const response = await checkUserExists('EMAIL', email);
+        if (response.data.exists) {
+          setEmailExists(true);
+          setInputErrors(prev => ({ ...prev, email: EmailErrors.ALREADY_EXISTS }));
+          setCheckingEmail(false);
+          return;
+        }
+      } catch (error) {
+        console.error('Error checking email:', error);
+        showToast('warning', 'Erro ao verificar e-mail. Tente novamente.');
+        setCheckingEmail(false);
+        return;
+      }
+      setCheckingEmail(false);
+    }
+
+    handleGoToPasswordStep();
+  };
 
   return (
     <View style={styles.container}>
@@ -126,23 +161,6 @@ const BasicInfosStep = ({
           onBlur={handleCheckEmail}
           errorMessage={inputErrors.email ? locale.register.inputErrors.email[inputErrors.email] : null}
         />
-        <Input
-          title={registerLocale.inputs.passwordTitle}
-          placeholder={registerLocale.inputs.passwordPlaceholder}
-          password
-          value={password}
-          maxLength={72}
-          onChangeText={onChangePassword}
-          errorMessage={inputErrors.password ? locale.register.inputErrors.password[inputErrors.password] : null}
-        />
-        <Input
-          placeholder={registerLocale.inputs.confirmPasswordPlaceholder}
-          password
-          value={confirmPassword}
-          maxLength={72}
-          onChangeText={onChangeConfirmPassword}
-          errorMessage={inputErrors.confirmPassword ? locale.register.inputErrors.password[inputErrors.confirmPassword] : null}
-        />
       </View>
       <View style={styles.termsContainer}>
         <Text style={[styles.termsText, { color: theme.grey20 }]}>
@@ -164,11 +182,12 @@ const BasicInfosStep = ({
       </View>
       <View style={[styles.buttonsContainer]}>
         <Button
-          onClick={handleGoToRegionStep}
+          onClick={handleContinue}
           onClickDisabled={handleVerifyErrors}
           text={registerLocale.continueButton}
           widthFull
-          disabled={basicInfosButtonIsDisabled || usernameExists || emailExists}
+          disabled={basicInfosButtonIsDisabled || usernameExists || emailExists || checkingUsername || checkingEmail}
+          loading={checkingUsername || checkingEmail}
         />
       </View>
     </View>

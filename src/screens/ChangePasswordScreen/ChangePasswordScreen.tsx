@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useRoute } from '@react-navigation/native';
 import Input from '@/components/Input/Input';
 import Button from '@/components/Button/Button';
 import useStore from '@/services/store';
@@ -26,14 +27,19 @@ export default function ChangePasswordScreen({ navigation }: any) {
   const { showToast } = useToast();
   const { locale } = useContext(LocaleContext);
   const { editField: editFieldLocale, editProfile: editProfileLocale } = locale;
+  const route = useRoute<any>();
 
   const {
     requestSummary,
     requestChangeUserData,
+    summary: summaryStore,
   } = useStore((state: any) => state);
 
-  const [step, setStep] = useState(1);
-  const [email, setEmail] = useState('');
+  const userEmail = summaryStore.data?.email || '';
+  const isChangePassword = route.params?.isChangePassword || false;
+
+  const [step, setStep] = useState(isChangePassword ? 2 : 1);
+  const [email, setEmail] = useState(isChangePassword ? userEmail : '');
   const [codeValue, setCodeValue] = useState('');
   const [hasValidClipboard, setHasValidClipboard] = useState(false);
   const [newPassword, setNewPassword] = useState('');
@@ -46,9 +52,30 @@ export default function ChangePasswordScreen({ navigation }: any) {
 
   const isEmailValid = email.length > 0 && verifyEmail(email) === null;
 
+  // Enviar código automaticamente quando for alteração de senha
+  useEffect(() => {
+    if (isChangePassword && userEmail && step === 2) {
+      const sendCode = async () => {
+        setLoading(true);
+        try {
+          await sendPasswordResetCode(userEmail);
+          setTimeout(() => {
+            codeInputRef.current?.focus();
+          }, 100);
+        } catch (error: any) {
+          const message = error.response?.data?.message || 'Erro ao enviar código';
+          showToast('warning', message);
+          setStep(1);
+        } finally {
+          setLoading(false);
+        }
+      };
+      sendCode();
+    }
+  }, [isChangePassword, userEmail]);
+
   useEffect(() => {
     if (step === 2 && codeValue.length === 6) {
-      // Código completo, validar antes de avançar
       validateCode();
     }
   }, [codeValue, step]);
@@ -57,7 +84,6 @@ export default function ChangePasswordScreen({ navigation }: any) {
     setLoading(true);
     try {
       await validateResetCode(email, codeValue);
-      // Código válido, avançar para step 3
       setLoading(false);
       setTimeout(() => {
         setStep(3);
@@ -65,13 +91,12 @@ export default function ChangePasswordScreen({ navigation }: any) {
     } catch (error: any) {
       const message = error.response?.data?.message || 'Código inválido';
       showToast('warning', message);
-      setCodeValue(''); // Limpar código para tentar novamente
+      setCodeValue('');
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    // Verificar área de transferência quando entrar no step 2
     if (step === 2) {
       checkClipboard();
     }
@@ -92,11 +117,15 @@ export default function ChangePasswordScreen({ navigation }: any) {
   };
 
   const handleContinueStep1 = async () => {
+    if (isChangePassword && email.toLowerCase() !== userEmail.toLowerCase()) {
+      showToast('warning', 'Este e-mail não pertence à sua conta');
+      return;
+    }
+
     setLoading(true);
     try {
       await sendPasswordResetCode(email);
       setStep(2);
-      // Focar no input de código após um pequeno delay
       setTimeout(() => {
         codeInputRef.current?.focus();
       }, 100);
