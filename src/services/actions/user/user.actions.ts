@@ -1,4 +1,4 @@
-import { commonActions } from "../common/common.actions";
+﻿import { commonActions } from "../common/common.actions";
 import { changeUserDataProps, requestFollowsProps, requestFollowUserProps, requestNotificationAsSeenProps, requestNotificationsProps, requestNotificationsUnreadCountProps, requestUnfollowUserProps, setFollowsLoadingProps, setFollowsProps, setFollowUserLoadingProps, setFollowUserProps, setNotificationAsSeenLoadingProps, setNotificationAsSeenProps, setNotificationsLoadingProps, setNotificationsProps, setNotificationsUnreadCountLoadingProps, setNotificationsUnreadCountProps, setUnfollowUserLoadingProps, setUnfollowUserProps } from "./user.actions.types";
 import { getNotifications, getNotificationsUnreadCount, postFollows, postFollowUser, postNotificationsAsSeen, postUnfollowUser, putChangeUserData } from "./user.requests";
 
@@ -39,7 +39,6 @@ const requestFollows = async ({ set, userId, type }: requestFollowsProps) => {
     }
 
     setFollows({ set, status: 'error' });
-    console.log('requestFollows', 'Something went wrong');
   }
 };
 
@@ -110,7 +109,6 @@ const requestFollowUser = async ({ set, userId, requestFrom }: requestFollowUser
     }
 
     setFollowUser({ set, status: 'error' });
-    console.log('requestFollowUser', 'Something went wrong');
   }
 }
 
@@ -179,7 +177,6 @@ const requestUnfollowUser = async ({ set, userId, requestFrom }: requestUnfollow
     }
 
     setUnfollowUser({ set, status: 'error' });
-    console.log('requestFollowUser', 'Something went wrong');
   }
 }
 
@@ -222,7 +219,6 @@ const requestNotifications = async ({ set }: requestNotificationsProps) => {
     }
 
     setNotifications({ set, status: 'error' });
-    console.log('requestNotifications', 'Something went wrong');
   }
 };
 
@@ -265,7 +261,6 @@ const requestNotificationsUnreadCount = async ({ set }: requestNotificationsUnre
     }
 
     setNotificationsUnreadCount({ set, status: 'error' });
-    console.log('requestNotificationsUnreadCount', 'Something went wrong');
   }
 };
 
@@ -320,7 +315,6 @@ const requestNotificationAsSeen = async ({ set, notificationId }: requestNotific
     }
 
     setNotificationAsSeen({ set, status: 'error' });
-    console.log('requestNotificationAsSeen', 'Something went wrong');
   }
 };
 
@@ -361,7 +355,6 @@ const requestChangeUserData = async ({ set, dataToChange, oldValue, newValue }: 
       commonActions.setInvalidToken({ set, invalidToken: true });
     }
 
-    console.log('requestChangeUserData', 'Something went wrong');
   }
 }
 

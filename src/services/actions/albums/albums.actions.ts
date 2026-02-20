@@ -1,4 +1,4 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+﻿import AsyncStorage from "@react-native-async-storage/async-storage";
 import { commonActions } from "../common/common.actions";
 import { requestAlbumDetailsProps, requestAlbumTemplatesProps, requestExternalUserAlbumsProps, requestExternalUserProfileProps, requestPurchaseAlbumProps, requestUpdateStickersQuantityProps, requestUserAlbumsProps, requestUsersByRegionProps, setAlbumDetailsLoadingProps, setAlbumDetailsProps, setAlbumTemplatesLoadingProps, setAlbumTemplatesProps, setExternalUserAlbumsLoadingProps, setExternalUserAlbumsProps, setExternalUserProfileLoadingProps, setExternalUserProfileProps, setPurchaseAlbumLoadingProps, setPurchaseAlbumProps, setUpdateStickersQuantityLoadingProps, setUpdateStickersQuantityProps, setUserAlbumsLoadingProps, setUserAlbumsProps, setUsersByRegionLoadingProps, setUsersByRegionProps } from "./albums.actions.types";
 import { getAlbumDetails, getAlbumTemplates, getExternalUserAlbums, getExternalUserProfile, getUserAlbums, getUsersByRegion, postPurchaseAlbum, postStickersQuantity } from "./albums.requests";
@@ -26,7 +26,6 @@ const setAlbumsTemplates = ({ set, list = null, status = null }: setAlbumTemplat
 };
 
 const requestAlbumsTemplates = async ({ set }: requestAlbumTemplatesProps) => {
-  console.log('requestAlbumsTemplates', 'requestAlbumsTemplates');
   try {
     setAlbumsTemplatesLoading({ set, loading: true });
 
@@ -41,7 +40,6 @@ const requestAlbumsTemplates = async ({ set }: requestAlbumTemplatesProps) => {
     }
 
     setAlbumsTemplates({ set, status: 'error' });
-    console.log('requestAlbumsTemplates', 'Something went wrong');
   }
 };
 
@@ -84,7 +82,6 @@ const requestPurchaseAlbum = async ({ set, albumTemplateId }: requestPurchaseAlb
     }
 
     setAlbumsTemplates({ set, status: 'error' });
-    console.log('requestPurchaseAlbum', 'Something went wrong');
   }
 };
 
@@ -127,7 +124,6 @@ const requestUserAlbums = async ({ set }: requestUserAlbumsProps) => {
     }
 
     setUserAlbums({ set, status: 'error' });
-    console.log('requestUserAlbums', 'Something went wrong');
   }
 };
 
@@ -170,7 +166,6 @@ const requestExternalUserAlbums = async ({ set, userId }: requestExternalUserAlb
     }
 
     setExternalUserAlbums({ set, status: 'error' });
-    console.log('requestExternalUserAlbums', 'Something went wrong');
   }
 };
 
@@ -213,7 +208,6 @@ const requestAlbumDetails = async ({ set, userAlbumId, page = 1, maxStickers = 5
     }
 
     setAlbumsTemplates({ set, status: 'error' });
-    console.log('requestAlbumDetails', 'Something went wrong');
   }
 };
 
@@ -268,7 +262,6 @@ const requestUsersByRegion = async ({ set }: requestUsersByRegionProps) => {
     }
 
     setAlbumsTemplates({ set, status: 'error' });
-    console.log('requestUsersByRegion', 'Something went wrong');
   }
 };
 
@@ -311,7 +304,6 @@ const requestExternalUserProfile = async ({ set, userId }: requestExternalUserPr
     }
 
     setAlbumsTemplates({ set, status: 'error' });
-    console.log('requestExternalUserProfile', 'Something went wrong');
   }
 };
 
@@ -339,13 +331,10 @@ const setUpdateStickersQuantity = ({ set, status }: setUpdateStickersQuantityPro
 };
 
 const requestUpdateStickersQuantity = async ({ set, stickersToUpdate }: requestUpdateStickersQuantityProps) => {
-  console.log('requestUpdateStickersQuantity called with:', stickersToUpdate);
   try {
     setUpdateStickersQuantityLoading({ set, loading: true });
 
-    console.log('Calling postStickersQuantity...');
     await postStickersQuantity({ stickersToUpdate });
-    console.log('postStickersQuantity completed successfully');
 
     await AsyncStorage.removeItem('stickers_to_update_cache');
 
@@ -361,7 +350,6 @@ const requestUpdateStickersQuantity = async ({ set, stickersToUpdate }: requestU
     }
 
     setAlbumsTemplates({ set, status: 'error' });
-    console.log('requestUpdateStickersQuantity', 'Something went wrong');
   }
 };
 

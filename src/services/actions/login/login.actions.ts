@@ -1,5 +1,5 @@
-import { postLogin } from "./login.requests";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+﻿import { postLogin } from "./login.requests";
+import * as SecureStore from 'expo-secure-store';
 
 const setLoading = ({ set, loading }: setLoadingProps) => {
   set((state: any) => ({
@@ -46,19 +46,17 @@ const requestLogin = async ({ set, username, password }: requestLoginProps) => {
       isAuthenticated: true,
     }
 
-    await AsyncStorage.setItem('login_store', JSON.stringify(loginStoreCache));
+    await SecureStore.setItemAsync('login_store', JSON.stringify(loginStoreCache));
 
-    console.log('Login successful', `Message: ${data.message}`);
 
     setLoading({ set, loading: false });
     return { success: true };
   } catch (error: any) {
     setStatus({ set, status: 'error' });
-    console.log('requestLogin', 'Something went wrong');
 
     setLoading({ set, loading: false });
 
-    // Verificar se é erro de credenciais (401/403/404) ou erro de servidor (500+)
+    // Verificar se Ã© erro de credenciais (401/403/404) ou erro de servidor (500+)
     const statusCode = error?.response?.status;
     if (statusCode === 401 || statusCode === 403 || statusCode === 404) {
       return { success: false, errorType: 'credentials' };
@@ -69,9 +67,8 @@ const requestLogin = async ({ set, username, password }: requestLoginProps) => {
 };
 
 const logout = async (set: any) => {
-  console.log('Logout successful', 'Message: Logout successful');
   setLogin({ set, token: null, isAuthenticated: false });
-  await AsyncStorage.removeItem('login_store');
+  await SecureStore.deleteItemAsync('login_store');
 };
 
 export const loginActions = {

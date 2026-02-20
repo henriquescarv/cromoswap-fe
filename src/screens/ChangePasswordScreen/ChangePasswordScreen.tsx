@@ -1,4 +1,4 @@
-import React, { useContext, useState, useRef, useEffect } from 'react';
+﻿import React, { useContext, useState, useRef, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -131,7 +131,6 @@ export default function ChangePasswordScreen({ navigation }: any) {
       }, 100);
     } catch (error: any) {
       const message = error.response?.data?.message || 'Erro ao enviar código';
-      console.log('cheguei aqui', error.response);
       showToast('warning', message);
     } finally {
       setLoading(false);
@@ -139,7 +138,6 @@ export default function ChangePasswordScreen({ navigation }: any) {
   };
 
   const handleCodeChange = (value: string) => {
-    // Aceita apenas números e limita a 6 caracteres
     const numbers = value.replace(/\D/g, '').slice(0, 6);
     setCodeValue(numbers);
   };

@@ -1,4 +1,4 @@
-import { commonActions } from "../common/common.actions";
+﻿import { commonActions } from "../common/common.actions";
 import { requestSummaryProps, setSummaryLoadingProps, setSummaryProps } from "./summary.actions.types";
 import { getSummary } from "./summary.request";
 
@@ -39,7 +39,6 @@ const requestSummary = async ({ set }: requestSummaryProps) => {
     }
 
     setSummary({ set, status: 'error' });
-    console.log('requestSummary', 'Something went wrong');
   }
 };
 

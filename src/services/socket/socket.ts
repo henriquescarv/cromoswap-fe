@@ -8,7 +8,7 @@ export const connectSocket = (userId: number | string) => {
   if (!socket) {
     const state = useStore.getState();
     const token = state.login.token;
-    
+
     socket = io(urlApi, {
       auth: { token },
       query: { userId },

@@ -1,4 +1,4 @@
-import { useApi } from "@/services/api/api";
+﻿import { useApi } from "@/services/api/api";
 import useStore from "@/services/store";
 
 
@@ -104,14 +104,11 @@ export const getExternalUserProfile = async ({ userId }) => {
 };
 
 export const postStickersQuantity = async ({ stickersToUpdate }) => {
-  console.log('postStickersQuantity called with:', stickersToUpdate);
   const state = useStore.getState();
   const api = useApi({ token: state.login.token });
 
   try {
-    console.log('Making API request to /user-sticker/batch-update');
     const response = await api.post('/user-sticker/batch-update', { stickersToUpdate });
-    console.log('API response:', response.data);
 
     return response.data;
   } catch (error) {

@@ -1,4 +1,4 @@
-import { postRegion, postRegister, getIbgeStates, getIbgeCities } from "./register.requests";
+﻿import { postRegion, postRegister, getIbgeStates, getIbgeCities } from "./register.requests";
 
 const setLoading = ({ set, loading }: setLoadingProps) => {
   set((state: any) => ({
@@ -40,7 +40,6 @@ const requestRegister = async ({set, username, email, password, countryState, ci
     setLoading({ set, loading: false });
   } catch (error) {
     setRegister({ set, status: 'error' });
-    console.log('requestRegister', 'Something went wrong', error);
 
     setLoading({ set, loading: false });
   }
@@ -89,7 +88,6 @@ const requestIbgeStates = async ({set}: requestIbgeStatesProps) => {
     }));
   } catch (error) {
     setIbgeStatesLoading({ set, loading: false });
-    console.log('requestIbgeStates', 'Something went wrong', error);
   }
 }
 
@@ -135,7 +133,6 @@ const requestIbgeCities = async ({set, countryStateId}: requestIbgeCitiesProps) 
     }));
   } catch (error) {
     setIbgeCitiesLoading({ set, loading: false });
-    console.log('requestIbgeCities', 'Something went wrong', error);
   }
 }
 

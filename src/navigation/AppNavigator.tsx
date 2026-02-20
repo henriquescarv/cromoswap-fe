@@ -17,7 +17,7 @@ import UserProfile from '@/screens/UserProfile/UserProfile';
 import { NotificationsScreen } from '@/screens/NotificationsScreen';
 import { MessagesScreen } from '@/screens/MessagesScreen';
 import { ChatScreen } from '@/screens/ChatScreen';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { FollowListScreen } from '@/screens/FollowListScreen';
 import EditProfileScreen from '@/screens/EditProfileScreen';
 import EditFieldScreen from '@/screens/EditFieldScreen';
@@ -60,7 +60,7 @@ function BottomTabNavigator() {
 
 const getLoginStoreCache = async () => {
   try {
-    const loginStoreCacheString = await AsyncStorage.getItem('login_store');
+    const loginStoreCacheString = await SecureStore.getItemAsync('login_store');
     return loginStoreCacheString ? JSON.parse(loginStoreCacheString) : null;
   } catch (error) {
     console.error('Error retrieving login store cache:', error);

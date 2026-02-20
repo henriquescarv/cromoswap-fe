@@ -1,4 +1,4 @@
-import { commonActions } from "../common/common.actions";
+﻿import { commonActions } from "../common/common.actions";
 import { requestLastMessagesProps, requestMessagesMarkAllSeenProps, requestMessagesWithUserProps, requestUnreadMessagesCountProps, resetUnreadMessagesCountProps, setLastMessagesLoadingProps, setLastMessagesProps, setMessagesMarkAllSeenLoadingProps, setMessagesMarkAllSeenProps, setMessagesWithUserLoadingProps, setMessagesWithUserProps, setUnreadMessagesCountLoadingProps, setUnreadMessagesCountProps } from "./messages.actions.types";
 import { getLastMessages, getMessagesWithUser, getUnreadMessagesCount, postMessagesMarkAllSeen } from "./messages.requests";
 
@@ -46,7 +46,6 @@ const requestMessagesWithUser = async ({ set, userId }: requestMessagesWithUserP
     }
 
     setMessagesWithUser({ set, status: 'error', userId });
-    console.log('requestMessagesWithUser', 'Something went wrong');
   }
 };
 
@@ -95,7 +94,6 @@ const requestLastMessages = async ({ set }: requestLastMessagesProps) => {
     }
 
     setLastMessages({ set, status: 'error' });
-    console.log('requestMessagesWithUser', 'Something went wrong');
   }
 };
 
@@ -160,7 +158,6 @@ const requestUnreadMessagesCount = async ({ set }: requestUnreadMessagesCountPro
     }
 
     setUnreadMessagesCount({ set, status: 'error' });
-    console.log('requestMessagesWithUser', 'Something went wrong');
   }
 };
 
@@ -226,7 +223,6 @@ const requestMessagesMarkAllSeen = async ({ set, userId }: requestMessagesMarkAl
     }
 
     setMessagesMarkAllSeen({ set, status: 'error', userId });
-    console.log('requestMessagesWithUser', 'Something went wrong');
   }
 };
 
