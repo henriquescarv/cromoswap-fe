@@ -10,6 +10,7 @@ import { useState } from 'react';
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
+  const [initialRoute, setInitialRoute] = useState<'Main' | 'Login'>('Login');
 
   let [fontsLoaded] = useFonts({
     'primaryRegular': require('./assets/fonts/GalanoGrotesqueRegular.otf'),
@@ -19,7 +20,10 @@ export default function App() {
   });
 
   if (!fontsLoaded || showSplash) {
-    return <SplashScreen onFinish={() => setShowSplash(false)} />;
+    return <SplashScreen onFinish={(route) => {
+      setInitialRoute(route);
+      setShowSplash(false);
+    }} />;
   }
 
   return (
@@ -27,7 +31,7 @@ export default function App() {
       <LocaleProvider>
         <ToastProvider>
           <View style={styles.container}>
-            <AppNavigator onFinishSplash={() => setShowSplash(false)} />
+            <AppNavigator initialRoute={initialRoute} />
           </View>
         </ToastProvider>
       </LocaleProvider>

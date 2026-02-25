@@ -3,6 +3,7 @@ export type setRegisterProps = {
   status: 'success' | 'error' | null;
   countryState?: string | null;
   token?: string | null;
+  refreshToken?: string | null;
   city?: string | null;
 }
 

@@ -15,6 +15,7 @@ const initialState = {
   login: {
     isAuthenticated: false,
     token: null,
+    refreshToken: null,
     loading: false,
     status: null,
   },
@@ -139,8 +140,8 @@ const initialState = {
 };
 
 const useStore = create<StoreState>((set) => {
-  const requestLogin = ({ username, password }: requestLoginProps) => loginActions.login.request({ set, username, password });
-  const setLogin = ({ token, isAuthenticated }: setLoginProps) => loginActions.login.set({ set, token, isAuthenticated });
+  const requestLogin = ({ username, password }: { username: string; password: string }) => loginActions.login.request({ set, username, password });
+  const setLogin = ({ token, refreshToken, isAuthenticated }: { token: string | null; refreshToken?: string | null; isAuthenticated: boolean }) => loginActions.login.set({ set, token, refreshToken, isAuthenticated });
   const logout = () => loginActions.login.logout(set);
 
   const requestRegister = ({

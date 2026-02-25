@@ -46,7 +46,7 @@ export default function HomeScreen({ navigation }: any) {
 
     requestNotificationsUnreadCount();
     requestUserAlbums();
-  }, []);
+  }, [summaryStore.data?.id, requestUsersByRegion, requestNotificationsUnreadCount, requestUserAlbums]);
 
   useEffect(() => {
     getDefaultData();

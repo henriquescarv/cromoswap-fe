@@ -33,6 +33,7 @@
     "react-native-screens": "~4.16.0",
     "react-native-scripts": "^2.0.1",
     "react-native-vector-icons": "^10.2.0",
+    "react-native-worklets-core": "^1.6.3",
     "react-navigation": "^5.0.0",
     "socket.io-client": "^4.8.1",
     "zustand": "^5.0.3"

@@ -11,13 +11,14 @@ const setLoading = ({ set, loading }: setLoadingProps) => {
   }));
 }
 
-const setLogin = ({ set, token, isAuthenticated, invalidToken }: setLoginProps) => {
+const setLogin = ({ set, token, refreshToken, isAuthenticated, invalidToken }: setLoginProps) => {
   set((state: any) => ({
     ...state,
     invalidToken: invalidToken || state.invalidToken,
     login: {
       ...state.login,
       token,
+      refreshToken: refreshToken || state.login.refreshToken,
       isAuthenticated,
     },
   }));
@@ -38,11 +39,12 @@ const requestLogin = async ({ set, username, password }: requestLoginProps) => {
     setLoading({ set, loading: true });
 
     const data = await postLogin({ username, password });
-    setLogin({ set, token: data.token, isAuthenticated: true, invalidToken: false });
+    setLogin({ set, token: data.token, refreshToken: data.refreshToken, isAuthenticated: true, invalidToken: false });
     setStatus({ set, status: 'success' });
 
     const loginStoreCache = {
       token: data.token,
+      refreshToken: data.refreshToken,
       isAuthenticated: true,
     }
 
@@ -68,6 +70,8 @@ const requestLogin = async ({ set, username, password }: requestLoginProps) => {
 
 const logout = async (set: any) => {
   setLogin({ set, token: null, isAuthenticated: false });
+  // Reseta o invalidToken para evitar loops
+  set((state: any) => ({ ...state, invalidToken: false }));
   await SecureStore.deleteItemAsync('login_store');
 };
 

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { urlApi, ibgeApiUrl } from '@/fakeenv';
+import { ibgeApiUrl } from '@/fakeenv';
 
 export const useApi = ({ token = null }: { token: string | null }) => {
   const headers: Record<string, string> = {
@@ -11,21 +11,20 @@ export const useApi = ({ token = null }: { token: string | null }) => {
   }
 
   return axios.create({
-    baseURL: urlApi,
+    baseURL: process.env.EXPO_PUBLIC_API_URL,
     headers,
   });
 };
 
 export const ibge = axios.create({
-  baseURL: ibgeApiUrl,
+  baseURL: process.env.EXPO_PUBLIC_IBGE_API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// APIs de recuperação de senha (sem autenticação)
 export const forgotPasswordApi = axios.create({
-  baseURL: urlApi,
+  baseURL: process.env.EXPO_PUBLIC_API_URL,
   headers: {
     'Content-Type': 'application/json',
   },

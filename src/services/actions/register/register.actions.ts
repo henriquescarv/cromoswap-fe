@@ -1,4 +1,7 @@
-﻿import { postRegion, postRegister, getIbgeStates, getIbgeCities } from "./register.requests";
+﻿import { setLoadingProps } from "../login/login.actions.types";
+import { requestIbgeCitiesProps, requestIbgeStatesProps, requestRegisterProps, setRegisterProps } from "./register.actions.types";
+import { postRegion, postRegister, getIbgeStates, getIbgeCities } from "./register.requests";
+import * as SecureStore from 'expo-secure-store';
 
 const setLoading = ({ set, loading }: setLoadingProps) => {
   set((state: any) => ({
@@ -10,7 +13,7 @@ const setLoading = ({ set, loading }: setLoadingProps) => {
   }));
 }
 
-const setRegister = ({set, status, token = null, countryState = null, city = null}: setRegisterProps) => {
+const setRegister = ({ set, status, token = null, refreshToken = null, countryState = null, city = null }: setRegisterProps) => {
   set((state: any) => ({
     ...state,
     login: {
@@ -18,6 +21,7 @@ const setRegister = ({set, status, token = null, countryState = null, city = nul
       isAuthenticated: !!token,
       status: status === 'success' ? status : state.login.status,
       token,
+      refreshToken,
     },
     register: {
       ...state.register,
@@ -28,14 +32,22 @@ const setRegister = ({set, status, token = null, countryState = null, city = nul
   }));
 };
 
-const requestRegister = async ({set, username, email, password, countryState, city}: requestRegisterProps) => {
+const requestRegister = async ({ set, username, email, password, countryState, city }: requestRegisterProps) => {
   try {
     setLoading({ set, loading: true });
 
     const registerData = await postRegister({ username, email, password });
-    setRegister({ set, status: 'success', token: registerData.token, countryState, city });
+    setRegister({ set, status: 'success', token: registerData.token, refreshToken: registerData.refreshToken, countryState, city });
 
     await postRegion({ username, countryState, city });
+
+    // Salva tokens no SecureStore
+    const loginStoreCache = {
+      token: registerData.token,
+      refreshToken: registerData.refreshToken,
+      isAuthenticated: true,
+    };
+    await SecureStore.setItemAsync('login_store', JSON.stringify(loginStoreCache));
 
     setLoading({ set, loading: false });
   } catch (error) {
@@ -61,7 +73,7 @@ const setIbgeStatesLoading = ({ set, loading }: setLoadingProps) => {
   }));
 }
 
-const requestIbgeStates = async ({set}: requestIbgeStatesProps) => {
+const requestIbgeStates = async ({ set }: requestIbgeStatesProps) => {
   try {
     setIbgeStatesLoading({ set, loading: true });
 
@@ -107,7 +119,7 @@ const setIbgeCitiesLoading = ({ set, loading }: setLoadingProps) => {
   }));
 }
 
-const requestIbgeCities = async ({set, countryStateId}: requestIbgeCitiesProps) => {
+const requestIbgeCities = async ({ set, countryStateId }: requestIbgeCitiesProps) => {
   try {
     setIbgeCitiesLoading({ set, loading: true });
 

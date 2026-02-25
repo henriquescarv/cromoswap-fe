@@ -1,6 +1,7 @@
 export type setLoginProps = {
   set: any;
   token: string | null;
+  refreshToken?: string | null;
   isAuthenticated: boolean;
   status?: 'success' | 'error' | null;
   invalidToken?: boolean;

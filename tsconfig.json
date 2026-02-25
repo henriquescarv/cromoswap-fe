@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "jsx": "react-native",
     "moduleResolution": "bundler",
     "noImplicitAny": false,
     "skipLibCheck": true,

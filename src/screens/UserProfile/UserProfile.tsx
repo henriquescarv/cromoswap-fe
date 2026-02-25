@@ -80,7 +80,11 @@ export default function UserProfile({ navigation }: any) {
 
   const handleLogout = useCallback(() => {
     logout();
-  }, [])
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Login' }],
+    });
+  }, [logout, navigation]);
 
   const handleEditProfile = () => {
     navigation.navigate('EditProfileScreen');
