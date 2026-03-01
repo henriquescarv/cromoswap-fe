@@ -44,7 +44,6 @@ const BasicInfosStep = ({
       }
     } catch (error) {
       console.error('Error checking username:', error);
-      showToast('warning', 'Erro ao verificar nome de usuário. Tente novamente.');
     } finally {
       setCheckingUsername(false);
     }
@@ -62,7 +61,6 @@ const BasicInfosStep = ({
       }
     } catch (error) {
       console.error('Error checking email:', error);
-      showToast('warning', 'Erro ao verificar e-mail. Tente novamente.');
     } finally {
       setCheckingEmail(false);
     }
@@ -97,7 +95,6 @@ const BasicInfosStep = ({
         }
       } catch (error) {
         console.error('Error checking username:', error);
-        showToast('warning', 'Erro ao verificar nome de usuário. Tente novamente.');
         setCheckingUsername(false);
         return;
       }
@@ -116,7 +113,6 @@ const BasicInfosStep = ({
         }
       } catch (error) {
         console.error('Error checking email:', error);
-        showToast('warning', 'Erro ao verificar e-mail. Tente novamente.');
         setCheckingEmail(false);
         return;
       }
