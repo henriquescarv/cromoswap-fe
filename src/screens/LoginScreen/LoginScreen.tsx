@@ -28,7 +28,10 @@ export default function LoginScreen({ navigation }: any) {
   const redirectToHome = useCallback(() => {
     if (!!loginStore.isAuthenticated && loginStore.status === 'success') {
       requestSummary();
-      navigation.navigate('Main');
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Main' }],
+      });
     }
   }, [loginStore.isAuthenticated, loginStore.status, navigation]);
 

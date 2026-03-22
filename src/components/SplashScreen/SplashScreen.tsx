@@ -44,26 +44,27 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
         const isAuthenticated = loginCacheData?.isAuthenticated;
 
         if (isAuthenticated && !invalidToken) {
-          try {
-            await requestSummary();
+          await requestSummary();
+
+          const storeAfterSummary = useStore.getState() as any;
+
+          if (!storeAfterSummary.invalidToken) {
             await new Promise(resolve => setTimeout(resolve, 1500));
             onFinish('Main');
-          } catch (error: any) {
-            if (error?.response?.status === 401 && loginCacheData.refreshToken) {
-              const refreshResult = await refreshAccessToken();
+          } else if (loginCacheData.refreshToken) {
+            const refreshResult = await refreshAccessToken();
 
-              if (refreshResult.success) {
-                await requestSummary();
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                onFinish('Main');
-              } else {
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                onFinish('Login');
-              }
+            if (refreshResult.success) {
+              await requestSummary();
+              await new Promise(resolve => setTimeout(resolve, 1500));
+              onFinish('Main');
             } else {
               await new Promise(resolve => setTimeout(resolve, 2000));
               onFinish('Login');
             }
+          } else {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            onFinish('Login');
           }
         } else {
           await new Promise(resolve => setTimeout(resolve, 2000));
