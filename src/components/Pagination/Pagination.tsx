@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
+import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
 
 interface PaginationProps {
   currentPage: number;
@@ -20,6 +21,7 @@ export const Pagination: React.FC<PaginationProps> = ({
   categoriesInPage = []
 }) => {
   const { theme } = useTheme();
+  const { locale } = useContext(LocaleContext);
 
   const renderPageButton = (page: number, isActive: boolean = false) => (
     <TouchableOpacity
@@ -48,7 +50,7 @@ export const Pagination: React.FC<PaginationProps> = ({
   const renderPageButtons = () => {
     const buttons: React.ReactNode[] = [];
     const maxButtons = 5;
-    
+
     if (totalPages <= maxButtons) {
       // Se tem poucas páginas, mostra todas
       for (let i = 1; i <= totalPages; i++) {
@@ -101,31 +103,28 @@ export const Pagination: React.FC<PaginationProps> = ({
         buttons.push(renderPageButton(totalPages));
       }
     }
-    
+
     return buttons;
   };
 
   if (totalPages <= 1) {
-    return null; // Não mostra paginação se só tem 1 página
+    return null;
   }
 
   return (
     <View style={styles.container}>
-      {/* Informações da página atual */}
       <View style={styles.pageInfoContainer}>
         <Text style={[styles.pageInfoText, { color: theme.primary100 }]}>
-          Página {currentPage} de {totalPages}
+          {locale.pagination.pageInfo(currentPage, totalPages)}
         </Text>
         {categoriesInPage.length > 0 && (
           <Text style={[styles.categoriesText, { color: theme.grey20 }]}>
-            Categorias: {categoriesInPage.map(cat => `${cat.name} (${cat.count})`).join(', ')}
+            {locale.pagination.categoriesLabel} {categoriesInPage.map(cat => `${cat.name} (${cat.count})`).join(', ')}
           </Text>
         )}
       </View>
 
-      {/* Controles de navegação */}
       <View style={styles.navigationContainer}>
-        {/* Botão Anterior */}
         <TouchableOpacity
           style={[
             styles.navButton,
@@ -142,12 +141,10 @@ export const Pagination: React.FC<PaginationProps> = ({
           </Text>
         </TouchableOpacity>
 
-        {/* Botões de páginas */}
         <View style={styles.pageButtonsContainer}>
           {renderPageButtons()}
         </View>
 
-        {/* Botão Próximo */}
         <TouchableOpacity
           style={[
             styles.navButton,

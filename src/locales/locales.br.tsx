@@ -115,7 +115,7 @@ const Locales = {
     youNeed: 'VOCÊ PRECISA',
   },
   album: {
-    searchPlaceholder: 'Ex: "Portugal, Cristiano, 200"',
+    searchPlaceholder: 'Buscar cromo',
     categoryPlaceholder: 'Categoria',
     categoryConfirm: 'Confirmar',
     filterChips: {
@@ -204,6 +204,10 @@ const Locales = {
     title: 'Alterar localização',
     description: 'para encontrar colecionadores próximos a você e facilitar suas trocas :)',
     saveButton: 'Salvar',
+  },
+  pagination: {
+    pageInfo: (current, total) => `Página ${current} de ${total}`,
+    categoriesLabel: 'Categorias:',
   },
   editField: {
     passwordLabel: 'Senha',

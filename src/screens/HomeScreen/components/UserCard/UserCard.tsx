@@ -11,22 +11,11 @@ export default function UserCard({
   albums,
   username,
   trocableStickers,
-  avatar,
   onClick,
 }: UserCardTypes) {
   const { theme } = useTheme();
   const { locale } = useContext(LocaleContext);
   const { home: homeLocale } = locale;
-
-  const mountUserAvatar = () => {
-    if (avatar) {
-      return avatar;
-    }
-    
-    return <Ionicons name="person" size={24} color={theme.primary100} />;
-  }
-
-  const userAvatar = mountUserAvatar();
 
   const handleClick = () => {
     onClick && onClick();
@@ -39,10 +28,6 @@ export default function UserCard({
           <View style={[styles.leftContainer]}>
             <Tag number={trocableStickers} text={locale.home.nearYou.trocables} />
             <Text numberOfLines={1} style={[styles.username, { color: theme.primary100 }]}>{username}</Text>
-          </View>
-
-          <View style={[styles.avatar]}>
-            {userAvatar}
           </View>
         </View>
 
@@ -84,6 +69,7 @@ const styles = StyleSheet.create({
   leftContainer: {
     display: 'flex',
     flexDirection: 'column',
+    gap: 8,
     justifyContent: 'space-between',
   },
   avatar: {

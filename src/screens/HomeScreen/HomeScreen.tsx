@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   blockTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontFamily: 'primaryBold',
   },
   nearYouContainer: {

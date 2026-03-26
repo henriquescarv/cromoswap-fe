@@ -3,6 +3,9 @@ import { LanguageEnum, LanguageStatus, LocaleContextProps, LocaleProviderProps }
 import * as Localization from 'expo-localization';
 import BRLocales from '@/locales/locales.br';
 import ENLocales from '@/locales/locales.en';
+import ESLocales from '@/locales/locales.es';
+import ITALocales from '@/locales/locales.ita';
+import ALELocales from '@/locales/locales.ale';
 
 const LocaleContextDefault = {
   language: 'en' as LanguageStatus,
@@ -13,21 +16,34 @@ const LocaleContextDefault = {
 const content = {
   br: BRLocales,
   en: ENLocales,
+  es: ESLocales,
+  ita: ITALocales,
+  ale: ALELocales,
 };
 
 export const LocaleContext = createContext<LocaleContextProps>(LocaleContextDefault);
 
 export const LocaleProvider = ({ children }: LocaleProviderProps) => {
+
   const [language, setLanguage] = useState<keyof typeof content>('br');
 
   useEffect(() => {
-    const deviceLanguage = Localization.getLocales()[0].languageTag;
+    const locales = Localization.getLocales();
+    const deviceLanguage = locales && locales.length > 0 ? locales[0].languageCode?.toLowerCase() : 'en';
 
-    const appLanguage = Object.keys(LanguageEnum).includes(deviceLanguage)
-      ? LanguageEnum[deviceLanguage as keyof typeof LanguageEnum]
-      : 'br';
+    let appLanguage: keyof typeof content = 'en';
 
-    setLanguage(appLanguage as keyof typeof content);
+    if (deviceLanguage === 'es') {
+      appLanguage = 'es';
+    } else if (deviceLanguage === 'pt') {
+      appLanguage = 'br';
+    } else if (deviceLanguage === 'de') {
+      appLanguage = 'ale';
+    } else if (deviceLanguage === 'it') {
+      appLanguage = 'ita';
+    }
+
+    setLanguage(appLanguage);
   }, []);
 
   const contextValue = {

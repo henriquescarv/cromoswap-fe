@@ -168,6 +168,7 @@ export default function UserProfile({ navigation }: any) {
             onClick={handleEditProfile}
             size="small"
             color="primary50"
+            fontSize={13}
           />
         </View>
         <View style={[styles.button]}>
@@ -177,6 +178,7 @@ export default function UserProfile({ navigation }: any) {
             onClick={handleLogout}
             size="small"
             color="primaryRed"
+            fontSize={13}
           />
         </View>
       </>
@@ -250,7 +252,7 @@ export default function UserProfile({ navigation }: any) {
                     <Button
                       text={userProfileLocale.seeMore}
                       variant="text"
-                      fontSize={16}
+                      fontSize={13}
                       onClick={goToExternalUserAlbumsScreen}
                     />
                   )}
