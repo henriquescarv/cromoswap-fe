@@ -4,4 +4,5 @@ export type AlbumProps = {
   totalStickers?: number;
   percentCompleted?: number;
   onClick?: () => void;
+  onDelete?: () => void;
 }

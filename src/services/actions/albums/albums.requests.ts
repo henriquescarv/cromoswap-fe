@@ -54,19 +54,23 @@ export const getExternalUserAlbums = async ({ userId }) => {
   }
 };
 
-export const getAlbumDetails = async ({ userAlbumId, page = 1, maxStickers = 100, ownership, terms }) => {
+export const getAlbumDetails = async ({ userAlbumId, page = 1, maxStickers = 100, ownership, terms, categories }: { userAlbumId: number | string; page?: number; maxStickers?: number; ownership?: string; terms?: string; categories?: string[] }) => {
   const state = useStore.getState();
   const api = useApi({ token: state.login.token });
 
   try {
     let url = `/album-details/${userAlbumId}?page=${page}&maxStickers=${maxStickers}`;
-    
+
     if (ownership) {
       url += `&ownership=${ownership}`;
     }
-    
+
     if (terms && terms.trim()) {
       url += `&terms=${encodeURIComponent(terms.trim())}`;
+    }
+
+    if (categories && categories.length > 0) {
+      url += `&categories=${encodeURIComponent(categories.join(','))}`;
     }
 
     const response = await api.get(url);
@@ -113,6 +117,19 @@ export const postStickersQuantity = async ({ stickersToUpdate }) => {
     return response.data;
   } catch (error) {
     console.error('Error in postStickersQuantity:', error);
+    throw error;
+  }
+};
+
+export const deleteUserAlbum = async ({ userAlbumId }: { userAlbumId: number | string }) => {
+  const state = useStore.getState();
+  const api = useApi({ token: state.login.token });
+
+  try {
+    const response = await api.delete(`/user-albums/${userAlbumId}`);
+
+    return response.data;
+  } catch (error) {
     throw error;
   }
 };

@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { AlbumProps } from './Album.types';
-import { Image, StyleSheet, Text, TouchableHighlight, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 import { Ionicons } from '@expo/vector-icons';
 import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
@@ -11,6 +11,7 @@ export default function Album({
   totalStickers,
   percentCompleted,
   onClick,
+  onDelete,
 }: AlbumProps) {
   const { theme } = useTheme();
   const { locale } = useContext(LocaleContext);
@@ -22,71 +23,86 @@ export default function Album({
   };
 
   return (
-    <TouchableHighlight
-      onPress={handleClick}
-      style={[styles.container, { backgroundColor: theme.grey5, borderColor: theme.grey10 }]}
-      underlayColor={theme.grey10}
-    >
-      <View style={styles.content}>
-        <Image
-          source={typeof image === 'string' ? { uri: image } : image}
-          style={styles.image}
-          resizeMode="cover"
-        />
+    <View style={styles.wrapper}>
+      <TouchableHighlight
+        onPress={handleClick}
+        style={[styles.container, { backgroundColor: theme.grey5, borderColor: theme.grey10 }]}
+        underlayColor={theme.grey10}
+      >
+        <View style={styles.content}>
+          <Image
+            source={typeof image === 'string' ? { uri: image } : image}
+            style={styles.image}
+            resizeMode="cover"
+          />
 
-        <View style={styles.albumInfosContainer}>
-          <View style={styles.albumDetails}>
-            <Text
-              style={[styles.name, { color: theme.primary100 }]}
-              numberOfLines={1}
-            >
-              {name}
-            </Text>
-
-            {percentCompleted !== undefined && (
-              <View
-                style={[styles.albumPercentageContainer, { borderColor: theme.primary50 }]}
-              >
-                <View style={[styles.albumPercentageBar, { backgroundColor: theme.primary50, width: `${percentCompleted}%` }]}>
-                  <Text
-                    style={[styles.percentageStickers, { color: theme.highLight }]}
-                    numberOfLines={1}
-                  >
-                    {percentCompleted >= 30 && `${percentCompleted}%`}
-                  </Text>
-                </View>
-
-                {percentCompleted < 30 && (
-                  <View style={[styles.albumPercentageBar, { flex: 1, width: `100%` }]}>
-                    <Text
-                      style={[styles.percentageStickers, { color: theme.primary50 }]}
-                      numberOfLines={1}
-                    >
-                      {`${percentCompleted}%`}
-                    </Text>
-                  </View>
-                )}
-              </View>
-            )}
-
-            {!!totalStickers && (
+          <View style={styles.albumInfosContainer}>
+            <View style={styles.albumDetails}>
               <Text
-                style={[styles.totalStickers, { color: theme.grey20 }]}
+                style={[styles.name, { color: theme.primary100 }]}
                 numberOfLines={1}
               >
-                {homeLocale.albums.totalStickers(totalStickers)}
+                {name}
               </Text>
-            )}
-          </View>
 
-          <Ionicons name="chevron-forward" size={24} color={theme.grey20} />
+              {percentCompleted !== undefined && (
+                <View
+                  style={[styles.albumPercentageContainer, { borderColor: theme.primary50 }]}
+                >
+                  <View style={[styles.albumPercentageBar, { backgroundColor: theme.primary50, width: `${percentCompleted}%` }]}>
+                    <Text
+                      style={[styles.percentageStickers, { color: theme.highLight }]}
+                      numberOfLines={1}
+                    >
+                      {percentCompleted >= 30 && `${percentCompleted}%`}
+                    </Text>
+                  </View>
+
+                  {percentCompleted < 30 && (
+                    <View style={[styles.albumPercentageBar, { flex: 1, width: `100%` }]}>
+                      <Text
+                        style={[styles.percentageStickers, { color: theme.primary50 }]}
+                        numberOfLines={1}
+                      >
+                        {`${percentCompleted}%`}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              )}
+
+              {!!totalStickers && (
+                <Text
+                  style={[styles.totalStickers, { color: theme.grey20 }]}
+                  numberOfLines={1}
+                >
+                  {homeLocale.albums.totalStickers(totalStickers)}
+                </Text>
+              )}
+            </View>
+
+            <Ionicons name="chevron-forward" size={24} color={theme.grey20} />
+          </View>
         </View>
-      </View>
-    </TouchableHighlight>
+      </TouchableHighlight>
+
+      {onDelete && (
+        <TouchableOpacity
+          style={[styles.deleteButton, { backgroundColor: theme.primaryRed }]}
+          onPress={onDelete}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="trash-outline" size={16} color="#fff" />
+        </TouchableOpacity>
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    alignSelf: 'stretch',
+  },
   container: {
     display: 'flex',
     flexDirection: 'row',
@@ -146,5 +162,15 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: 'primaryBold',
     lineHeight: 18,
+  },
+  deleteButton: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

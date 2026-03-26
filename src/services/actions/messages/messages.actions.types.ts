@@ -13,6 +13,9 @@ export type setMessagesWithUserProps = {
 export type requestMessagesWithUserProps = {
   set: any;
   userId?: number | string | null;
+  offset?: number;
+  limit?: number;
+  append?: boolean;
 }
 
 

@@ -4,37 +4,46 @@ import { SearchProps } from "./Search.types";
 import { useTheme } from "@/providers/ThemeModeProvider/ThemeModeProvider";
 import { Ionicons } from "@expo/vector-icons";
 
-export default function Search({title, placeholder, disabled, value, onChangeText, maxLength, errorMessage}: SearchProps) {
+export default function Search({ title, placeholder, disabled, value, onChangeText, onSearch, maxLength, errorMessage }: SearchProps) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   const { theme } = useTheme();
+
+  const handleSearch = () => {
+    if (onSearch) {
+      onSearch();
+    }
+  };
 
   return (
     <View style={styles.inputContainer}>
       {title && <Text style={[styles.inputTitle, { color: theme.primary100 }]}>{title}</Text>}
 
       <TextInput
-        style={[styles.input, { backgroundColor: theme.grey5, color: theme.highDark }]}
+        style={[styles.input, { backgroundColor: theme.grey5, color: theme.highDark, paddingRight: onSearch ? 48 : 24 }]}
         placeholder={placeholder}
         placeholderTextColor={theme.grey20}
         value={value}
         onChangeText={onChangeText}
         maxLength={maxLength}
         editable={!disabled}
-        
+        returnKeyType={onSearch ? "search" : "default"}
+        onSubmitEditing={handleSearch}
       />
-    
+
       <View style={[styles.inputError]}>
-        {errorMessage && <Text style={[styles.inputErrorText, { color: theme.primaryRed }]}>{errorMessage}</Text>}	
+        {errorMessage && <Text style={[styles.inputErrorText, { color: theme.primaryRed }]}>{errorMessage}</Text>}
       </View>
 
-      <View style={styles.inputIcon}>
-        <Ionicons
-          name='search'
-          size={24}
-          color={disabled ? theme.grey15 : theme.highDark}
-        />
-      </View>
+      {onSearch && (
+        <TouchableOpacity style={styles.inputIconRight} onPress={handleSearch} disabled={disabled}>
+          <Ionicons
+            name='search'
+            size={24}
+            color={disabled ? theme.grey15 : theme.primary50}
+          />
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -46,8 +55,8 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   input: {
-    height: 48,
-    paddingLeft: 48,
+    height: 40,
+    paddingLeft: 24,
     paddingRight: 24,
     borderRadius: 24,
     width: '100%',
@@ -66,14 +75,15 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginBottom: 4,
   },
-  inputIcon: {
+  inputIconRight: {
     position: 'absolute',
+    right: 0,
+    top: 0,
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    height: 48,
+    height: 40,
     width: 48,
     zIndex: 1,
-    borderRadius: '50%',
   }
 });

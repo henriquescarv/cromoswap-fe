@@ -1,7 +1,7 @@
-export type StepProps = 'BASIC_INFOS' | 'PASSWORD' | 'REGION';
+export type StepProps = 'BASIC_INFOS' | 'PASSWORD' | 'LOCATION';
 
 export enum STEPS {
   BASIC_INFOS = 'BASIC_INFOS',
   PASSWORD = 'PASSWORD',
-  REGION = 'REGION',
+  LOCATION = 'LOCATION',
 }

@@ -3,9 +3,11 @@ import { StyleSheet, Text, View, ScrollView, TouchableOpacity, TouchableWithoutF
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { MessageCard } from './components/MessageCard';
 import useStore from '@/services/store';
+import { connectSocket, disconnectSocket, getSocket } from '@/services/socket/socket';
 
 export default function NotificationsScreen({ navigation }: any) {
   const { theme } = useTheme();
@@ -15,27 +17,42 @@ export default function NotificationsScreen({ navigation }: any) {
 
   const {
     messages: messagesStore,
+    summary: summaryStore,
     requestLastMessages,
-    resetLastMessages,
   } = useStore((state: any) => state);
 
+  const myId = summaryStore.data?.id;
+
   const getDefaultData = useCallback(() => {
-    if (!messagesStore.lastMessages.status) {
-      requestLastMessages();
-    }
-  }, [messagesStore.lastMessages.status]);
+    requestLastMessages();
+  }, [requestLastMessages]);
 
   useEffect(() => {
     getDefaultData();
   }, [getDefaultData]);
 
-  const cleanUpFunction = useCallback(() => {
-    resetLastMessages();
-  }, []);
+  // Atualizar lista sempre que a tela ganhar foco (quando voltar do chat)
+  useFocusEffect(
+    useCallback(() => {
+      requestLastMessages();
+    }, [requestLastMessages])
+  );
 
-  useEffect(() => () => {
-    cleanUpFunction();
-  }, [cleanUpFunction]);
+  // Socket listener para atualizar lista quando receber mensagem
+  useEffect(() => {
+    if (!myId) return;
+
+    const socket = connectSocket(myId);
+
+    socket.on('receive_message', () => {
+      // Atualizar lista de conversas quando receber nova mensagem
+      requestLastMessages();
+    });
+
+    return () => {
+      disconnectSocket();
+    };
+  }, [myId, requestLastMessages]);
 
   const messagesList = messagesStore.lastMessages.list || [];
 

@@ -81,6 +81,7 @@ export type requestAlbumDetailsProps = {
   maxStickers?: number;
   ownership?: string;
   terms?: string;
+  categories?: string[];
 }
 
 export type setAlbumDetailsProps = {
@@ -144,4 +145,9 @@ export type requestUpdateStickersQuantityProps = {
 export type setUpdateStickersQuantityProps = {
   set: any;
   status?: "success" | "error" | null;
+}
+
+export type requestDeleteAlbumProps = {
+  set: any;
+  userAlbumId: number | string;
 }

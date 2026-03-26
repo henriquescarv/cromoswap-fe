@@ -1,12 +1,12 @@
 import { useApi } from "@/services/api/api";
 import useStore from "@/services/store";
 
-export const getMessagesWithUser = async ({ userId }) => {
+export const getMessagesWithUser = async ({ userId, offset = 0, limit = 10 }) => {
   const state = useStore.getState();
   const api = useApi({ token: state.login.token });
 
   try {
-    const response = await api.get(`/messages/${userId}`);
+    const response = await api.get(`/messages/${userId}?limit=${limit}&offset=${offset}`);
 
     return response.data;
   } catch (error) {

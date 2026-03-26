@@ -148,19 +148,16 @@ const useStore = create<StoreState>((set) => {
     username,
     email,
     password,
-    countryState,
-    city
+    latitude,
+    longitude,
   }: requestRegisterProps) => registerActions.register.request({
     set,
     username,
     email,
     password,
-    countryState,
-    city
+    latitude,
+    longitude,
   });
-
-  const requestIbgeStates = () => registerActions.ibge.states.request({ set });
-  const requestIbgeCities = (countryStateId: string) => registerActions.ibge.cities.request({ set, countryStateId });
 
   const requestSummary = () => summaryActions.request({ set });
 
@@ -168,11 +165,12 @@ const useStore = create<StoreState>((set) => {
   const requestPurchaseAlbum = ({ albumTemplateId }) => albumsActions.purchaseAlbum.request({ set, albumTemplateId });
   const requestUserAlbums = () => albumsActions.userAlbums.request({ set });
   const requestExternalUserAlbums = ({ userId }) => albumsActions.externalUserAlbums.request({ set, userId });
-  const requestAlbumDetails = ({ userAlbumId, page, maxStickers, ownership, terms }) => albumsActions.albumDetails.request({ set, userAlbumId, page, maxStickers, ownership, terms });
+  const requestAlbumDetails = ({ userAlbumId, page, maxStickers, ownership, terms, categories }: { userAlbumId: any; page?: number; maxStickers?: number; ownership?: string; terms?: string; categories?: string[] }) => albumsActions.albumDetails.request({ set, userAlbumId, page, maxStickers, ownership, terms, categories });
   const resetAlbumDetails = () => albumsActions.albumDetails.reset({ set });
   const requestUsersByRegion = () => albumsActions.usersByRegion.request({ set });
   const requestExternalUserProfile = ({ userId }) => albumsActions.externalUserProfile.request({ set, userId });
   const requestUpdateStickersQuantity = ({ stickersToUpdate }: { stickersToUpdate: StickerToUpdate[] }) => albumsActions.updateStickersQuantity.request({ set, stickersToUpdate });
+  const requestDeleteAlbum = ({ userAlbumId }: { userAlbumId: number | string }) => albumsActions.deleteAlbum.request({ set, userAlbumId });
 
   const requestFollows = ({ userId, type }) => userActions.follows.request({ set, userId, type });
   const requestFollowUser = ({ userId, requestFrom }) => userActions.followUser.request({ set, userId, requestFrom });
@@ -190,7 +188,8 @@ const useStore = create<StoreState>((set) => {
   const requestUnreadMessagesCount = () => messagesActions.unreadMessagesCount.request({ set });
   const resetUnreadMessagesCount = () => messagesActions.unreadMessagesCount.reset({ set });
   const requestMessagesMarkAllSeen = ({ userId }) => messagesActions.messagesMarkAllSeen.request({ set, userId });
-  const requestMessagesWithUser = ({ userId }) => messagesActions.getMessagesWithUser.request({ set, userId });
+  const requestMessagesWithUser = ({ userId, offset, limit, append }: { userId: any, offset?: number, limit?: number, append?: boolean }) =>
+    messagesActions.getMessagesWithUser.request({ set, userId, offset, limit, append });
   const setMessagesWithUser = ({ status, data, userId }) => messagesActions.getMessagesWithUser.set({ set, status, data, userId });
 
   return {
@@ -201,8 +200,6 @@ const useStore = create<StoreState>((set) => {
 
     // register
     requestRegister,
-    requestIbgeStates,
-    requestIbgeCities,
 
     // summary
     requestSummary,
@@ -217,6 +214,7 @@ const useStore = create<StoreState>((set) => {
     requestUsersByRegion,
     requestExternalUserProfile,
     requestUpdateStickersQuantity,
+    requestDeleteAlbum,
 
     // users
     requestFollows,

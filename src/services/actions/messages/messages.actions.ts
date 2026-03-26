@@ -31,21 +31,54 @@ const setMessagesWithUser = ({ set, data = null, status = null, userId }: setMes
   }));
 };
 
-const requestMessagesWithUser = async ({ set, userId }: requestMessagesWithUserProps) => {
+const requestMessagesWithUser = async ({ set, userId, offset = 0, limit = 10, append = false }: requestMessagesWithUserProps) => {
   try {
-    setMessagesWithUserLoading({ set, loading: true });
+    // Só mostra loading de tela inteira no carregamento inicial
+    if (!append) {
+      setMessagesWithUserLoading({ set, loading: true });
+    }
 
-    const data = await getMessagesWithUser({ userId });
+    const data = await getMessagesWithUser({ userId, offset, limit });
 
-    setMessagesWithUser({ set, data: data, status: 'success', userId });
+    if (append) {
+      // Append new messages to existing ones, filtering duplicates
+      set((state: any) => {
+        const existingMessages = state.messages.withUser.data?.messages || [];
+        const existingIds = new Set(existingMessages.map((m: any) => m.id));
+        const newMessages = data.messages.filter((m: any) => !existingIds.has(m.id));
+
+        return {
+          ...state,
+          messages: {
+            ...state.messages,
+            withUser: {
+              ...state.messages.withUser,
+              data: {
+                ...state.messages.withUser.data,
+                messages: [...existingMessages, ...newMessages],
+                pagination: data.pagination,
+              },
+              status: 'success',
+              userId,
+            }
+          }
+        };
+      });
+    } else {
+      setMessagesWithUser({ set, data: data, status: 'success', userId });
+    }
   } catch (error: any) {
-    setMessagesWithUserLoading({ set, loading: false });
+    if (!append) {
+      setMessagesWithUserLoading({ set, loading: false });
+    }
 
     if (error.response?.data?.message === 'INVALID_TOKEN') {
       commonActions.setInvalidToken({ set, invalidToken: true });
     }
 
-    setMessagesWithUser({ set, status: 'error', userId });
+    if (!append) {
+      setMessagesWithUser({ set, status: 'error', userId });
+    }
   }
 };
 

@@ -1,7 +1,7 @@
 ﻿import AsyncStorage from "@react-native-async-storage/async-storage";
 import { commonActions } from "../common/common.actions";
-import { requestAlbumDetailsProps, requestAlbumTemplatesProps, requestExternalUserAlbumsProps, requestExternalUserProfileProps, requestPurchaseAlbumProps, requestUpdateStickersQuantityProps, requestUserAlbumsProps, requestUsersByRegionProps, setAlbumDetailsLoadingProps, setAlbumDetailsProps, setAlbumTemplatesLoadingProps, setAlbumTemplatesProps, setExternalUserAlbumsLoadingProps, setExternalUserAlbumsProps, setExternalUserProfileLoadingProps, setExternalUserProfileProps, setPurchaseAlbumLoadingProps, setPurchaseAlbumProps, setUpdateStickersQuantityLoadingProps, setUpdateStickersQuantityProps, setUserAlbumsLoadingProps, setUserAlbumsProps, setUsersByRegionLoadingProps, setUsersByRegionProps } from "./albums.actions.types";
-import { getAlbumDetails, getAlbumTemplates, getExternalUserAlbums, getExternalUserProfile, getUserAlbums, getUsersByRegion, postPurchaseAlbum, postStickersQuantity } from "./albums.requests";
+import { requestAlbumDetailsProps, requestAlbumTemplatesProps, requestDeleteAlbumProps, requestExternalUserAlbumsProps, requestExternalUserProfileProps, requestPurchaseAlbumProps, requestUpdateStickersQuantityProps, requestUserAlbumsProps, requestUsersByRegionProps, setAlbumDetailsLoadingProps, setAlbumDetailsProps, setAlbumTemplatesLoadingProps, setAlbumTemplatesProps, setExternalUserAlbumsLoadingProps, setExternalUserAlbumsProps, setExternalUserProfileLoadingProps, setExternalUserProfileProps, setPurchaseAlbumLoadingProps, setPurchaseAlbumProps, setUpdateStickersQuantityLoadingProps, setUpdateStickersQuantityProps, setUserAlbumsLoadingProps, setUserAlbumsProps, setUsersByRegionLoadingProps, setUsersByRegionProps } from "./albums.actions.types";
+import { getAlbumDetails, getAlbumTemplates, getExternalUserAlbums, getExternalUserProfile, getUserAlbums, getUsersByRegion, postPurchaseAlbum, postStickersQuantity, deleteUserAlbum } from "./albums.requests";
 
 const setAlbumsTemplatesLoading = ({ set, loading }: setAlbumTemplatesLoadingProps) => {
   set((state: any) => ({
@@ -193,11 +193,11 @@ const setAlbumDetails = ({ set, data, status }: setAlbumDetailsProps) => {
   }));
 };
 
-const requestAlbumDetails = async ({ set, userAlbumId, page = 1, maxStickers = 50, ownership, terms }: requestAlbumDetailsProps) => {
+const requestAlbumDetails = async ({ set, userAlbumId, page = 1, maxStickers = 50, ownership, terms, categories }: requestAlbumDetailsProps) => {
   try {
     setAlbumDetailsLoading({ set, loading: true });
 
-    const data = await getAlbumDetails({ userAlbumId, page, maxStickers, ownership, terms });
+    const data = await getAlbumDetails({ userAlbumId, page, maxStickers, ownership, terms, categories });
 
     setAlbumDetails({ set, status: 'success', data });
   } catch (error: any) {
@@ -353,6 +353,18 @@ const requestUpdateStickersQuantity = async ({ set, stickersToUpdate }: requestU
   }
 };
 
+const requestDeleteAlbum = async ({ set, userAlbumId }: requestDeleteAlbumProps) => {
+  try {
+    await deleteUserAlbum({ userAlbumId });
+    await requestUserAlbums({ set });
+  } catch (error: any) {
+    if (error.response?.data?.message === 'INVALID_TOKEN') {
+      commonActions.setInvalidToken({ set, invalidToken: true });
+    }
+    throw error;
+  }
+};
+
 export const albumsActions = {
   getAlbumsTemplates: {
     request: requestAlbumsTemplates,
@@ -378,5 +390,8 @@ export const albumsActions = {
   },
   externalUserProfile: {
     request: requestExternalUserProfile,
+  },
+  deleteAlbum: {
+    request: requestDeleteAlbum,
   },
 };

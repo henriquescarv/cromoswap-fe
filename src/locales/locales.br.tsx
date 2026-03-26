@@ -53,31 +53,26 @@ const Locales = {
       },
     },
 
-    regionStep: {
+    locationStep: {
       title: 'Precisamos da sua localização',
       description: 'para encontrar colecionadores próximos a você e facilitar suas trocas :)',
-      countryStatePlaceholder: 'Selecione seu estado',
-      searchStatePlaceholder: 'Ex: Santa Catarina',
-      cityPlaceholder: 'Selecione sua cidade',
-      searchCityPlaceholder: 'Ex: Florianópolis',
-
-      errors: {
-        countryState: {
-          [StateErrors.EMPTY]: 'Campo obrigatório',
-        },
-        city: {
-          [CityErrors.EMPTY]: 'Campo obrigatório',
-        },
-      }
+      allowButton: 'Permitir localização',
+      tryAgainButton: 'Tentar novamente',
+      permissionDenied: 'Permissão negada. Habilite a localização nas configurações do dispositivo.',
+      openSettings: 'Abrir configurações',
     }
   },
   home: {
     title: 'CromoSwap',
     seeMoreButtonLabel: 'Ver mais',
     nearYou: {
-      nearYouTitle: 'Perto de você',
+      nearYouTitle: 'Trocadores próximos',
       seeProfile: 'Ver perfil',
       trocables: 'TROCÁVEIS',
+      noPermissionText: 'Para ver colecionadores próximos, você precisa ',
+      noPermissionButton: 'permitir o uso da sua localização',
+      noPermissionButtonSettings: 'habilitar sua localização',
+      inSettingsText: " nas configurações."
     },
     albums: {
       albumsTitle: 'Seus álbuns',
@@ -98,6 +93,13 @@ const Locales = {
     searchPlaceholder: 'Ex: “Copa 2026”',
     noAlbums: 'Você ainda não possui álbuns! Clique no botão abaixo para começar a colecionar!',
     noAlbumsExternalUser: 'O usuário ainda não possui álbuns!',
+    deleteSheet: {
+      title: 'Deseja mesmo excluir este álbum?',
+      warning: 'Esta ação não poderá ser desfeita.',
+      confirm: 'Sim, excluir',
+      cancel: 'Cancelar',
+      error: 'Não foi possível excluir o álbum. Tente novamente.',
+    },
   },
   purchaseAlbum: {
     stickersLabel: quantity => `${quantity} cromos`,
@@ -105,7 +107,7 @@ const Locales = {
     goBackButtonLabel: 'Voltar',
   },
   nearYou: {
-    title: 'Perto de você',
+    title: 'Trocadores próximos',
     searchPlaceholder: 'Pesquise por álbuns ou usuários',
     seeProfile: 'Ver perfil',
     message: 'Mensagem',
@@ -113,7 +115,9 @@ const Locales = {
     youNeed: 'VOCÊ PRECISA',
   },
   album: {
-    searchPlaceholder: 'Ex: “Portugal, Cristiano, 200”',
+    searchPlaceholder: 'Ex: "Portugal, Cristiano, 200"',
+    categoryPlaceholder: 'Categoria',
+    categoryConfirm: 'Confirmar',
     filterChips: {
       iHave: 'Tenho',
       iMissing: 'Faltam',
@@ -137,7 +141,7 @@ const Locales = {
     following: 'seguindo',
     follow: 'Seguir',
     unfollow: 'Deixar de seguir',
-    sendMessage: 'Enviar mensagem',
+    sendMessage: 'Mensagem',
 
     noAlbums: 'Você ainda não possui álbuns! Clique no botão abaixo para começar a colecionar!',
 

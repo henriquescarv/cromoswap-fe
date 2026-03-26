@@ -1,5 +1,5 @@
-import React, { useCallback, useContext, useEffect, useMemo } from 'react';
-import { StyleSheet, Text, View, TouchableWithoutFeedback, Keyboard, FlatList, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { StyleSheet, Text, View, TouchableWithoutFeedback, Keyboard, FlatList, ScrollView, TouchableOpacity, Linking } from 'react-native';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
 import Button from '@/components/Button/Button';
@@ -10,11 +10,32 @@ import { Ionicons } from '@expo/vector-icons';
 import useStore from '@/services/store';
 import { Skeleton } from '@/components/Skeleton';
 import { useFocusEffect } from '@react-navigation/native';
+import * as Location from 'expo-location';
+import { connectSocket, disconnectSocket } from '@/services/socket/socket';
 
 export default function HomeScreen({ navigation }: any) {
   const { theme } = useTheme();
   const { locale } = useContext(LocaleContext);
   const { home: homeLocale } = locale;
+
+  const [locationPermission, setLocationPermission] = useState<'granted' | 'denied' | 'undetermined' | null>(null);
+
+  const checkLocationPermission = useCallback(async () => {
+    const { status } = await Location.getForegroundPermissionsAsync();
+    setLocationPermission(status as any);
+  }, []);
+
+  const handleRequestLocationPermission = async () => {
+    if (locationPermission === 'denied') {
+      Linking.openSettings();
+      return;
+    }
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    setLocationPermission(status as any);
+    if (status === 'granted') {
+      requestUsersByRegion();
+    }
+  };
 
   const {
     summary: summaryStore,
@@ -72,6 +93,23 @@ export default function HomeScreen({ navigation }: any) {
     getNotificationsUnreadCount();
   }, [getNotificationsUnreadCount]);
 
+  // Socket listener para atualizar contador quando receber mensagem
+  useEffect(() => {
+    const myId = summaryStore.data?.id;
+    if (!myId) return;
+
+    const socket = connectSocket(myId);
+
+    socket.on('receive_message', () => {
+      // Atualizar contador de mensagens não lidas quando receber nova mensagem
+      requestUnreadMessagesCount();
+    });
+
+    return () => {
+      disconnectSocket();
+    };
+  }, [summaryStore.data?.id, requestUnreadMessagesCount]);
+
   const cleanUpFunction = useCallback(() => {
     resetUnreadMessagesCount();
     resetNotificationsUnreadCount();
@@ -79,10 +117,11 @@ export default function HomeScreen({ navigation }: any) {
 
   useFocusEffect(
     useCallback(() => {
+      checkLocationPermission();
       return () => {
         cleanUpFunction();
       };
-    }, [cleanUpFunction])
+    }, [cleanUpFunction, checkLocationPermission])
   );
 
   const goToNearYouScreen = () => {
@@ -151,49 +190,63 @@ export default function HomeScreen({ navigation }: any) {
         </View>
 
         <ScrollView style={[styles.contentWrapper]}>
-          {(<View style={[styles.blockContainer]}>
-            <View style={[styles.blockHead]}>
-              <Text style={[styles.blockTitle, { color: theme.primary100 }]}>{homeLocale.nearYou.nearYouTitle}</Text>
-              <Button text={homeLocale.seeMoreButtonLabel} variant="text" fontSize={16} onClick={goToNearYouScreen} />
-            </View>
-
-            {usersByRegionStore.loading && (
-              <FlatList
-                data={[...Array(3)]}
-                horizontal
-                keyExtractor={(_, index) => index.toString()}
-                renderItem={({ item }) => (
-                  <Skeleton width={214} height={140} borderRadius={24} />
-                )}
-                contentContainerStyle={styles.nearYouContainer}
-                showsHorizontalScrollIndicator={false}
-              />
-            )}
-
-            {!usersByRegionStore.loading && !!usersByRegionStore.list.length && (
-              <FlatList
-                data={users}
-                horizontal
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => (
-                  <UserCard
-                    username={item.username}
-                    trocableStickers={item.trocableStickers}
-                    albums={item.albumsInCommon}
-                    onClick={() => goToUserProfileScreen(item.id)}
-                  />
-                )}
-                contentContainerStyle={styles.nearYouContainer}
-                showsHorizontalScrollIndicator={false}
-              />
-            )}
-
-            {!usersByRegionStore.loading && !usersByRegionStore.list.length && (
-              <View style={[styles.emptyStateContainer]}>
-                <Text style={[styles.emptyStateText, { color: theme.primary100 }]}>{homeLocale.albums.noNearUsers}</Text>
+          {(usersByRegionStore.loading || usersByRegionStore.list.length > 0 || locationPermission !== 'granted') && (
+            <View style={[styles.blockContainer]}>
+              <View style={[styles.blockHead]}>
+                <Text style={[styles.blockTitle, { color: theme.primary100 }]}>{homeLocale.nearYou.nearYouTitle}</Text>
+                <Button text={homeLocale.seeMoreButtonLabel} variant="text" fontSize={16} onClick={goToNearYouScreen} />
               </View>
-            )}
-          </View>)}
+
+              {usersByRegionStore.loading && (
+                <FlatList
+                  data={[...Array(3)]}
+                  horizontal
+                  keyExtractor={(_, index) => index.toString()}
+                  renderItem={({ item }) => (
+                    <Skeleton width={214} height={140} borderRadius={24} />
+                  )}
+                  contentContainerStyle={styles.nearYouContainer}
+                  showsHorizontalScrollIndicator={false}
+                />
+              )}
+
+              {!usersByRegionStore.loading && !!usersByRegionStore.list.length && (
+                <FlatList
+                  data={users}
+                  horizontal
+                  keyExtractor={(item) => item.id.toString()}
+                  renderItem={({ item }) => (
+                    <UserCard
+                      username={item.username}
+                      trocableStickers={item.trocableStickers}
+                      albums={item.albumsInCommon}
+                      onClick={() => goToUserProfileScreen(item.id)}
+                    />
+                  )}
+                  contentContainerStyle={styles.nearYouContainer}
+                  showsHorizontalScrollIndicator={false}
+                />
+              )}
+
+              {locationPermission !== null && locationPermission !== 'granted' && (
+                <View style={styles.noPermissionContainer}>
+                  <Text style={[styles.noPermissionText, { color: theme.primary100 }]}>
+                    {homeLocale.nearYou.noPermissionText}
+                    <Text
+                      style={[styles.noPermissionLink, { color: theme.primary50 }]}
+                      onPress={handleRequestLocationPermission}
+                    >
+                      {locationPermission === 'denied'
+                        ? homeLocale.nearYou.noPermissionButtonSettings
+                        : homeLocale.nearYou.noPermissionButton
+                      }
+                    </Text>
+                    {homeLocale.nearYou.inSettingsText}
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
 
           <View style={[styles.blockContainer]}>
             <View style={[styles.blockHead]}>
@@ -335,5 +388,22 @@ const styles = StyleSheet.create({
   messagesCountText: {
     fontSize: 12,
     fontFamily: 'primaryBold',
+  },
+  noPermissionContainer: {
+    paddingVertical: 24,
+    paddingHorizontal: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  noPermissionText: {
+    fontSize: 15,
+    fontFamily: 'primaryRegular',
+    lineHeight: 22,
+    textAlign: 'center',
+  },
+  noPermissionLink: {
+    fontFamily: 'primaryBold',
+    textDecorationLine: 'underline',
   },
 });

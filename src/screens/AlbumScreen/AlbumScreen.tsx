@@ -10,6 +10,7 @@ import StickerButton from '@/components/StickerButton';
 import { Pagination } from '@/components/Pagination';
 import { AlbumScreenRouteParams, ChipsTypes } from './AlbumScreen.types';
 import { Chip } from './components/Chip';
+import CategorySelectFilter from './components/CategorySelectFilter/CategorySelectFilter';
 import Button from '@/components/Button/Button';
 import useStore from '@/services/store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -17,13 +18,15 @@ import { useLayoutCalculations } from './useLayoutCalculations';
 
 export default function AlbumScreen({ navigation }: any) {
   const [filter, setFilter] = useState('');
-  const [debouncedFilter, setDebouncedFilter] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedChip, setSelectedChip] = useState(null);
   const [stickers, setStickers] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [displayFilter, setDisplayFilter] = useState(true);
   const [screenData, setScreenData] = useState(Dimensions.get('window'));
   const [isSyncingCache, setIsSyncingCache] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [allCategories, setAllCategories] = useState<string[]>([]);
 
   const {
     albumDetails: albumDetailsStore,
@@ -54,14 +57,6 @@ export default function AlbumScreen({ navigation }: any) {
 
     return () => subscription?.remove();
   }, []);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedFilter(filter);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [filter]);
 
   const checkAndSyncStickersCache = useCallback(async () => {
     const cacheKey = 'stickers_to_update_cache';
@@ -121,11 +116,18 @@ export default function AlbumScreen({ navigation }: any) {
     }
   }, []);
 
+  const handleSearch = useCallback(() => {
+    setSearchTerm(filter);
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    }
+  }, [filter, currentPage]);
+
   useEffect(() => {
     if (currentPage !== 1) {
       setCurrentPage(1);
     }
-  }, [selectedChip, debouncedFilter]);
+  }, [selectedChip]);
 
   useEffect(() => {
     if (albumId) {
@@ -133,26 +135,32 @@ export default function AlbumScreen({ navigation }: any) {
         await syncCacheBeforeAction();
 
         const ownership = getOwnershipValue(selectedChip);
-        const terms = debouncedFilter.trim() || undefined;
+        const terms = searchTerm.trim() || undefined;
+        const categories = selectedCategories.length > 0 ? selectedCategories : undefined;
 
         requestAlbumDetails({
           userAlbumId: albumId,
           page: currentPage,
           maxStickers: 70,
           ownership,
-          terms
+          terms,
+          categories
         });
       };
 
       applyFiltersAndFetch();
     }
-  }, [albumId, currentPage, requestAlbumDetails, selectedChip, debouncedFilter, getOwnershipValue, syncCacheBeforeAction]);
+  }, [albumId, currentPage, requestAlbumDetails, selectedChip, searchTerm, selectedCategories, getOwnershipValue, syncCacheBeforeAction]);
 
   useEffect(() => {
-    if (albumDetailsStore.data?.stickersList) {
+    if (albumDetailsStore.data?.stickersList !== undefined) {
       setStickers([...albumDetailsStore.data.stickersList]);
     }
-  }, [albumDetailsStore.data?.stickersList]);
+
+    if (albumDetailsStore.data?.allCategories) {
+      setAllCategories(albumDetailsStore.data.allCategories);
+    }
+  }, [albumDetailsStore.data?.stickersList, albumDetailsStore.data?.allCategories]);
 
   const cleanUpFunction = async () => {
     const cacheKey = 'stickers_to_update_cache';
@@ -299,8 +307,9 @@ export default function AlbumScreen({ navigation }: any) {
     await syncCacheBeforeAction();
 
     setFilter('');
-    setDebouncedFilter('');
+    setSearchTerm('');
     setSelectedChip(null);
+    setSelectedCategories([]);
     setCurrentPage(1);
   };
 
@@ -389,7 +398,21 @@ export default function AlbumScreen({ navigation }: any) {
               placeholder={albumLocale.searchPlaceholder}
               onChangeText={setFilter}
               value={filter}
+              onSearch={handleSearch}
             />
+
+            {allCategories.length > 0 && (
+              <CategorySelectFilter
+                categories={allCategories}
+                selectedCategories={selectedCategories}
+                onConfirm={(cats) => {
+                  setSelectedCategories(cats);
+                  setCurrentPage(1);
+                }}
+                placeholder={albumLocale.categoryPlaceholder}
+                confirmLabel={albumLocale.categoryConfirm}
+              />
+            )}
 
             <View style={[styles.chipsContainer]}>
               {chipsList.map((chip) => (

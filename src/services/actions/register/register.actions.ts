@@ -1,6 +1,6 @@
 ﻿import { setLoadingProps } from "../login/login.actions.types";
-import { requestIbgeCitiesProps, requestIbgeStatesProps, requestRegisterProps, setRegisterProps } from "./register.actions.types";
-import { postRegion, postRegister, getIbgeStates, getIbgeCities } from "./register.requests";
+import { requestRegisterProps, setRegisterProps } from "./register.actions.types";
+import { postRegister, postLocation } from "./register.requests";
 import * as SecureStore from 'expo-secure-store';
 
 const setLoading = ({ set, loading }: setLoadingProps) => {
@@ -13,7 +13,7 @@ const setLoading = ({ set, loading }: setLoadingProps) => {
   }));
 }
 
-const setRegister = ({ set, status, token = null, refreshToken = null, countryState = null, city = null }: setRegisterProps) => {
+const setRegister = ({ set, status, token = null, refreshToken = null }: setRegisterProps) => {
   set((state: any) => ({
     ...state,
     login: {
@@ -26,22 +26,19 @@ const setRegister = ({ set, status, token = null, refreshToken = null, countrySt
     register: {
       ...state.register,
       status,
-      countryState,
-      city,
     },
   }));
 };
 
-const requestRegister = async ({ set, username, email, password, countryState, city }: requestRegisterProps) => {
+const requestRegister = async ({ set, username, email, password, latitude, longitude }: requestRegisterProps) => {
   try {
     setLoading({ set, loading: true });
 
     const registerData = await postRegister({ username, email, password });
-    setRegister({ set, status: 'success', token: registerData.token, refreshToken: registerData.refreshToken, countryState, city });
+    setRegister({ set, status: 'success', token: registerData.token, refreshToken: registerData.refreshToken });
 
-    await postRegion({ username, countryState, city });
+    await postLocation({ latitude, longitude });
 
-    // Salva tokens no SecureStore
     const loginStoreCache = {
       token: registerData.token,
       refreshToken: registerData.refreshToken,
@@ -52,7 +49,6 @@ const requestRegister = async ({ set, username, email, password, countryState, c
     setLoading({ set, loading: false });
   } catch (error) {
     setRegister({ set, status: 'error' });
-
     setLoading({ set, loading: false });
   }
 };

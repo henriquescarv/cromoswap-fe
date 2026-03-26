@@ -60,23 +60,6 @@ export default function EditProfileScreen({ navigation }: any) {
     </View>
   );
 
-  const renderRegionRow = () => (
-    <View style={[styles.infoRow, { borderBottomColor: theme.grey5 }]}>
-      <View style={styles.infoContent}>
-        <Text style={[styles.infoLabel, { color: theme.grey20 }]}>{editProfileLocale.regionLabel}</Text>
-        <Text style={[styles.infoValue, { color: theme.primary100 }]}>
-          {userData.city && userData.countryState
-            ? `${userData.city}, ${userData.countryState}`
-            : '-'
-          }
-        </Text>
-      </View>
-      <TouchableOpacity onPress={goToEditRegion}>
-        <Ionicons name="pencil" size={20} color={theme.primary100} />
-      </TouchableOpacity>
-    </View>
-  );
-
   if (summaryStore.loading && !summaryStore.data) {
     return (
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -117,7 +100,6 @@ export default function EditProfileScreen({ navigation }: any) {
           <View style={[styles.contentWrapper]}>
             {renderInfoRow(editProfileLocale.usernameLabel, userData.username, 'username', false)}
             {renderInfoRow(editProfileLocale.emailLabel, userData.email, 'email')}
-            {renderRegionRow()}
 
             <View style={[styles.passwordButtonContainer]}>
               <Button

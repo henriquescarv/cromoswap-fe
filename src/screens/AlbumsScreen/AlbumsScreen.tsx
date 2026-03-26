@@ -9,11 +9,17 @@ import Search from '@/components/Search/Search';
 import { AlbumType } from './AlbumsScreen.types';
 import useStore from '@/services/store';
 import { useRoute } from '@react-navigation/native';
+import DeleteAlbumSheet from './components/DeleteAlbumSheet/DeleteAlbumSheet';
+import { useToast } from '@/providers/ToastProvider/ToastProvider';
 
 export default function AlbumsScreen({ navigation }: any) {
   const [filter, setFilter] = useState('');
   const [filteredList, setFilteredList] = useState<AlbumType[]>([]);
+  const [albumToDelete, setAlbumToDelete] = useState<AlbumType | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const insets = useSafeAreaInsets();
+
+  const { showToast } = useToast();
 
   const {
     summary: summaryStore,
@@ -21,6 +27,7 @@ export default function AlbumsScreen({ navigation }: any) {
     externalUserAlbums: externalUserAlbumsStore,
     requestUserAlbums,
     requestExternalUserAlbums,
+    requestDeleteAlbum,
   } = useStore((state: any) => state);
 
   const { theme } = useTheme();
@@ -87,6 +94,20 @@ export default function AlbumsScreen({ navigation }: any) {
     navigation.navigate('ChooseAlbumScreen');
   };
 
+  const handleConfirmDelete = async () => {
+    console.log(albumToDelete)
+    if (!albumToDelete) return;
+    setDeleteLoading(true);
+    try {
+      await requestDeleteAlbum({ userAlbumId: albumToDelete.userAlbumId });
+    } catch {
+      showToast('warning', myAlbumsLocale.deleteSheet.error);
+    } finally {
+      setDeleteLoading(false);
+      setAlbumToDelete(null);
+    }
+  };
+
   if (userAlbumsStore.loading) {
     return (
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -104,64 +125,74 @@ export default function AlbumsScreen({ navigation }: any) {
   }
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={[styles.safeArea, { backgroundColor: theme.highLight, paddingTop: insets.top }]}>
-        <View style={styles.wrapper}>
-          <View style={[styles.headBlock]}>
-            <View style={[styles.headContainer]}>
-              <TouchableOpacity onPress={goBack}>
-                <Ionicons
-                  name={"chevron-back-outline"}
-                  size={32}
-                  color={theme.primary50}
-                />
-              </TouchableOpacity>
+    <>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={[styles.safeArea, { backgroundColor: theme.highLight, paddingTop: insets.top }]}>
+          <View style={styles.wrapper}>
+            <View style={[styles.headBlock]}>
+              <View style={[styles.headContainer]}>
+                <TouchableOpacity onPress={goBack}>
+                  <Ionicons
+                    name={"chevron-back-outline"}
+                    size={32}
+                    color={theme.primary50}
+                  />
+                </TouchableOpacity>
 
-              <Text style={[styles.blockTitle, { color: theme.primary100 }]}>{isExternalUser ? myAlbumsLocale.externalUserAlbumsTitle : myAlbumsLocale.albumsTitle}</Text>
-            </View>
-
-            <Search
-              placeholder={myAlbumsLocale.searchPlaceholder}
-              onChangeText={setFilter}
-              value={filter}
-              disabled={!filteredList?.length}
-            />
-          </View>
-
-          {!filteredList?.length && (
-            <View style={[styles.emptyWrapper]}>
-              <Text style={[styles.emptyStateText, { color: theme.primary100 }]}>{isExternalUser ? myAlbumsLocale.noAlbumsExternalUser : myAlbumsLocale.noAlbums}</Text>
-
-              <TouchableOpacity style={[styles.plusButton, { borderColor: theme.primary100 }]} onPress={goToChooseAlbumScreen}>
-                <Ionicons
-                  name={"add"}
-                  size={32}
-                  color={theme.primary100}
-                />
-              </TouchableOpacity>
-            </View>
-          )}
-
-          {!!filteredList?.length && (
-            <ScrollView style={[styles.contentWrapper]}>
-              <View style={[styles.blockContainer]}>
-                <View style={[styles.albumsContainer]}>
-                  {filteredList.map(item => (
-                    <Album
-                      key={item.id}
-                      name={item.name}
-                      image={item.image}
-                      percentCompleted={item.percentCompleted}
-                      onClick={() => goToAlbumScreen(item.userAlbumId)}
-                    />
-                  ))}
-                </View>
+                <Text style={[styles.blockTitle, { color: theme.primary100 }]}>{isExternalUser ? myAlbumsLocale.externalUserAlbumsTitle : myAlbumsLocale.albumsTitle}</Text>
               </View>
-            </ScrollView>
-          )}
+
+              <Search
+                placeholder={myAlbumsLocale.searchPlaceholder}
+                onChangeText={setFilter}
+                value={filter}
+                disabled={!filteredList?.length}
+              />
+            </View>
+
+            {!filteredList?.length && (
+              <View style={[styles.emptyWrapper]}>
+                <Text style={[styles.emptyStateText, { color: theme.primary100 }]}>{isExternalUser ? myAlbumsLocale.noAlbumsExternalUser : myAlbumsLocale.noAlbums}</Text>
+
+                <TouchableOpacity style={[styles.plusButton, { borderColor: theme.primary100 }]} onPress={goToChooseAlbumScreen}>
+                  <Ionicons
+                    name={"add"}
+                    size={32}
+                    color={theme.primary100}
+                  />
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {!!filteredList?.length && (
+              <ScrollView style={[styles.contentWrapper]}>
+                <View style={[styles.blockContainer]}>
+                  <View style={[styles.albumsContainer]}>
+                    {filteredList.map(item => (
+                      <Album
+                        key={item.id}
+                        name={item.name}
+                        image={item.image}
+                        percentCompleted={item.percentCompleted}
+                        onClick={() => goToAlbumScreen(item.userAlbumId)}
+                        onDelete={!isExternalUser ? () => setAlbumToDelete(item) : undefined}
+                      />
+                    ))}
+                  </View>
+                </View>
+              </ScrollView>
+            )}
+          </View>
         </View>
-      </View>
-    </TouchableWithoutFeedback>
+      </TouchableWithoutFeedback>
+
+      <DeleteAlbumSheet
+        album={albumToDelete}
+        loading={deleteLoading}
+        onClose={() => setAlbumToDelete(null)}
+        onConfirm={handleConfirmDelete}
+      />
+    </>
   );
 }
 

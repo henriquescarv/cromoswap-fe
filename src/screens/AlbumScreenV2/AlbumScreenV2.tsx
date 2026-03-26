@@ -172,7 +172,6 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
     }
   }, [albumId, currentPage, requestAlbumDetails, selectedChip, debouncedFilter, getOwnershipValue, requestUpdateStickersQuantity]);
 
-  // Reset da página quando os filtros mudam
   useEffect(() => {
     if (currentPage !== 1) {
       setCurrentPage(1);
@@ -180,7 +179,7 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
   }, [selectedChip, debouncedFilter]);
 
   useEffect(() => {
-    if (albumDetailsStore.data?.stickersList) {
+    if (albumDetailsStore.data?.stickersList !== undefined) {
       const stickersCopy = [...albumDetailsStore.data.stickersList];
 
       stickersCopy.forEach(sticker => {
@@ -194,7 +193,7 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
   }, [albumDetailsStore.data?.stickersList]);
 
   useEffect(() => {
-    if (albumDetailsStore.data?.stickersList && changedStickers.size > 0) {
+    if (albumDetailsStore.data?.stickersList !== undefined && changedStickers.size > 0) {
       const stickersCopy = [...albumDetailsStore.data.stickersList];
 
       stickersCopy.forEach(sticker => {

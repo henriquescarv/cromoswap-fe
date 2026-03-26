@@ -1,9 +1,11 @@
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 import React, { useEffect } from 'react';
-import { StyleSheet, View, Image, Animated } from 'react-native';
+import { StyleSheet, Image, Animated } from 'react-native';
 import useStore from '@/services/store';
 import * as SecureStore from 'expo-secure-store';
 import { refreshAccessToken } from '@/services/actions/login/refreshToken';
+import * as Location from 'expo-location';
+import { postLocation } from '@/services/actions/register/register.requests';
 
 interface SplashScreenProps {
   onFinish: (initialRoute: 'Main' | 'Login') => void;
@@ -24,6 +26,17 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
   const fadeAnim = new Animated.Value(1);
 
   useEffect(() => {
+    const silentlyUpdateLocation = async () => {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') return;
+        const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+        await postLocation({ latitude: loc.coords.latitude, longitude: loc.coords.longitude });
+      } catch {
+        // silently fail — not critical
+      }
+    };
+
     const checkAuthAndInitialize = async () => {
       try {
         const store = useStore.getState() as any;
@@ -50,6 +63,7 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
 
           if (!storeAfterSummary.invalidToken) {
             await new Promise(resolve => setTimeout(resolve, 1500));
+            silentlyUpdateLocation();
             onFinish('Main');
           } else if (loginCacheData.refreshToken) {
             const refreshResult = await refreshAccessToken();
@@ -57,6 +71,7 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
             if (refreshResult.success) {
               await requestSummary();
               await new Promise(resolve => setTimeout(resolve, 1500));
+              silentlyUpdateLocation();
               onFinish('Main');
             } else {
               await new Promise(resolve => setTimeout(resolve, 2000));

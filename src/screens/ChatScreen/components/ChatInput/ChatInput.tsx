@@ -17,8 +17,11 @@ export default function ChatInput({ placeholder, value, onChangeText, maxLength,
         onChangeText={onChangeText}
         maxLength={maxLength}
         onFocus={onFocus}
+        multiline={true}
+        numberOfLines={4}
+        textAlignVertical="top"
       />
-    
+
       <TouchableOpacity style={[styles.sendButton, { backgroundColor: theme.primary50 }]} onPress={onSendMessage}>
         <Ionicons
           name='send'
@@ -37,9 +40,12 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   input: {
-    height: 48,
+    minHeight: 48,
+    maxHeight: 120,
     paddingLeft: 24,
     paddingRight: 48,
+    paddingTop: 12,
+    paddingBottom: 12,
     borderRadius: 24,
     width: '100%',
     fontFamily: 'primaryRegular',

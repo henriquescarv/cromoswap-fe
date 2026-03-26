@@ -145,7 +145,7 @@ export default function UserProfile({ navigation }: any) {
             variant="secondary"
             onClick={handleClickFollowButton}
             size="small"
-            fontSize={14}
+            fontSize={13}
             color={externalUserProfileStore.data?.isFollowing ? 'grey20' : 'primary50'}
           />
         </View>
@@ -155,7 +155,7 @@ export default function UserProfile({ navigation }: any) {
             variant="secondary"
             onClick={goToChatScreen}
             size="small"
-            fontSize={14}
+            fontSize={13}
           />
         </View>
       </>
@@ -440,13 +440,11 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'column',
     width: '100%',
-    marginTop: 16,
   },
   blockContainer: {
     display: 'flex',
     width: '100%',
     padding: 20,
-    paddingTop: 32,
   },
   blockHead: {
     display: 'flex',
@@ -456,8 +454,6 @@ const styles = StyleSheet.create({
   albumsContainer: {
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'center',
-    flex: 1,
     marginTop: 16,
     gap: 16,
   },
@@ -478,6 +474,7 @@ const styles = StyleSheet.create({
   },
   plusButton: {
     display: 'flex',
+    alignSelf: 'center',
     alignItems: 'center',
     justifyContent: 'center',
     width: 52,

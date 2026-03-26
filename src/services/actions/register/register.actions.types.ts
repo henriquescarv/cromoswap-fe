@@ -1,10 +1,8 @@
 export type setRegisterProps = {
   set: any;
   status: 'success' | 'error' | null;
-  countryState?: string | null;
   token?: string | null;
   refreshToken?: string | null;
-  city?: string | null;
 }
 
 export type requestRegisterProps = {
@@ -12,8 +10,8 @@ export type requestRegisterProps = {
   username: string;
   email: string;
   password: string;
-  countryState: string,
-  city: string;
+  latitude: number;
+  longitude: number;
 }
 
 export type requestIbgeStatesProps = {

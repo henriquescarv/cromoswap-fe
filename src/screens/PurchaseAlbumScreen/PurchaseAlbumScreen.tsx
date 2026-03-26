@@ -4,6 +4,7 @@ import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRoute } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import Button from '@/components/Button/Button';
 import useStore from '@/services/store';
 
@@ -33,16 +34,24 @@ export default function PurchaseAlbumScreen({ navigation }: any) {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={[styles.safeArea, { backgroundColor: theme.highLight, paddingTop: insets.top }]}>
         <View style={styles.wrapper}>
+          <View style={[styles.header, { borderBottomColor: theme.grey5 }]}>
+            <TouchableOpacity onPress={goBack} style={styles.backButton}>
+              <Ionicons name="chevron-back-outline" size={32} color={theme.primary50} />
+            </TouchableOpacity>
+            <Text style={[styles.headerTitle, { color: theme.primary100 }]}>
+              {album.name}
+            </Text>
+          </View>
+
           <Image
             source={typeof album.image === 'string' ? { uri: album.image } : album.image}
-            style={[styles.image, { borderColor: theme.grey5 }]}
+            style={[styles.image]}
             resizeMode="cover"
           />
 
           <View style={[styles.purchaseWrapper]}>
             <View style={[styles.textsWrapper]}>
               <Text style={[styles.stickersLabel, { color: theme.primary100 }]}>{purchaseAlbumLocale.stickersLabel(album.totalStickers || 0)}</Text>
-              <Text style={[styles.albumName, { color: theme.primary100 }]} numberOfLines={2}>{album.name}</Text>
             </View>
 
             <View style={[styles.buttonsWrapper]}>
@@ -50,11 +59,6 @@ export default function PurchaseAlbumScreen({ navigation }: any) {
                 text={purchaseAlbumLocale.collectAlbumButtonLabel}
                 onClick={handlePurchaseAlbum}
                 loading={purchaseAlbumStore.loading}
-              />
-              <Button
-                text={purchaseAlbumLocale.goBackButtonLabel}
-                onClick={goBack}
-                variant='secondary'
               />
             </View>
           </View>
@@ -73,19 +77,39 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  image: {
-    width: '100%',
-    height: 375,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderBottomWidth: 1,
+    gap: 8,
+  },
+  backButton: {
+    marginRight: 4,
+  },
+  headerTitle: {
+    flex: 1,
+    fontSize: 16,
+    fontFamily: 'primaryBold',
+    textAlign: 'center',
+    marginRight: 40,
+  },
+  image: {
+    width: '90%',
+    height: 300,
+    borderRadius: 16,
+    alignSelf: 'center',
+    marginTop: 24,
   },
   purchaseWrapper: {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'center',
-    padding: 20,
-    gap: 72,
-    marginBottom: 40,
+    justifyContent: 'flex-start',
+    padding: 12,
+    paddingTop: 32,
+    gap: 40,
   },
   albumName: {
     fontSize: 24,

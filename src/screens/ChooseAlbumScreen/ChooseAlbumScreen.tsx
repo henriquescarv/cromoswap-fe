@@ -14,7 +14,7 @@ export default function ChooseAlbumScreen({ navigation }: any) {
   const [filteredList, setFilteredList] = useState<AlbumType[]>([]);
   const insets = useSafeAreaInsets();
 
-  const { albumsTemplates: albumsTemplatesStore, requestAlbumsTemplates } = useStore((state: any) => state);
+  const { albumsTemplates: albumsTemplatesStore, userAlbums: userAlbumsStore, requestAlbumsTemplates, requestUserAlbums } = useStore((state: any) => state);
 
   const { theme } = useTheme();
   const { locale } = useContext(LocaleContext);
@@ -24,13 +24,17 @@ export default function ChooseAlbumScreen({ navigation }: any) {
     if (albumsTemplatesStore.status === null) {
       requestAlbumsTemplates();
     }
-  }, [albumsTemplatesStore.status]);
+    if (userAlbumsStore.status === null) {
+      requestUserAlbums();
+    }
+  }, [albumsTemplatesStore.status, userAlbumsStore.status]);
 
   useEffect(() => {
     getDefaultData();
   }, [getDefaultData]);
 
-  const templateAlbums = albumsTemplatesStore.list || [];
+  const ownedTemplateIds = new Set((userAlbumsStore.list || []).map((a: any) => a.albumTemplateId));
+  const templateAlbums = (albumsTemplatesStore.list || []).filter((item: AlbumType) => !ownedTemplateIds.has(item.id));
 
   const updateFilteredList = useCallback(() => {
     if (filter === '') {

@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, View, TouchableWithoutFeedback, Keyboard, FlatList, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Image, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, TouchableWithoutFeedback, Keyboard, FlatList, TouchableOpacity, KeyboardAvoidingView, Platform, Image, ActivityIndicator, KeyboardEvent } from 'react-native';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -12,13 +12,14 @@ import { connectSocket, disconnectSocket, getSocket } from '@/services/socket/so
 
 export default function ChatScreen({ navigation }: any) {
   const [newMessageContent, setNewMessageContent] = useState('');
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const insets = useSafeAreaInsets();
 
   const {
     messages: messagesStore,
     summary: summaryStore,
     setMessagesWithUser,
-    resetLastMessages,
     requestMessagesWithUser,
     requestMessagesMarkAllSeen,
     resetUnreadMessagesCount,
@@ -26,7 +27,7 @@ export default function ChatScreen({ navigation }: any) {
 
   const chatData = messagesStore?.withUser?.data || null;
 
-  const scrollViewRef = useRef<ScrollView>(null);
+  const flatListRef = useRef<FlatList>(null);
 
   const { theme } = useTheme();
   const { locale } = useContext(LocaleContext);
@@ -47,9 +48,8 @@ export default function ChatScreen({ navigation }: any) {
 
   const cleanUpFunction = useCallback(() => {
     requestMessagesMarkAllSeen({ userId });
-    resetLastMessages();
     resetUnreadMessagesCount();
-  }, []);
+  }, [userId, requestMessagesMarkAllSeen, resetUnreadMessagesCount]);
 
   useEffect(() => () => {
     cleanUpFunction();
@@ -59,17 +59,34 @@ export default function ChatScreen({ navigation }: any) {
     if (!myId) return;
     const socket = connectSocket(myId);
 
+    socket.on('connect', () => { });
+
+    socket.on('connect_error', (error) => {
+      console.error('Socket connection error:', error.message);
+    });
+
+    socket.on('error', (error) => {
+      console.error('Socket error:', error);
+      alert(`Erro ao enviar mensagem: ${error.message}`);
+    });
+
     socket.on('receive_message', (msg) => {
-      // Atualizar store localmente ao receber mensagem
       if (msg && msg.senderId === userId) {
-        setMessagesWithUser({
-          data: {
-            ...chatData,
-            messages: [...(chatData?.messages || []), msg],
-          },
-          userId,
-          status: 'success',
-        });
+        const existingMessages = chatData?.messages || [];
+        const messageExists = existingMessages.some((m: any) => m.id === msg.id);
+
+        if (!messageExists) {
+          setMessagesWithUser({
+            data: {
+              ...chatData,
+              messages: [msg, ...existingMessages],
+            },
+            userId,
+            status: 'success',
+          });
+
+          requestMessagesMarkAllSeen({ userId });
+        }
       } else {
         getDefaultData();
       }
@@ -80,33 +97,30 @@ export default function ChatScreen({ navigation }: any) {
     };
   }, [myId, getDefaultData, chatData, userId, setMessagesWithUser]);
 
-  const goToEndOfMessagesList = useCallback(() => {
-    if (messagesStore?.withUser?.status === 'success') {
+  const loadMoreMessages = useCallback(async () => {
+    if (loadingMore || !chatData?.pagination?.hasMore) return;
 
-      setTimeout(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: false });
-      }, 0);
+    setLoadingMore(true);
+    try {
+      const currentOffset = chatData.messages?.length || 0;
+      await requestMessagesWithUser({ userId, offset: currentOffset, append: true });
+    } finally {
+      setLoadingMore(false);
     }
-  }, [messagesStore?.withUser?.status]);
+  }, [loadingMore, chatData, userId, requestMessagesWithUser]);
 
   useEffect(() => {
-    goToEndOfMessagesList();
-  }, [goToEndOfMessagesList]);
-
-  const scrollToEndWhenOpeningKeyboard = useCallback(() => {
     const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
-      setTimeout(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: true });
-      }, 0);
+      setKeyboardVisible(true);
+    });
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardVisible(false);
     });
     return () => {
       keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
     };
   }, []);
-
-  useEffect(() => {
-    scrollToEndWhenOpeningKeyboard();
-  }, [scrollToEndWhenOpeningKeyboard]);
 
   const getSenderById = (senderId: number) => {
     if (senderId === myId) {
@@ -145,11 +159,33 @@ export default function ChatScreen({ navigation }: any) {
   const sendMessage = (content: string) => {
     if (!myId || !userId) return;
     if (!content) return;
-    setNewMessageContent('');
-    Keyboard.dismiss();
 
-    getSocket()?.emit('send_message', {
-      senderId: myId,
+    const socket = getSocket();
+    if (!socket) {
+      alert('Erro: Conexão não estabelecida. Tente novamente.');
+      return;
+    }
+
+    if (!socket.connected) {
+      // Aguarda conexão antes de enviar
+      const connectTimeout = setTimeout(() => {
+        alert('Erro: Tempo esgotado ao conectar. Tente novamente.');
+      }, 5000);
+
+      socket.once('connect', () => {
+        clearTimeout(connectTimeout);
+        sendMessageNow(socket, content);
+      });
+      return;
+    }
+
+    sendMessageNow(socket, content);
+  };
+
+  const sendMessageNow = (socket: any, content: string) => {
+    setNewMessageContent('');
+
+    socket.emit('send_message', {
       receiverId: userId,
       content,
     });
@@ -166,7 +202,7 @@ export default function ChatScreen({ navigation }: any) {
       setMessagesWithUser({
         data: {
           ...chatData,
-          messages: [...(chatData.messages || []), newMsg],
+          messages: [newMsg, ...(chatData.messages || [])],
         },
         userId,
         status: 'success',
@@ -174,30 +210,28 @@ export default function ChatScreen({ navigation }: any) {
     }
   };
 
-  if (!chatData || messagesStore.withUser.loading) {
+  if (messagesStore.withUser.loading || (!chatData && messagesStore.withUser.status === null)) {
     return (
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={[styles.safeArea, { backgroundColor: theme.highLight, paddingTop: insets.top }]}>
-          <View style={[styles.loadingWrapper]}>
-            <ActivityIndicator
-              size="large"
-              color={theme.primary50}
-              style={[styles.wrapper]}
-            />
-          </View>
+      <View style={[styles.safeArea, { backgroundColor: theme.highLight, paddingTop: insets.top }]}>
+        <View style={[styles.loadingWrapper]}>
+          <ActivityIndicator
+            size="large"
+            color={theme.primary50}
+            style={[styles.wrapper]}
+          />
         </View>
-      </TouchableWithoutFeedback>
+      </View>
     );
   }
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={[styles.safeArea, { backgroundColor: theme.highLight, paddingTop: insets.top }]}>
-        <KeyboardAvoidingView
-          style={styles.container}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
-        >
+    <View style={[styles.safeArea, { backgroundColor: theme.highLight, paddingTop: insets.top }]}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={0}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={[styles.headBlock, { borderColor: theme.primary10 }]}>
             <View style={[styles.headContainer]}>
               <TouchableOpacity onPress={goBack}>
@@ -217,35 +251,41 @@ export default function ChatScreen({ navigation }: any) {
               </TouchableOpacity>
             </View>
           </View>
+        </TouchableWithoutFeedback>
 
-          <ScrollView
-            contentContainerStyle={styles.contentWrapper}
-            ref={scrollViewRef}
-            onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
-          >
-            {chatData?.messages?.map((message) => (
-              <View style={[styles.messageContainer, { alignItems: messagePosition(message.senderId) }]} key={message.id}>
-                <Message
-                  key={message.id}
-                  message={message.content}
-                  sender={getSenderById(message.senderId)}
-                />
-              </View>
-            ))}
-          </ScrollView>
+        <FlatList
+          ref={flatListRef}
+          data={chatData?.messages || []}
+          keyExtractor={(item) => item.id.toString()}
+          inverted
+          onEndReached={loadMoreMessages}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            loadingMore ? (
+              <ActivityIndicator size="small" color={theme.primary50} style={{ padding: 16 }} />
+            ) : null
+          }
+          renderItem={({ item: message }) => (
+            <View style={[styles.messageContainer, { alignItems: messagePosition(message.senderId) }]}>
+              <Message
+                message={message.content}
+                sender={getSenderById(message.senderId)}
+              />
+            </View>
+          )}
+          contentContainerStyle={styles.contentWrapper}
+        />
 
-          <View style={[styles.chatInputContainer]}>
-            <ChatInput
-              placeholder={chatLocale.placeholder}
-              value={newMessageContent}
-              onChangeText={setNewMessageContent}
-              onSendMessage={() => sendMessage(newMessageContent)}
-              onFocus={() => scrollViewRef.current?.scrollToEnd({ animated: false })}
-            />
-          </View>
-        </KeyboardAvoidingView>
-      </View>
-    </TouchableWithoutFeedback>
+        <View style={[styles.chatInputContainer, { paddingBottom: Platform.OS === 'ios' ? insets.bottom : 24 }]}>
+          <ChatInput
+            placeholder={chatLocale.placeholder}
+            value={newMessageContent}
+            onChangeText={setNewMessageContent}
+            onSendMessage={() => sendMessage(newMessageContent)}
+          />
+        </View>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 
@@ -288,14 +328,6 @@ const styles = StyleSheet.create({
   blockTitle: {
     fontSize: 20,
     fontFamily: 'primaryBold',
-  },
-  listContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    height: '100%',
-    marginBottom: 120,
-    backgroundColor: 'red',
   },
   messageContainer: {
     width: '100%',
