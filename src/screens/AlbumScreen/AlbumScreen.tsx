@@ -15,6 +15,10 @@ import Button from '@/components/Button/Button';
 import useStore from '@/services/store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLayoutCalculations } from './useLayoutCalculations';
+import EmptyState from '@/components/EmptyState';
+import ErrorState from '@/components/ErrorState';
+import { putLastAccess } from '@/services/actions/albums/albums.requests';
+import { getAlbumName } from '@/utils/albumName';
 
 export default function AlbumScreen({ navigation }: any) {
   const [filter, setFilter] = useState('');
@@ -40,13 +44,20 @@ export default function AlbumScreen({ navigation }: any) {
 
   const route = useRoute<RouteProp<{ params: AlbumScreenRouteParams }>>();
   const { theme } = useTheme();
-  const { locale } = useContext(LocaleContext);
-  const { album: albumLocale } = locale;
+  const { locale, language } = useContext(LocaleContext);
+  const { album: albumLocale, errors: errorsLocale } = locale;
 
   const { albumId, userId: userIdByParam } = route.params;
 
   const myUserId = summaryStore?.data?.id;
   const userId = userIdByParam || myUserId;
+  const isExternalAlbum = !!userIdByParam && userIdByParam !== myUserId;
+
+  useEffect(() => {
+    if (albumId && !isExternalAlbum) {
+      putLastAccess({ userAlbumId: albumId });
+    }
+  }, [albumId, isExternalAlbum]);
 
   const { numColumns: actualNumColumns, itemWidth, buttonHeight } = useLayoutCalculations(screenData);
 
@@ -350,6 +361,32 @@ export default function AlbumScreen({ navigation }: any) {
     navigation.goBack();
   };
 
+  const handleRetryAlbumDetails = useCallback(() => {
+    const ownership = getOwnershipValue(selectedChip);
+    const terms = searchTerm.trim() || undefined;
+    const categories = selectedCategories.length > 0 ? selectedCategories : undefined;
+    requestAlbumDetails({
+      userAlbumId: albumId,
+      page: currentPage,
+      maxStickers: 70,
+      ownership,
+      terms,
+      categories,
+    });
+  }, [albumId, currentPage, selectedChip, searchTerm, selectedCategories, getOwnershipValue, requestAlbumDetails]);
+
+  if (albumDetailsStore.status === 'error' && !albumDetailsStore.data) {
+    return (
+      <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]}>
+        <ErrorState
+          title={albumLocale.error}
+          onRetry={handleRetryAlbumDetails}
+          retryLabel={errorsLocale.retry}
+        />
+      </SafeAreaView>
+    );
+  }
+
   if (albumDetailsStore.loading || !albumDetailsStore.data || isSyncingCache) {
     return (
       <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]}>
@@ -378,7 +415,7 @@ export default function AlbumScreen({ navigation }: any) {
 
           <View style={[styles.albumInfos]}>
             <Text style={[styles.albumName, { color: theme.primary100 }]}>
-              {albumDetailsStore.data?.name}
+              {getAlbumName(albumDetailsStore.data?.name, language)}
               <Text style={[styles.stickersCount, { color: theme.grey20 }]}>{` (${albumDetailsStore.data?.totalStickers})`}</Text>
             </Text>
           </View>
@@ -445,13 +482,19 @@ export default function AlbumScreen({ navigation }: any) {
         numColumns={actualNumColumns}
         contentContainerStyle={[
           styles.gridContainer,
-          { paddingBottom: 16 }
+          { paddingBottom: 16 },
+          stickers.length === 0 && { flexGrow: 1 },
         ]}
         style={styles.flatList}
         ListHeaderComponent={() => (
           <Text style={[styles.stickersQty, { color: theme.grey20 }]}>
             {albumLocale.stickersQty(stickersQuantity)}
           </Text>
+        )}
+        ListEmptyComponent={() => (
+          <EmptyState
+            title={albumLocale.empty}
+          />
         )}
         ListFooterComponent={renderPagination}
         removeClippedSubviews={true}

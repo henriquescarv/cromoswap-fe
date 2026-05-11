@@ -12,6 +12,7 @@ const Locales = {
   },
   register: {
     title: 'Registrati!',
+    error: 'Impossibile creare l\'account. Riprova.',
     description: 'Crea un account per continuare',
     passwordStepTitle: 'Crea una password',
     continueButton: 'Continua',
@@ -22,8 +23,8 @@ const Locales = {
     termsAnd: ' e ',
     privacyLink: 'Politica sulla privacy',
     links: {
-      terms: 'https://www.cromoswap.app/it/termini',
-      privacy: 'https://www.cromoswap.app/it/privacy',
+      terms: 'https://www.cromoswap.app/ita/terms',
+      privacy: 'https://www.cromoswap.app/ita/privacy',
     },
     inputs: {
       nameTitle: 'Nome utente',
@@ -68,7 +69,7 @@ const Locales = {
     nearYou: {
       nearYouTitle: 'Collezionisti vicini',
       seeProfile: 'Vedi profilo',
-      trocables: 'SCAMBIABILI',
+      trocables: (qty) => qty === 1 ? 'SCAMBIABILE' : 'SCAMBIABILI',
       noPermissionText: 'Per vedere i collezionisti vicini, devi ',
       noPermissionButton: 'consentire l\'uso della posizione',
       noPermissionButtonSettings: 'abilitare la posizione',
@@ -81,10 +82,15 @@ const Locales = {
       totalStickers: quantity => `${quantity} figurine`,
     },
   },
+  errors: {
+    retry: 'Ricarica',
+  },
   chooseAlbum: {
     albumsTitle: 'Album disponibili',
     seeMoreButtonLabel: 'Vedi altro',
-    searchPlaceholder: 'Es: “Copa 2026”',
+    searchPlaceholder: 'Es: “Copa 2026”', empty: 'Hai già tutti gli album!',
+    emptySearch: 'Nessun album trovato',
+    error: 'Impossibile caricare gli album disponibili',
   },
   myAlbums: {
     albumsTitle: 'I tuoi album',
@@ -93,6 +99,7 @@ const Locales = {
     searchPlaceholder: 'Es: “Copa 2026”',
     noAlbums: 'Non hai ancora album! Clicca sul pulsante qui sotto per iniziare a collezionare!',
     noAlbumsExternalUser: 'L\'utente non ha ancora album!',
+    error: 'Impossibile caricare gli album',
     deleteSheet: {
       title: 'Vuoi davvero eliminare questo album?',
       warning: 'Questa azione non può essere annullata.',
@@ -105,6 +112,7 @@ const Locales = {
     stickersLabel: quantity => `${quantity} figurine`,
     collectAlbumButtonLabel: 'Colleziona album',
     goBackButtonLabel: 'Indietro',
+    error: 'Impossibile collezionare questo album. Riprova.',
   },
   nearYou: {
     title: 'Collezionisti vicini',
@@ -113,11 +121,13 @@ const Locales = {
     message: 'Messaggio',
     youHave: 'HAI',
     youNeed: 'TI SERVE',
+    error: 'Impossibile caricare gli utenti vicini',
   },
   album: {
     searchPlaceholder: 'Cerca figurina',
     categoryPlaceholder: 'Categoria',
     categoryConfirm: 'Conferma',
+    error: 'Impossibile caricare le figurine',
     filterChips: {
       iHave: 'Ho',
       iMissing: 'Mancano',
@@ -130,6 +140,7 @@ const Locales = {
     },
     clearFilters: 'Pulisci filtri',
     stickersQty: quantity => `Mostrando ${quantity} figurine`,
+    empty: 'Nessuna figurina trovata',
   },
   userProfile: {
     editProfile: 'Modifica profilo',
@@ -142,6 +153,8 @@ const Locales = {
     follow: 'Segui',
     unfollow: 'Smetti di seguire',
     sendMessage: 'Messaggio',
+    followError: 'Impossibile seguire l\'utente. Riprova.',
+    unfollowError: 'Impossibile smettere di seguire. Riprova.',
 
     noAlbums: 'Non hai ancora album! Clicca sul pulsante qui sotto per iniziare a collezionare!',
 
@@ -160,15 +173,16 @@ const Locales = {
     terms: 'Termini di utilizzo',
     deleteAccount: 'Elimina account',
     links: {
-      support: 'https://www.cromoswap.app/it/supporto',
-      privacy: 'https://www.cromoswap.app/it/privacy',
-      terms: 'https://www.cromoswap.app/it/termini',
-      deleteAccount: 'https://www.cromoswap.app/it/elimina-account',
+      support: 'https://www.cromoswap.app/ita/support',
+      privacy: 'https://www.cromoswap.app/ita/privacy',
+      terms: 'https://www.cromoswap.app/ita/terms',
+      deleteAccount: 'https://www.cromoswap.app/ita/delete-account',
     }
   },
   notifications: {
     title: 'Notifiche',
     newFollower: 'ha iniziato a seguirti!',
+    empty: 'Nessuna notifica',
     time: {
       now: 'Ora',
       minute: (time) => `${time}min`,
@@ -178,13 +192,15 @@ const Locales = {
   },
   messages: {
     title: 'Messaggi',
+    empty: 'Nessuna conversazione',
     messageCard: {
       you: 'Tu: ',
     }
   },
   chat: {
     title: 'Messaggi',
-    placeholder: 'Scrivi il tuo messaggio...'
+    placeholder: 'Scrivi il tuo messaggio...',
+    error: 'Impossibile inviare il messaggio. Riprova.',
   },
   followListScreen: {
     followers: 'Follower',

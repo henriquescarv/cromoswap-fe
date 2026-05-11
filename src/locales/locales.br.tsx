@@ -12,6 +12,7 @@ const Locales = {
   },
   register: {
     title: 'Cadastre-se!',
+    error: 'Erro ao criar conta. Tente novamente.',
     description: 'Crie uma conta para continuar',
     passwordStepTitle: 'Crie uma senha',
     continueButton: 'Continuar',
@@ -22,8 +23,8 @@ const Locales = {
     termsAnd: ' e ',
     privacyLink: 'Políticas de Privacidade',
     links: {
-      terms: 'https://www.cromoswap.app/pt-br/termos',
-      privacy: 'https://www.cromoswap.app/pt-br/privacidade',
+      terms: 'https://www.cromoswap.app/pt-br/terms',
+      privacy: 'https://www.cromoswap.app/pt-br/privacy',
     },
     inputs: {
       nameTitle: 'Nome de usuário',
@@ -68,7 +69,7 @@ const Locales = {
     nearYou: {
       nearYouTitle: 'Trocadores próximos',
       seeProfile: 'Ver perfil',
-      trocables: 'TROCÁVEIS',
+      trocables: (qty) => qty === 1 ? 'TROCÁVEL' : 'TROCÁVEIS',
       noPermissionText: 'Para ver colecionadores próximos, você precisa ',
       noPermissionButton: 'permitir o uso da sua localização',
       noPermissionButtonSettings: 'habilitar sua localização',
@@ -81,10 +82,15 @@ const Locales = {
       totalStickers: quantity => `${quantity} cromos`,
     },
   },
+  errors: {
+    retry: 'Recarregar',
+  },
   chooseAlbum: {
     albumsTitle: 'Álbuns disponíveis',
     seeMoreButtonLabel: 'Ver mais',
-    searchPlaceholder: 'Ex: “Copa 2026”',
+    searchPlaceholder: 'Ex: "Copa 2026"', empty: 'Você já tem todos os álbuns!',
+    emptySearch: 'Nenhum álbum encontrado',
+    error: 'Não foi possível carregar os álbuns disponíveis',
   },
   myAlbums: {
     albumsTitle: 'Seus álbuns',
@@ -92,8 +98,7 @@ const Locales = {
     seeMoreButtonLabel: 'Ver mais',
     searchPlaceholder: 'Ex: “Copa 2026”',
     noAlbums: 'Você ainda não possui álbuns! Clique no botão abaixo para começar a colecionar!',
-    noAlbumsExternalUser: 'O usuário ainda não possui álbuns!',
-    deleteSheet: {
+    noAlbumsExternalUser: 'O usuário ainda não possui álbuns!', error: 'Não foi possível carregar os álbuns', deleteSheet: {
       title: 'Deseja mesmo excluir este álbum?',
       warning: 'Esta ação não poderá ser desfeita.',
       confirm: 'Sim, excluir',
@@ -105,6 +110,7 @@ const Locales = {
     stickersLabel: quantity => `${quantity} cromos`,
     collectAlbumButtonLabel: 'Colecionar álbum',
     goBackButtonLabel: 'Voltar',
+    error: 'Erro ao colecionar este álbum. Tente novamente.',
   },
   nearYou: {
     title: 'Trocadores próximos',
@@ -113,11 +119,13 @@ const Locales = {
     message: 'Mensagem',
     youHave: 'VOCÊ POSSUI',
     youNeed: 'VOCÊ PRECISA',
+    error: 'Não foi possível carregar os usuários próximos',
   },
   album: {
     searchPlaceholder: 'Buscar cromo',
     categoryPlaceholder: 'Categoria',
     categoryConfirm: 'Confirmar',
+    error: 'Não foi possível carregar os cromos',
     filterChips: {
       iHave: 'Tenho',
       iMissing: 'Faltam',
@@ -130,6 +138,7 @@ const Locales = {
     },
     clearFilters: 'Limpar filtros',
     stickersQty: quantity => `Exibindo ${quantity} cromos`,
+    empty: 'Nenhum cromo encontrado',
   },
   userProfile: {
     editProfile: 'Editar perfil',
@@ -142,6 +151,8 @@ const Locales = {
     follow: 'Seguir',
     unfollow: 'Deixar de seguir',
     sendMessage: 'Mensagem',
+    followError: 'Erro ao seguir usuário. Tente novamente.',
+    unfollowError: 'Erro ao deixar de seguir. Tente novamente.',
 
     noAlbums: 'Você ainda não possui álbuns! Clique no botão abaixo para começar a colecionar!',
 
@@ -160,15 +171,16 @@ const Locales = {
     terms: 'Termos de uso',
     deleteAccount: 'Deletar conta',
     links: {
-      support: 'https://www.cromoswap.app/pt-br/suporte',
-      privacy: 'https://www.cromoswap.app/pt-br/privacidade',
-      terms: 'https://www.cromoswap.app/pt-br/termos',
-      deleteAccount: 'https://www.cromoswap.app/pt-br/deletar-conta',
+      support: 'https://www.cromoswap.app/pt-br/support',
+      privacy: 'https://www.cromoswap.app/pt-br/privacy',
+      terms: 'https://www.cromoswap.app/pt-br/terms',
+      deleteAccount: 'https://www.cromoswap.app/pt-br/delete-account',
     }
   },
   notifications: {
     title: 'Notificações',
     newFollower: 'começou a seguir você!',
+    empty: 'Nenhuma notificação por aqui',
     time: {
       now: 'Agora',
       minute: (time) => `${time}min`,
@@ -178,6 +190,7 @@ const Locales = {
   },
   messages: {
     title: 'Mensagens',
+    empty: 'Nenhuma conversa ainda',
     messageCard: {
       you: 'Você: ',
     }
@@ -185,6 +198,7 @@ const Locales = {
   chat: {
     title: 'Mensagens',
     placeholder: 'Digite sua mensagem...',
+    error: 'Erro ao enviar mensagem. Tente novamente.',
   },
   followListScreen: {
     followers: 'Seguidores',

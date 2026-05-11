@@ -9,6 +9,7 @@ import { useRoute } from '@react-navigation/native';
 import { ChatInput } from './components/ChatInput';
 import useStore from '@/services/store';
 import { connectSocket, disconnectSocket, getSocket } from '@/services/socket/socket';
+import { useToast } from '@/providers/ToastProvider';
 
 export default function ChatScreen({ navigation }: any) {
   const [newMessageContent, setNewMessageContent] = useState('');
@@ -34,6 +35,7 @@ export default function ChatScreen({ navigation }: any) {
   const route = useRoute<any>();
 
   const { chat: chatLocale } = locale;
+  const { showToast } = useToast();
 
   const userId = route?.params?.userId || null;
   const myId = summaryStore.data?.id;
@@ -67,7 +69,7 @@ export default function ChatScreen({ navigation }: any) {
 
     socket.on('error', (error) => {
       console.error('Socket error:', error);
-      alert(`Erro ao enviar mensagem: ${error.message}`);
+      showToast('warning', chatLocale.error);
     });
 
     socket.on('receive_message', (msg) => {
@@ -162,14 +164,14 @@ export default function ChatScreen({ navigation }: any) {
 
     const socket = getSocket();
     if (!socket) {
-      alert('Erro: Conexão não estabelecida. Tente novamente.');
+      showToast('warning', chatLocale.error);
       return;
     }
 
     if (!socket.connected) {
       // Aguarda conexão antes de enviar
       const connectTimeout = setTimeout(() => {
-        alert('Erro: Tempo esgotado ao conectar. Tente novamente.');
+        showToast('warning', chatLocale.error);
       }, 5000);
 
       socket.once('connect', () => {

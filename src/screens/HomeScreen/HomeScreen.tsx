@@ -2,12 +2,14 @@ import React, { useCallback, useContext, useEffect, useMemo, useState } from 're
 import { StyleSheet, Text, View, TouchableWithoutFeedback, Keyboard, FlatList, ScrollView, TouchableOpacity, Linking } from 'react-native';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
+import { getAlbumName } from '@/utils/albumName';
 import Button from '@/components/Button/Button';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserCard } from './components/UserCard';
 import { Album } from '@/components/Album';
 import { Ionicons } from '@expo/vector-icons';
 import useStore from '@/services/store';
+import EmptyState from '@/components/EmptyState';
 import { Skeleton } from '@/components/Skeleton';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Location from 'expo-location';
@@ -15,7 +17,7 @@ import { connectSocket, disconnectSocket } from '@/services/socket/socket';
 
 export default function HomeScreen({ navigation }: any) {
   const { theme } = useTheme();
-  const { locale } = useContext(LocaleContext);
+  const { locale, language } = useContext(LocaleContext);
   const { home: homeLocale } = locale;
 
   const [locationPermission, setLocationPermission] = useState<'granted' | 'denied' | 'undetermined' | null>(null);
@@ -219,7 +221,7 @@ export default function HomeScreen({ navigation }: any) {
                     <UserCard
                       username={item.username}
                       trocableStickers={item.trocableStickers}
-                      albums={item.albumsInCommon}
+                      albums={item.albumsInCommon.map((a: any) => getAlbumName(a, language))}
                       onClick={() => goToUserProfileScreen(item.id)}
                     />
                   )}
@@ -274,7 +276,7 @@ export default function HomeScreen({ navigation }: any) {
               {!userAlbumsStore.loading && albums.slice(0, 2).map((item) => (
                 <Album
                   key={item.id}
-                  name={item.name}
+                  name={getAlbumName(item.name, language)}
                   image={item.image}
                   percentCompleted={item.percentCompleted}
                   onClick={() => goToAlbumScreen(item.userAlbumId)}
@@ -282,9 +284,10 @@ export default function HomeScreen({ navigation }: any) {
               ))}
 
               {!userAlbumsStore.loading && !albums?.length && (
-                <View style={[styles.emptyStateContainer]}>
-                  <Text style={[styles.emptyStateText, { color: theme.primary100 }]}>{homeLocale.albums.noAlbums}</Text>
-                </View>
+                <EmptyState
+                  title={homeLocale.albums.noAlbums}
+                  style={{ minHeight: 180 }}
+                />
               )}
 
               <TouchableOpacity style={[styles.plusButton, { borderColor: theme.primary100 }]} onPress={goToChooseAlbumScreen}>

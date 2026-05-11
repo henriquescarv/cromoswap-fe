@@ -8,6 +8,9 @@ import { Ionicons } from '@expo/vector-icons';
 import Search from '@/components/Search/Search';
 import { AlbumType } from './ChooseAlbumScreen.types';
 import useStore from '@/services/store';
+import EmptyState from '@/components/EmptyState';
+import ErrorState from '@/components/ErrorState';
+import { getAlbumName } from '@/utils/albumName';
 
 export default function ChooseAlbumScreen({ navigation }: any) {
   const [filter, setFilter] = useState('');
@@ -17,8 +20,8 @@ export default function ChooseAlbumScreen({ navigation }: any) {
   const { albumsTemplates: albumsTemplatesStore, userAlbums: userAlbumsStore, requestAlbumsTemplates, requestUserAlbums } = useStore((state: any) => state);
 
   const { theme } = useTheme();
-  const { locale } = useContext(LocaleContext);
-  const { chooseAlbum: chooseAlbumLocale } = locale;
+  const { locale, language } = useContext(LocaleContext);
+  const { chooseAlbum: chooseAlbumLocale, errors: errorsLocale } = locale;
 
   const getDefaultData = useCallback(() => {
     if (albumsTemplatesStore.status === null) {
@@ -43,7 +46,7 @@ export default function ChooseAlbumScreen({ navigation }: any) {
     }
 
     const filteredByName = templateAlbums.filter((item) =>
-      item.name.toLowerCase().includes(filter.toLowerCase())
+      getAlbumName(item.name, language).toLowerCase().includes(filter.toLowerCase())
     );
 
     const filteredByTags = templateAlbums.filter((item) =>
@@ -86,6 +89,20 @@ export default function ChooseAlbumScreen({ navigation }: any) {
     );
   }
 
+  if (albumsTemplatesStore.status === 'error') {
+    return (
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={[styles.safeArea, { backgroundColor: theme.highLight, paddingTop: insets.top }]}>
+          <ErrorState
+            title={chooseAlbumLocale.error}
+            onRetry={requestAlbumsTemplates}
+            retryLabel={errorsLocale.retry}
+          />
+        </View>
+      </TouchableWithoutFeedback>
+    );
+  }
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={[styles.safeArea, { backgroundColor: theme.highLight, paddingTop: insets.top }]}>
@@ -110,20 +127,31 @@ export default function ChooseAlbumScreen({ navigation }: any) {
             />
           </View>
 
-          <ScrollView style={[styles.contentWrapper]}>
-            <View style={[styles.blockContainer]}>
-              <View style={[styles.albumsContainer]}>
-                {filteredList.map((item) => (
-                  <Album
-                    key={item.id}
-                    name={item.name}
-                    image={item.image}
-                    totalStickers={item.totalStickers}
-                    onClick={() => goToPurchaseAlbum(item)}
-                  />
-                ))}
+          <ScrollView style={[styles.contentWrapper]} contentContainerStyle={(templateAlbums.length === 0 || filteredList.length === 0) ? styles.emptyContainer : undefined}>
+            {templateAlbums.length === 0 ? (
+              <EmptyState
+                variant="done"
+                title={chooseAlbumLocale.empty}
+              />
+            ) : filteredList.length === 0 ? (
+              <EmptyState
+                title={chooseAlbumLocale.emptySearch}
+              />
+            ) : (
+              <View style={[styles.blockContainer]}>
+                <View style={[styles.albumsContainer]}>
+                  {filteredList.map((item) => (
+                    <Album
+                      key={item.id}
+                      name={getAlbumName(item.name, language)}
+                      image={item.image}
+                      totalStickers={item.totalStickers}
+                      onClick={() => goToPurchaseAlbum(item)}
+                    />
+                  ))}
+                </View>
               </View>
-            </View>
+            )}
           </ScrollView>
         </View>
       </View>
@@ -161,6 +189,9 @@ const styles = StyleSheet.create({
   contentWrapper: {
     display: 'flex',
     width: '100%',
+    flex: 1,
+  },
+  emptyContainer: {
     flex: 1,
   },
   blockContainer: {

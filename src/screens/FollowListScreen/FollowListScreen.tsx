@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View, TouchableWithoutFeedback, Keyboard, FlatList, ScrollView, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import NotificationCard from './components/NotificationCard/FollowCard';
 import { useRoute } from '@react-navigation/native';
 import useStore from '@/services/store';
+import { useToast } from '@/providers/ToastProvider';
 import FollowCard from './components/NotificationCard/FollowCard';
 
 export default function FollowListScreen({ navigation }: any) {
@@ -22,11 +23,33 @@ export default function FollowListScreen({ navigation }: any) {
   const {
     follows: followsStore,
     summary: summaryStore,
+    followUser: followUserStore,
+    unfollowUser: unfollowUserStore,
     requestUnfollowUser,
     requestFollowUser,
     requestFollows,
     requestNotifications,
   } = useStore((state: any) => state);
+
+  const { showToast } = useToast();
+  const { userProfile: userProfileLocale } = locale;
+
+  const prevFollowStatus = useRef(followUserStore?.status);
+  const prevUnfollowStatus = useRef(unfollowUserStore?.status);
+
+  useEffect(() => {
+    if (followUserStore?.status === 'error' && prevFollowStatus.current !== 'error') {
+      showToast('warning', userProfileLocale.followError);
+    }
+    prevFollowStatus.current = followUserStore?.status;
+  }, [followUserStore?.status]);
+
+  useEffect(() => {
+    if (unfollowUserStore?.status === 'error' && prevUnfollowStatus.current !== 'error') {
+      showToast('warning', userProfileLocale.unfollowError);
+    }
+    prevUnfollowStatus.current = unfollowUserStore?.status;
+  }, [unfollowUserStore?.status]);
 
   const getDefaultData = useCallback(() => {
     requestFollows({ userId, type });

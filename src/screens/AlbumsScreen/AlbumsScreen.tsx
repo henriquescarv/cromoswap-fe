@@ -6,6 +6,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Album } from '@/components/Album';
 import { Ionicons } from '@expo/vector-icons';
 import Search from '@/components/Search/Search';
+import EmptyState from '@/components/EmptyState';
+import ErrorState from '@/components/ErrorState';
+import { getAlbumName } from '@/utils/albumName';
 import { AlbumType } from './AlbumsScreen.types';
 import useStore from '@/services/store';
 import { useRoute } from '@react-navigation/native';
@@ -31,8 +34,8 @@ export default function AlbumsScreen({ navigation }: any) {
   } = useStore((state: any) => state);
 
   const { theme } = useTheme();
-  const { locale } = useContext(LocaleContext);
-  const { myAlbums: myAlbumsLocale } = locale;
+  const { locale, language } = useContext(LocaleContext);
+  const { myAlbums: myAlbumsLocale, errors: errorsLocale } = locale;
 
   const route = useRoute<any>();
 
@@ -63,7 +66,7 @@ export default function AlbumsScreen({ navigation }: any) {
     }
 
     const filteredByName = albumsList.filter((item) =>
-      item.name.toLowerCase().includes(filter.toLowerCase())
+      getAlbumName(item.name, language).toLowerCase().includes(filter.toLowerCase())
     );
 
     const filteredByTags = albumsList.filter((item) =>
@@ -124,6 +127,28 @@ export default function AlbumsScreen({ navigation }: any) {
     );
   }
 
+  const albumsError = isExternalUser
+    ? externalUserAlbumsStore.status === 'error'
+    : userAlbumsStore.status === 'error';
+
+  const retryAlbums = isExternalUser
+    ? () => requestExternalUserAlbums({ userId })
+    : requestUserAlbums;
+
+  if (albumsError) {
+    return (
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={[styles.safeArea, { backgroundColor: theme.highLight, paddingTop: insets.top }]}>
+          <ErrorState
+            title={myAlbumsLocale.error}
+            onRetry={retryAlbums}
+            retryLabel={errorsLocale.retry}
+          />
+        </View>
+      </TouchableWithoutFeedback>
+    );
+  }
+
   return (
     <>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -151,9 +176,13 @@ export default function AlbumsScreen({ navigation }: any) {
             </View>
 
             {!filteredList?.length && (
-              <View style={[styles.emptyWrapper]}>
-                <Text style={[styles.emptyStateText, { color: theme.primary100 }]}>{isExternalUser ? myAlbumsLocale.noAlbumsExternalUser : myAlbumsLocale.noAlbums}</Text>
+              <EmptyState
+                title={isExternalUser ? myAlbumsLocale.noAlbumsExternalUser : myAlbumsLocale.noAlbums}
+              />
+            )}
 
+            {!filteredList?.length && !isExternalUser && (
+              <View style={styles.plusButtonWrapper}>
                 <TouchableOpacity style={[styles.plusButton, { borderColor: theme.primary100 }]} onPress={goToChooseAlbumScreen}>
                   <Ionicons
                     name={"add"}
@@ -171,7 +200,7 @@ export default function AlbumsScreen({ navigation }: any) {
                     {filteredList.map(item => (
                       <Album
                         key={item.id}
-                        name={item.name}
+                        name={getAlbumName(item.name, language)}
                         image={item.image}
                         percentCompleted={item.percentCompleted}
                         onClick={() => goToAlbumScreen(item.userAlbumId)}
@@ -258,6 +287,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'primaryMedium',
     textAlign: 'center',
+  },
+  plusButtonWrapper: {
+    position: 'absolute',
+    bottom: 40,
+    alignSelf: 'center',
   },
   plusButton: {
     borderRadius: 16,

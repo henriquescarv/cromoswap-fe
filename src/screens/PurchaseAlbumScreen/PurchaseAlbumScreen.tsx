@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View, TouchableWithoutFeedback, Keyboard, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
@@ -7,10 +7,12 @@ import { useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import Button from '@/components/Button/Button';
 import useStore from '@/services/store';
+import { getAlbumName } from '@/utils/albumName';
+import { useToast } from '@/providers/ToastProvider';
 
 export default function PurchaseAlbumScreen({ navigation }: any) {
   const { theme } = useTheme();
-  const { locale } = useContext(LocaleContext);
+  const { locale, language } = useContext(LocaleContext);
   const route = useRoute();
   const insets = useSafeAreaInsets();
 
@@ -19,12 +21,23 @@ export default function PurchaseAlbumScreen({ navigation }: any) {
   const { album } = route.params as any;
 
   const { purchaseAlbum: purchaseAlbumStore, requestPurchaseAlbum } = useStore((state: any) => state);
+  const { showToast } = useToast();
+  const purchaseClickedRef = useRef(false);
 
-  const handlePurchaseAlbum = useCallback(async () => {
-    await requestPurchaseAlbum({ albumTemplateId: album.id }).then(() => {
+  useEffect(() => {
+    if (!purchaseClickedRef.current) return;
+    if (purchaseAlbumStore.status === 'success') {
       navigation.navigate('Main');
-    });
-  }, []);
+    } else if (purchaseAlbumStore.status === 'error') {
+      purchaseClickedRef.current = false;
+      showToast('warning', purchaseAlbumLocale.error);
+    }
+  }, [purchaseAlbumStore.status]);
+
+  const handlePurchaseAlbum = useCallback(() => {
+    purchaseClickedRef.current = true;
+    requestPurchaseAlbum({ albumTemplateId: album.id });
+  }, [album.id, requestPurchaseAlbum]);
 
   const goBack = () => {
     navigation.goBack();
@@ -39,7 +52,7 @@ export default function PurchaseAlbumScreen({ navigation }: any) {
               <Ionicons name="chevron-back-outline" size={32} color={theme.primary50} />
             </TouchableOpacity>
             <Text style={[styles.headerTitle, { color: theme.primary100 }]}>
-              {album.name}
+              {getAlbumName(album.name, language)}
             </Text>
           </View>
 

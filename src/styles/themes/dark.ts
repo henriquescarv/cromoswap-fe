@@ -13,6 +13,7 @@ const darkTheme = {
   grey15: '#B0B0B0',
   grey20: '#67676C',
 
+  primary5: '#1E0F2B',
   primary10: '#381A51',
   primary20: '#994ED2',
   primary50: '#994ED2',

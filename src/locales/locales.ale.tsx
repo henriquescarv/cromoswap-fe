@@ -12,6 +12,7 @@ const Locales = {
   },
   register: {
     title: 'Registrieren!',
+    error: 'Konto konnte nicht erstellt werden. Bitte erneut versuchen.',
     description: 'Erstelle ein Konto, um fortzufahren',
     passwordStepTitle: 'Passwort erstellen',
     continueButton: 'Weiter',
@@ -22,8 +23,8 @@ const Locales = {
     termsAnd: ' und ',
     privacyLink: 'Datenschutzrichtlinie',
     links: {
-      terms: 'https://www.cromoswap.app/de/nutzungsbedingungen',
-      privacy: 'https://www.cromoswap.app/de/datenschutz',
+      terms: 'https://www.cromoswap.app/ale/terms',
+      privacy: 'https://www.cromoswap.app/ale/privacy',
     },
     inputs: {
       nameTitle: 'Benutzername',
@@ -68,7 +69,7 @@ const Locales = {
     nearYou: {
       nearYouTitle: 'Sammler in der Nähe',
       seeProfile: 'Profil ansehen',
-      trocables: 'TAUSCHBAR',
+      trocables: (_qty) => 'TAUSCHBAR',
       noPermissionText: 'Um Sammler in der Nähe zu sehen, musst du ',
       noPermissionButton: 'Standortfreigabe erlauben',
       noPermissionButtonSettings: 'Standort aktivieren',
@@ -81,10 +82,15 @@ const Locales = {
       totalStickers: quantity => `${quantity} Sticker`,
     },
   },
+  errors: {
+    retry: 'Neu laden',
+  },
   chooseAlbum: {
     albumsTitle: 'Verfügbare Alben',
     seeMoreButtonLabel: 'Mehr anzeigen',
-    searchPlaceholder: 'Z.B.: “WM 2026”',
+    searchPlaceholder: 'Z.B.: "WM 2026"', empty: 'Du hast bereits alle Alben!',
+    emptySearch: 'Keine Alben gefunden',
+    error: 'Verfügbare Alben konnten nicht geladen werden',
   },
   myAlbums: {
     albumsTitle: 'Deine Alben',
@@ -92,8 +98,7 @@ const Locales = {
     seeMoreButtonLabel: 'Mehr anzeigen',
     searchPlaceholder: 'Z.B.: “WM 2026”',
     noAlbums: 'Du hast noch keine Alben! Klicke unten, um zu sammeln!',
-    noAlbumsExternalUser: 'Der Nutzer hat noch keine Alben!',
-    deleteSheet: {
+    noAlbumsExternalUser: 'Der Nutzer hat noch keine Alben!', error: 'Alben konnten nicht geladen werden', deleteSheet: {
       title: 'Möchtest du dieses Album wirklich löschen?',
       warning: 'Diese Aktion kann nicht rückgängig gemacht werden.',
       confirm: 'Ja, löschen',
@@ -105,6 +110,7 @@ const Locales = {
     stickersLabel: quantity => `${quantity} Sticker`,
     collectAlbumButtonLabel: 'Album sammeln',
     goBackButtonLabel: 'Zurück',
+    error: 'Dieses Album konnte nicht gesammelt werden. Bitte erneut versuchen.',
   },
   nearYou: {
     title: 'Sammler in der Nähe',
@@ -113,11 +119,13 @@ const Locales = {
     message: 'Nachricht',
     youHave: 'DU HAST',
     youNeed: 'DU BRAUCHST',
+    error: 'Nutzer in der Nähe konnten nicht geladen werden',
   },
   album: {
     searchPlaceholder: 'Sticker suchen',
     categoryPlaceholder: 'Kategorie',
     categoryConfirm: 'Bestätigen',
+    error: 'Sticker konnten nicht geladen werden',
     filterChips: {
       iHave: 'Ich habe',
       iMissing: 'Fehlen',
@@ -130,6 +138,7 @@ const Locales = {
     },
     clearFilters: 'Filter löschen',
     stickersQty: quantity => `${quantity} Sticker angezeigt`,
+    empty: 'Keine Sticker gefunden',
   },
   userProfile: {
     editProfile: 'Profil bearbeiten',
@@ -142,6 +151,8 @@ const Locales = {
     follow: 'Folgen',
     unfollow: 'Nicht mehr folgen',
     sendMessage: 'Nachricht',
+    followError: 'Nutzer konnte nicht gefolgt werden. Bitte erneut versuchen.',
+    unfollowError: 'Entfolgen fehlgeschlagen. Bitte erneut versuchen.',
 
     noAlbums: 'Du hast noch keine Alben! Klicke unten, um zu sammeln!',
 
@@ -160,15 +171,16 @@ const Locales = {
     terms: 'Nutzungsbedingungen',
     deleteAccount: 'Konto löschen',
     links: {
-      support: 'https://www.cromoswap.app/de/support',
-      privacy: 'https://www.cromoswap.app/de/datenschutz',
-      terms: 'https://www.cromoswap.app/de/nutzungsbedingungen',
-      deleteAccount: 'https://www.cromoswap.app/de/konto-löschen',
+      support: 'https://www.cromoswap.app/ale/support',
+      privacy: 'https://www.cromoswap.app/ale/privacy',
+      terms: 'https://www.cromoswap.app/ale/terms',
+      deleteAccount: 'https://www.cromoswap.app/ale/delete-account',
     }
   },
   notifications: {
     title: 'Benachrichtigungen',
     newFollower: 'folgt dir jetzt!',
+    empty: 'Noch keine Benachrichtigungen',
     time: {
       now: 'Jetzt',
       minute: (time) => `${time}min`,
@@ -178,13 +190,15 @@ const Locales = {
   },
   messages: {
     title: 'Nachrichten',
+    empty: 'Noch keine Gespräche',
     messageCard: {
       you: 'Du: ',
     }
   },
   chat: {
     title: 'Nachrichten',
-    placeholder: 'Schreibe deine Nachricht...'
+    placeholder: 'Schreibe deine Nachricht...',
+    error: 'Nachricht konnte nicht gesendet werden. Bitte erneut versuchen.',
   },
   followListScreen: {
     followers: 'Follower',

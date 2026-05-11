@@ -2,12 +2,14 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { StyleSheet, Text, View, TouchableWithoutFeedback, Keyboard, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
+import { getAlbumName } from '@/utils/albumName';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Search from '@/components/Search/Search';
 import { UserCardFull } from './components/UserCardFull';
 import { UserProps } from './NearYouScreen.types';
 import useStore from '@/services/store';
+import ErrorState from '@/components/ErrorState';
 
 export default function NearYouScreen({ navigation }: any) {
   const [filter, setFilter] = useState('');
@@ -19,8 +21,8 @@ export default function NearYouScreen({ navigation }: any) {
   } = useStore((state: any) => state);
 
   const { theme } = useTheme();
-  const { locale } = useContext(LocaleContext);
-  const { nearYou: nearYouLocale } = locale;
+  const { locale, language } = useContext(LocaleContext);
+  const { nearYou: nearYouLocale, errors: errorsLocale } = locale;
 
   const getDefaultData = useCallback(() => {
     requestUsersByRegion();
@@ -43,7 +45,7 @@ export default function NearYouScreen({ navigation }: any) {
     );
 
     const filteredByTags = users.filter((item) =>
-      item.albumsInCommon.some((tag) => tag.toLowerCase().includes(filter.toLowerCase()))
+      item.albumsInCommon.some((tag) => getAlbumName(tag, language).toLowerCase().includes(filter.toLowerCase()))
     );
 
     const filteredByAll = [...filteredByName, ...filteredByTags].filter(
@@ -85,6 +87,20 @@ export default function NearYouScreen({ navigation }: any) {
     );
   }
 
+  if (usersByRegionStore.status === 'error') {
+    return (
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]} edges={['top', 'left', 'right']}>
+          <ErrorState
+            title={nearYouLocale.error}
+            onRetry={requestUsersByRegion}
+            retryLabel={errorsLocale.retry}
+          />
+        </SafeAreaView>
+      </TouchableWithoutFeedback>
+    );
+  }
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]} edges={['top', 'left', 'right']}>
@@ -117,7 +133,7 @@ export default function NearYouScreen({ navigation }: any) {
                   username={item.username}
                   youNeed={item.youNeed}
                   youHave={item.youHave}
-                  albums={item.albumsInCommon}
+                  albums={item.albumsInCommon.map((a: any) => getAlbumName(a, language))}
                   onClick={() => goToUserProfile(item.id)}
                   onSendMessage={() => goToChat(item.id)}
                 />

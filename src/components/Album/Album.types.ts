@@ -1,5 +1,5 @@
 export type AlbumProps = {
-  name: string;
+  name?: string;
   image?: string;
   totalStickers?: number;
   percentCompleted?: number;

@@ -133,3 +133,16 @@ export const deleteUserAlbum = async ({ userAlbumId }: { userAlbumId: number | s
     throw error;
   }
 };
+
+export const putLastAccess = async ({ userAlbumId }: { userAlbumId: number | string }) => {
+  const state = useStore.getState();
+  const api = useApi({ token: state.login.token });
+
+  try {
+    const response = await api.put(`/user-albums/${userAlbumId}/last-access`);
+
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

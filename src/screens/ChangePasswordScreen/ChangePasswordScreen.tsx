@@ -41,6 +41,7 @@ export default function ChangePasswordScreen({ navigation }: any) {
   const [step, setStep] = useState(isChangePassword ? 2 : 1);
   const [email, setEmail] = useState(isChangePassword ? userEmail : '');
   const [codeValue, setCodeValue] = useState('');
+  const [verifiedToken, setVerifiedToken] = useState('');
   const [hasValidClipboard, setHasValidClipboard] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -83,7 +84,8 @@ export default function ChangePasswordScreen({ navigation }: any) {
   const validateCode = async () => {
     setLoading(true);
     try {
-      await validateResetCode(email, codeValue);
+      const response = await validateResetCode(email, codeValue);
+      setVerifiedToken(response.data.verifiedToken);
       setLoading(false);
       setTimeout(() => {
         setStep(3);
@@ -161,7 +163,7 @@ export default function ChangePasswordScreen({ navigation }: any) {
 
     setLoading(true);
     try {
-      await resetPassword(email, codeValue, newPassword);
+      await resetPassword(email, verifiedToken, newPassword);
       showToast('success', 'Senha alterada com sucesso!');
       goBack();
     } catch (error: any) {

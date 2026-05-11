@@ -13,6 +13,7 @@ import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
 import Button from '@/components/Button/Button';
 import { AlbumType } from '../../AlbumsScreen.types';
+import { getAlbumName } from '@/utils/albumName';
 
 const SHEET_HEIGHT = Dimensions.get('window').height * 0.55;
 
@@ -25,7 +26,7 @@ type DeleteAlbumSheetProps = {
 
 export default function DeleteAlbumSheet({ album, loading, onClose, onConfirm }: DeleteAlbumSheetProps) {
   const { theme } = useTheme();
-  const { locale } = useContext(LocaleContext);
+  const { locale, language } = useContext(LocaleContext);
   const { myAlbums: myAlbumsLocale } = locale;
 
   const [isVisible, setIsVisible] = useState(false);
@@ -104,7 +105,7 @@ export default function DeleteAlbumSheet({ album, loading, onClose, onConfirm }:
               />
               <View style={styles.albumInfo}>
                 <Text style={[styles.albumName, { color: theme.primary100 }]} numberOfLines={2}>
-                  {album.name}
+                  {getAlbumName(album.name, language)}
                 </Text>
                 {album.percentCompleted !== undefined && (
                   <Text style={[styles.albumPercent, { color: theme.grey20 }]}>

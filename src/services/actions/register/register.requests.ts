@@ -2,11 +2,11 @@ import { useApi } from "@/services/api/api";
 import useStore from "@/services/store";
 import { postRegisterProps } from "./register.requests.types";
 
-export const postRegister = async ({ username, email, password }: postRegisterProps) => {
+export const postRegister = async ({ username, email, password, verifiedToken }: postRegisterProps) => {
   const api = useApi({ token: null });
 
   try {
-    const response = await api.post('/register', { username, email, password });
+    const response = await api.post('/register', { username, email, password, verifiedToken });
     return response.data;
   } catch (error) {
     throw error;

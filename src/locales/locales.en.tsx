@@ -12,6 +12,7 @@ const Locales = {
   },
   register: {
     title: 'Sign up!',
+    error: 'Could not create account. Try again.',
     description: 'Create an account to continue',
     passwordStepTitle: 'Create a password',
     continueButton: 'Continue',
@@ -68,7 +69,7 @@ const Locales = {
     nearYou: {
       nearYouTitle: 'Nearby traders',
       seeProfile: 'View profile',
-      trocables: 'TRADABLE',
+      trocables: (_qty) => 'TRADABLE',
       noPermissionText: 'To see nearby collectors, you need to ',
       noPermissionButton: 'allow location access',
       noPermissionButtonSettings: 'enable your location',
@@ -81,10 +82,15 @@ const Locales = {
       totalStickers: quantity => `${quantity} stickers`,
     },
   },
+  errors: {
+    retry: 'Reload',
+  },
   chooseAlbum: {
     albumsTitle: 'Available albums',
     seeMoreButtonLabel: 'See more',
-    searchPlaceholder: 'Ex: “World Cup 2026”',
+    searchPlaceholder: 'Ex: "World Cup 2026"', empty: 'You already have all albums!',
+    emptySearch: 'No albums found',
+    error: 'Could not load available albums',
   },
   myAlbums: {
     albumsTitle: 'Your albums',
@@ -92,8 +98,7 @@ const Locales = {
     seeMoreButtonLabel: 'See more',
     searchPlaceholder: 'Ex: “World Cup 2026”',
     noAlbums: 'You don\'t have any albums yet! Click the button below to start collecting!',
-    noAlbumsExternalUser: 'This user doesn\'t have any albums yet!',
-    deleteSheet: {
+    noAlbumsExternalUser: 'This user doesn\'t have any albums yet!', error: 'Could not load albums', deleteSheet: {
       title: 'Do you really want to delete this album?',
       warning: 'This action cannot be undone.',
       confirm: 'Yes, delete',
@@ -105,6 +110,7 @@ const Locales = {
     stickersLabel: quantity => `${quantity} stickers`,
     collectAlbumButtonLabel: 'Collect album',
     goBackButtonLabel: 'Back',
+    error: 'Could not collect this album. Try again.',
   },
   nearYou: {
     title: 'Nearby traders',
@@ -113,11 +119,13 @@ const Locales = {
     message: 'Message',
     youHave: 'YOU HAVE',
     youNeed: 'YOU NEED',
+    error: 'Could not load nearby users',
   },
   album: {
     searchPlaceholder: 'Search sticker',
     categoryPlaceholder: 'Category',
     categoryConfirm: 'Confirm',
+    error: 'Could not load stickers',
     filterChips: {
       iHave: 'I have',
       iMissing: 'Missing',
@@ -130,6 +138,7 @@ const Locales = {
     },
     clearFilters: 'Clear filters',
     stickersQty: quantity => `Showing ${quantity} stickers`,
+    empty: 'No stickers found',
   },
   userProfile: {
     editProfile: 'Edit profile',
@@ -142,6 +151,8 @@ const Locales = {
     follow: 'Follow',
     unfollow: 'Unfollow',
     sendMessage: 'Message',
+    followError: 'Could not follow user. Try again.',
+    unfollowError: 'Could not unfollow user. Try again.',
 
     noAlbums: 'You don\'t have any albums yet! Click the button below to start collecting!',
 
@@ -169,6 +180,7 @@ const Locales = {
   notifications: {
     title: 'Notifications',
     newFollower: 'started following you!',
+    empty: 'No notifications yet',
     time: {
       now: 'Now',
       minute: (time) => `${time}min`,
@@ -178,13 +190,15 @@ const Locales = {
   },
   messages: {
     title: 'Messages',
+    empty: 'No conversations yet',
     messageCard: {
       you: 'You: ',
     }
   },
   chat: {
     title: 'Messages',
-    placeholder: 'Type your message...'
+    placeholder: 'Type your message...',
+    error: 'Could not send message. Try again.',
   },
   followListScreen: {
     followers: 'Followers',

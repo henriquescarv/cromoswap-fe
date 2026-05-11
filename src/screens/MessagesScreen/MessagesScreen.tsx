@@ -1,5 +1,6 @@
 import React, { useCallback, useContext, useEffect } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import EmptyState from '@/components/EmptyState';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -82,11 +83,18 @@ export default function NotificationsScreen({ navigation }: any) {
             </View>
           </View>
 
-          <ScrollView style={[styles.contentWrapper]}>
-            <View style={[styles.listContainer]}>
-              {messagesList.map((message) => <MessageCard key={message.id} message={message} goToChat={() => goToChat(message.otherUser.id)} />)}
-            </View>
-          </ScrollView>
+          {messagesList.length === 0 ? (
+            <EmptyState
+              variant="messages"
+              title={messagesLocale.empty}
+            />
+          ) : (
+            <ScrollView style={[styles.contentWrapper]} contentContainerStyle={!messagesList.length ? styles.emptyContainer : undefined}>
+              <View style={[styles.listContainer]}>
+                {messagesList.map((message) => <MessageCard key={message.id} message={message} goToChat={() => goToChat(message.otherUser.id)} />)}
+              </View>
+            </ScrollView>
+          )}
         </View>
       </View>
     </TouchableWithoutFeedback>
@@ -113,6 +121,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     width: '100%',
+  },
+  emptyContainer: {
+    flexGrow: 1,
   },
   contentWrapper: {
     display: 'flex',

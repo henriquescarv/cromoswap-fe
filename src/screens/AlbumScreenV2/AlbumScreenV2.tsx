@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
 import useStore from '@/services/store';
+import { getAlbumName } from '@/utils/albumName';
 import { useRoute } from '@react-navigation/native';
 import { Pagination } from '@/components/Pagination';
 import StickerButton from '@/components/StickerButton';
@@ -36,7 +37,7 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
   const insets = useSafeAreaInsets();
 
   const { theme } = useTheme();
-  const { locale } = useContext(LocaleContext);
+  const { locale, language } = useContext(LocaleContext);
   const { album: albumLocale } = locale;
   const route = useRoute<any>();
   const { numColumns: actualNumColumns, itemWidth, buttonHeight } = useLayoutCalculations(screenData);
@@ -378,7 +379,7 @@ export default function AlbumScreenV2({ navigation }: AlbumScreenV2Props) {
 
               <View style={[styles.albumInfos]}>
                 <Text style={[styles.albumName, { color: theme.primary100 }]}>
-                  {albumDetailsStore.data?.name || 'Album Screen V2'}
+                  {getAlbumName(albumDetailsStore.data?.name, language) || 'Album Screen V2'}
                   <Text style={[styles.stickersCount, { color: theme.grey20 }]}>{` (${albumDetailsStore.data?.totalStickers || 0})`}</Text>
                 </Text>
               </View>

@@ -26,7 +26,7 @@ export default function UserCard({
       <View style={[styles.wrapper, { backgroundColor: theme.grey6 }]}>
         <View style={[styles.topContent]}>
           <View style={[styles.leftContainer]}>
-            <Tag number={trocableStickers} text={locale.home.nearYou.trocables} />
+            <Tag number={trocableStickers} text={locale.home.nearYou.trocables(trocableStickers)} />
             <Text numberOfLines={1} style={[styles.username, { color: theme.primary100 }]}>{username}</Text>
           </View>
         </View>

@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { Keyboard, StyleSheet, TouchableWithoutFeedback } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 import { DefaultErrorsProps } from '@/validators/forms/forms.types';
@@ -9,6 +9,12 @@ import { BasicInfosStep } from './components/BasicInfosStep';
 import { PasswordStep } from './components/PasswordStep';
 import { LocationStep } from './components/LocationStep';
 import useStore from '@/services/store';
+import { useToast } from '@/providers/ToastProvider';
+import { useContext } from 'react';
+import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
+import { sendOTP, verifyOTP } from '@/services/api/api';
+import Button from '@/components/Button/Button';
+import Input from '@/components/Input/Input';
 
 const defaultErrors: DefaultErrorsProps = {
   username: null,
@@ -26,6 +32,9 @@ export default function RegisterScreen({ navigation }: any) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [inputErrors, setInputErrors] = useState({ ...defaultErrors });
+  const [otpValue, setOtpValue] = useState('');
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [verifiedToken, setVerifiedToken] = useState('');
 
   const { verifyUsername, verifyEmail, verifyPassword, comparePassowrd } = formsValidators;
 
@@ -36,6 +45,10 @@ export default function RegisterScreen({ navigation }: any) {
   } = useStore((state: any) => state);
 
   const { theme } = useTheme();
+  const { showToast } = useToast();
+  const { locale } = useContext(LocaleContext);
+  const { register: registerLocale } = locale;
+  const registerClickedRef = useRef(false);
 
   const basicInfosButtonIsDisabled = !username || !email;
   const passwordButtonIsDisabled = !password || password !== confirmPassword;
@@ -49,6 +62,13 @@ export default function RegisterScreen({ navigation }: any) {
   useEffect(() => {
     redirectToHome();
   }, [redirectToHome]);
+
+  useEffect(() => {
+    if (registerStore.status === 'error' && registerClickedRef.current) {
+      registerClickedRef.current = false;
+      showToast('warning', registerLocale.error);
+    }
+  }, [registerStore.status]);
 
   const handleVerifyErrors = () => {
     const usernameError = verifyUsername(username);
@@ -67,6 +87,36 @@ export default function RegisterScreen({ navigation }: any) {
     setCurrentStep(STEPS.PASSWORD);
   };
 
+  const handleGoToOtpStep = async () => {
+    setOtpLoading(true);
+    try {
+      await sendOTP(email, 'register');
+      setOtpValue('');
+      setCurrentStep(STEPS.OTP);
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Erro ao enviar código';
+      showToast('warning', message);
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (otpValue.length !== 6) return;
+    setOtpLoading(true);
+    try {
+      const response = await verifyOTP(email, otpValue, 'register');
+      setVerifiedToken(response.data.verifiedToken);
+      setCurrentStep(STEPS.PASSWORD);
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Código inválido';
+      showToast('warning', message);
+      setOtpValue('');
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
   const handleGoToLocationStep = () => {
     setCurrentStep(STEPS.LOCATION);
   };
@@ -82,7 +132,8 @@ export default function RegisterScreen({ navigation }: any) {
   const handleLocationGranted = (latitude: number, longitude: number) => {
     const hasSomeError = Object.values(inputErrors).some((error) => error !== null);
     if (hasSomeError) return;
-    requestRegister({ username, email, password, latitude, longitude });
+    registerClickedRef.current = true;
+    requestRegister({ username, email, password, verifiedToken, latitude, longitude });
   };
 
   const basicInfosStepProps = {
@@ -93,7 +144,7 @@ export default function RegisterScreen({ navigation }: any) {
     inputErrors,
     setInputErrors,
     handleVerifyErrors,
-    handleGoToPasswordStep,
+    handleGoToPasswordStep: handleGoToOtpStep,
     handleBackToLoginStep,
     basicInfosButtonIsDisabled,
   };
@@ -103,7 +154,7 @@ export default function RegisterScreen({ navigation }: any) {
     setPassword,
     confirmPassword,
     setConfirmPassword,
-    handleGoBack: handleGoToBasicInfosStep,
+    handleGoBack: () => setCurrentStep(STEPS.OTP),
     handleContinue: handleGoToLocationStep,
     buttonIsDisabled: passwordButtonIsDisabled,
   };
@@ -114,8 +165,38 @@ export default function RegisterScreen({ navigation }: any) {
     buttonIsLoading: registerStore.loading,
   };
 
-  const stepRules = {
+  const renderOtpStep = () => (
+    <View style={styles.otpContainer}>
+      <TouchableOpacity onPress={() => setCurrentStep(STEPS.BASIC_INFOS)} style={styles.backButton}>
+        <Text style={[styles.backText, { color: theme.primary100 }]}>← Voltar</Text>
+      </TouchableOpacity>
+      <Text style={[styles.otpTitle, { color: theme.primary100 }]}>Verificação de e-mail</Text>
+      <Text style={[styles.otpSubtitle, { color: theme.primary50 }]}>
+        Enviamos um código de 6 dígitos para {email}.
+      </Text>
+      <Input
+        placeholder="000000"
+        value={otpValue}
+        onChangeText={(v) => setOtpValue(v.replace(/\D/g, '').slice(0, 6))}
+        keyboardType="numeric"
+        maxLength={6}
+      />
+      <Button
+        text="Verificar"
+        onClick={handleVerifyOtp}
+        loading={otpLoading}
+        disabled={otpValue.length !== 6}
+        widthFull
+      />
+      <TouchableOpacity onPress={handleGoToOtpStep} style={styles.resendButton}>
+        <Text style={[styles.resendText, { color: theme.primary50 }]}>Reenviar código</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const stepRules: Record<StepProps, React.ReactNode> = {
     [STEPS.BASIC_INFOS]: <BasicInfosStep {...basicInfosStepProps} />,
+    [STEPS.OTP]: renderOtpStep(),
     [STEPS.PASSWORD]: <PasswordStep {...passwordStepProps} />,
     [STEPS.LOCATION]: <LocationStep {...locationStepProps} />,
   };
@@ -134,5 +215,33 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     width: '100%',
+  },
+  otpContainer: {
+    flex: 1,
+    width: '100%',
+    padding: 24,
+    gap: 16,
+  },
+  backButton: {
+    marginBottom: 8,
+  },
+  backText: {
+    fontSize: 16,
+  },
+  otpTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+  },
+  otpSubtitle: {
+    fontSize: 15,
+    marginBottom: 8,
+  },
+  resendButton: {
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  resendText: {
+    fontSize: 14,
+    textDecorationLine: 'underline',
   },
 });

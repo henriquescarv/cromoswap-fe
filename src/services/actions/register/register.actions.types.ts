@@ -10,6 +10,7 @@ export type requestRegisterProps = {
   username: string;
   email: string;
   password: string;
+  verifiedToken: string;
   latitude: number;
   longitude: number;
 }

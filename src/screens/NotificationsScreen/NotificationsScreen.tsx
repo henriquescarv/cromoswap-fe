@@ -1,5 +1,6 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { StyleSheet, Text, View, TouchableWithoutFeedback, Keyboard, FlatList, ScrollView, TouchableOpacity } from 'react-native';
+import EmptyState from '@/components/EmptyState';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -84,17 +85,23 @@ export default function NotificationsScreen({ navigation }: any) {
             </View>
           </View>
 
-          <ScrollView style={[styles.contentWrapper]}>
-            <View style={[styles.listContainer]}>
-              {notificationsList.map((notification) => (
-                <NotificationCard
-                  key={notification.id}
-                  notification={notification}
-                  goToUserProfileScreen={() => onClickNotification({ userId: notification.senderUser.id, notificationId: notification.id })}
-                />
-              ))}
-            </View>
-          </ScrollView>
+          {notificationsList.length === 0 ? (
+            <EmptyState
+              title={notificationsLocale.empty}
+            />
+          ) : (
+            <ScrollView style={[styles.contentWrapper]} contentContainerStyle={!notificationsList.length ? styles.emptyContainer : undefined}>
+              <View style={[styles.listContainer]}>
+                {notificationsList.map((notification) => (
+                  <NotificationCard
+                    key={notification.id}
+                    notification={notification}
+                    goToUserProfileScreen={() => onClickNotification({ userId: notification.senderUser.id, notificationId: notification.id })}
+                  />
+                ))}
+              </View>
+            </ScrollView>
+          )}
         </View>
       </View>
     </TouchableWithoutFeedback>
@@ -126,6 +133,9 @@ const styles = StyleSheet.create({
     display: 'flex',
     width: '100%',
     flex: 1,
+  },
+  emptyContainer: {
+    flexGrow: 1,
   },
   blockTitle: {
     fontSize: 20,

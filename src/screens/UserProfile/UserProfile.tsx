@@ -1,9 +1,10 @@
 import { Album } from "@/components/Album";
 import Button from "@/components/Button/Button";
+import EmptyState from "@/components/EmptyState";
 import { LocaleContext } from "@/providers/LocaleProvider/LocaleProvider";
 import { useTheme } from "@/providers/ThemeModeProvider/ThemeModeProvider";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useRoute } from '@react-navigation/native';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View, TouchableWithoutFeedback, Keyboard } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -12,6 +13,8 @@ import { TabEnum, UserProfileProps } from "./UserProfile.types";
 import { StickerItem } from "../../components/StickerItem";
 import { ScrollView } from "react-native-gesture-handler";
 import useStore from "@/services/store";
+import { getAlbumName } from '@/utils/albumName';
+import { useToast } from '@/providers/ToastProvider';
 
 export default function UserProfile({ navigation }: any) {
   const [selectedTab, setSelectedTab] = useState<keyof typeof TabEnum>(TabEnum.YOU_NEED);
@@ -21,6 +24,8 @@ export default function UserProfile({ navigation }: any) {
     summary: summaryStore,
     userAlbums: userAlbumsStore,
     externalUserProfile: externalUserProfileStore,
+    followUser: followUserStore,
+    unfollowUser: unfollowUserStore,
     requestSummary,
     requestUserAlbums,
     requestExternalUserProfile,
@@ -32,8 +37,26 @@ export default function UserProfile({ navigation }: any) {
 
   const route = useRoute<any>();
   const { theme } = useTheme();
-  const { locale } = useContext(LocaleContext);
+  const { showToast } = useToast();
+  const { locale, language } = useContext(LocaleContext);
   const { userProfile: userProfileLocale } = locale;
+
+  const prevFollowStatus = useRef(followUserStore?.status);
+  const prevUnfollowStatus = useRef(unfollowUserStore?.status);
+
+  useEffect(() => {
+    if (followUserStore?.status === 'error' && prevFollowStatus.current !== 'error') {
+      showToast('warning', userProfileLocale.followError);
+    }
+    prevFollowStatus.current = followUserStore?.status;
+  }, [followUserStore?.status]);
+
+  useEffect(() => {
+    if (unfollowUserStore?.status === 'error' && prevUnfollowStatus.current !== 'error') {
+      showToast('warning', userProfileLocale.unfollowError);
+    }
+    prevUnfollowStatus.current = unfollowUserStore?.status;
+  }, [unfollowUserStore?.status]);
 
   const myUserId = summaryStore.data?.id;
   const userId = route?.params?.userId || myUserId;
@@ -262,7 +285,7 @@ export default function UserProfile({ navigation }: any) {
                   {userProfile?.albums?.slice(0, 4).map((item) => (
                     <Album
                       key={item.id}
-                      name={item.name}
+                      name={getAlbumName(item.name, language)}
                       image={item.image}
                       percentCompleted={item.percentCompleted}
                       onClick={() => goToAlbumScreen(item.userAlbumId)}
@@ -270,9 +293,10 @@ export default function UserProfile({ navigation }: any) {
                   ))}
 
                   {!userProfile?.albums?.length && (
-                    <View style={[styles.emptyStateContainer]}>
-                      <Text style={[styles.emptyStateText, { color: theme.primary100 }]}>{userProfileLocale.noAlbums}</Text>
-                    </View>
+                    <EmptyState
+                      title={userProfileLocale.noAlbums}
+                      style={{ minHeight: 180 }}
+                    />
                   )}
 
                   <TouchableOpacity style={[styles.plusButton, { borderColor: theme.primary100 }]} onPress={goToChooseAlbumScreen}>
@@ -305,9 +329,9 @@ export default function UserProfile({ navigation }: any) {
 
                 <ScrollView style={[styles.externalUserAlbuns]}>
                   {listToShow?.map((item) => (
-                    <View key={item.name} style={[styles.albumBlockContainer, { borderBottomColor: theme.grey5 }]}>
+                    <View key={item.userAlbumId} style={[styles.albumBlockContainer, { borderBottomColor: theme.grey5 }]}>
                       <View style={[styles.blockHead]}>
-                        <Text style={[styles.albumNameTitle, { color: theme.primary100 }]}>{item.name}</Text>
+                        <Text style={[styles.albumNameTitle, { color: theme.primary100 }]}>{getAlbumName(item.name, language)}</Text>
 
                         <Button
                           text={userProfileLocale.externalUser.showAlbum}

@@ -30,11 +30,11 @@ const setRegister = ({ set, status, token = null, refreshToken = null }: setRegi
   }));
 };
 
-const requestRegister = async ({ set, username, email, password, latitude, longitude }: requestRegisterProps) => {
+const requestRegister = async ({ set, username, email, password, verifiedToken, latitude, longitude }: requestRegisterProps) => {
   try {
     setLoading({ set, loading: true });
 
-    const registerData = await postRegister({ username, email, password });
+    const registerData = await postRegister({ username, email, password, verifiedToken });
     setRegister({ set, status: 'success', token: registerData.token, refreshToken: registerData.refreshToken });
 
     await postLocation({ latitude, longitude });
