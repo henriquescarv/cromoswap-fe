@@ -11,8 +11,8 @@ export type requestRegisterProps = {
   email: string;
   password: string;
   verifiedToken: string;
-  latitude: number;
-  longitude: number;
+  latitude?: number;
+  longitude?: number;
 }
 
 export type requestIbgeStatesProps = {

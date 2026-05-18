@@ -15,6 +15,7 @@ import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
 import { sendOTP, verifyOTP } from '@/services/api/api';
 import Button from '@/components/Button/Button';
 import Input from '@/components/Input/Input';
+import { Ionicons } from '@expo/vector-icons';
 
 const defaultErrors: DefaultErrorsProps = {
   username: null,
@@ -136,6 +137,11 @@ export default function RegisterScreen({ navigation }: any) {
     requestRegister({ username, email, password, verifiedToken, latitude, longitude });
   };
 
+  const handleSkipLocation = () => {
+    registerClickedRef.current = true;
+    requestRegister({ username, email, password, verifiedToken });
+  };
+
   const basicInfosStepProps = {
     username,
     setUsername,
@@ -162,14 +168,17 @@ export default function RegisterScreen({ navigation }: any) {
   const locationStepProps = {
     handleGoBack: handleGoToPasswordStep,
     handleContinue: handleLocationGranted,
+    handleSkip: handleSkipLocation,
     buttonIsLoading: registerStore.loading,
   };
 
   const renderOtpStep = () => (
     <View style={styles.otpContainer}>
-      <TouchableOpacity onPress={() => setCurrentStep(STEPS.BASIC_INFOS)} style={styles.backButton}>
-        <Text style={[styles.backText, { color: theme.primary100 }]}>← Voltar</Text>
-      </TouchableOpacity>
+      <View style={styles.headContainer}>
+        <TouchableOpacity onPress={() => setCurrentStep(STEPS.BASIC_INFOS)}>
+          <Ionicons name="chevron-back-outline" size={32} color={theme.primary50} />
+        </TouchableOpacity>
+      </View>
       <Text style={[styles.otpTitle, { color: theme.primary100 }]}>Verificação de e-mail</Text>
       <Text style={[styles.otpSubtitle, { color: theme.primary50 }]}>
         Enviamos um código de 6 dígitos para {email}.
@@ -222,18 +231,17 @@ const styles = StyleSheet.create({
     padding: 24,
     gap: 16,
   },
-  backButton: {
+  headContainer: {
+    width: '100%',
     marginBottom: 8,
-  },
-  backText: {
-    fontSize: 16,
   },
   otpTitle: {
     fontSize: 22,
-    fontWeight: 'bold',
+    fontFamily: 'primaryBold',
   },
   otpSubtitle: {
     fontSize: 15,
+    fontFamily: 'primaryRegular',
     marginBottom: 8,
   },
   resendButton: {
@@ -242,6 +250,7 @@ const styles = StyleSheet.create({
   },
   resendText: {
     fontSize: 14,
+    fontFamily: 'primaryRegular',
     textDecorationLine: 'underline',
   },
 });

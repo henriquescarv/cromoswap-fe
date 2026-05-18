@@ -59,6 +59,7 @@ const Locales = {
       description: 'um Sammler in deiner Nähe zu finden und das Tauschen zu erleichtern :)',
       allowButton: 'Standort erlauben',
       tryAgainButton: 'Erneut versuchen',
+      skipButton: 'Vorerst überspringen',
       permissionDenied: 'Zugriff verweigert. Standort in den Geräteeinstellungen aktivieren.',
       openSettings: 'Einstellungen öffnen',
     }
@@ -70,10 +71,10 @@ const Locales = {
       nearYouTitle: 'Sammler in der Nähe',
       seeProfile: 'Profil ansehen',
       trocables: (_qty) => 'TAUSCHBAR',
-      noPermissionText: 'Um Sammler in der Nähe zu sehen, musst du ',
-      noPermissionButton: 'Standortfreigabe erlauben',
-      noPermissionButtonSettings: 'Standort aktivieren',
-      inSettingsText: ' in den Einstellungen.'
+      noPermissionText: 'Um Sammler in der Nähe zu sehen und Sticker zu tauschen, aktiviere deinen Standort.',
+      noPermissionButton: 'Standort erlauben',
+      noPermissionButtonSettings: 'Einstellungen öffnen',
+      inSettingsText: ''
     },
     albums: {
       albumsTitle: 'Deine Alben',

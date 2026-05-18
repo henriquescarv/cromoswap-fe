@@ -234,17 +234,16 @@ export default function HomeScreen({ navigation }: any) {
                 <View style={styles.noPermissionContainer}>
                   <Text style={[styles.noPermissionText, { color: theme.primary100 }]}>
                     {homeLocale.nearYou.noPermissionText}
-                    <Text
-                      style={[styles.noPermissionLink, { color: theme.primary50 }]}
-                      onPress={handleRequestLocationPermission}
-                    >
-                      {locationPermission === 'denied'
+                  </Text>
+                  <Button
+                    text={
+                      locationPermission === 'denied'
                         ? homeLocale.nearYou.noPermissionButtonSettings
                         : homeLocale.nearYou.noPermissionButton
-                      }
-                    </Text>
-                    {homeLocale.nearYou.inSettingsText}
-                  </Text>
+                    }
+                    onClick={handleRequestLocationPermission}
+                    widthFull
+                  />
                 </View>
               )}
             </View>
@@ -398,6 +397,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
+    gap: 16,
   },
   noPermissionText: {
     fontSize: 15,

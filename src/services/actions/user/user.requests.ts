@@ -80,7 +80,7 @@ export const postNotificationsAsSeen = async ({ notificationId }) => {
   }
 };
 
-export const putChangeUserData = async ({ dataToChange, oldValue, newValue }) => {
+export const putChangeUserData = async ({ dataToChange, oldValue, newValue, verifiedToken }) => {
   const state = useStore.getState();
   const api = useApi({ token: state.login.token });
   try {
@@ -90,6 +90,10 @@ export const putChangeUserData = async ({ dataToChange, oldValue, newValue }) =>
 
     if (oldValue) {
       payload['oldValue'] = oldValue;
+    }
+
+    if (verifiedToken) {
+      payload['verifiedToken'] = verifiedToken;
     }
 
     const response = await api.put(`/update-profile`, payload);

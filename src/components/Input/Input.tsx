@@ -4,7 +4,7 @@ import { InputProps } from "./Input.types";
 import { useTheme } from "@/providers/ThemeModeProvider/ThemeModeProvider";
 import { Ionicons } from "@expo/vector-icons";
 
-export default function Input({ title, placeholder, value, onChangeText, onBlur, password, maxLength, errorMessage }: InputProps) {
+export default function Input({ title, placeholder, value, onChangeText, onBlur, password, keyboardType, maxLength, errorMessage }: InputProps) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   const { theme } = useTheme();
@@ -23,6 +23,7 @@ export default function Input({ title, placeholder, value, onChangeText, onBlur,
         value={value}
         onChangeText={onChangeText}
         onBlur={onBlur}
+        keyboardType={keyboardType}
         maxLength={maxLength}
       />
       <View style={[styles.inputError]}>

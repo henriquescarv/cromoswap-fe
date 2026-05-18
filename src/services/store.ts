@@ -148,6 +148,7 @@ const useStore = create<StoreState>((set) => {
     username,
     email,
     password,
+    verifiedToken,
     latitude,
     longitude,
   }: requestRegisterProps) => registerActions.register.request({
@@ -155,6 +156,7 @@ const useStore = create<StoreState>((set) => {
     username,
     email,
     password,
+    verifiedToken,
     latitude,
     longitude,
   });
@@ -181,7 +183,7 @@ const useStore = create<StoreState>((set) => {
   const resetNotificationsUnreadCount = () => userActions.notificationsUnreadCount.reset({ set });
   const setNotificationsUnreadCount = ({ status, quantity }) => userActions.notificationsUnreadCount.set({ set, status, quantity });
   const requestNotificationAsSeen = ({ notificationId }) => userActions.notificationAsSeen.request({ set, notificationId });
-  const requestChangeUserData = ({ dataToChange, oldValue, newValue }) => userActions.changeData.request({ set, dataToChange, oldValue, newValue });
+  const requestChangeUserData = ({ dataToChange, oldValue, newValue, verifiedToken }) => userActions.changeData.request({ set, dataToChange, oldValue, newValue, verifiedToken });
 
   const requestLastMessages = () => messagesActions.lastMessages.request({ set });
   const resetLastMessages = () => messagesActions.lastMessages.reset({ set });

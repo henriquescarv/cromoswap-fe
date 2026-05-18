@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { ActivityIndicator, Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
@@ -9,10 +9,11 @@ import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
 type LocationStepProps = {
   handleGoBack: () => void;
   handleContinue: (latitude: number, longitude: number) => void;
+  handleSkip: () => void;
   buttonIsLoading?: boolean;
 };
 
-export const LocationStep = ({ handleGoBack, handleContinue, buttonIsLoading }: LocationStepProps) => {
+export const LocationStep = ({ handleGoBack, handleContinue, handleSkip, buttonIsLoading }: LocationStepProps) => {
   const { theme } = useTheme();
   const { locale } = useContext(LocaleContext);
   const { register: registerLocale } = locale;
@@ -20,6 +21,26 @@ export const LocationStep = ({ handleGoBack, handleContinue, buttonIsLoading }: 
 
   const [loading, setLoading] = useState(false);
   const [denied, setDenied] = useState(false);
+
+  useEffect(() => {
+    const checkExistingPermission = async () => {
+      const { status } = await Location.getForegroundPermissionsAsync();
+      if (status === 'granted') {
+        setLoading(true);
+        try {
+          const location = await Location.getCurrentPositionAsync({
+            accuracy: Location.Accuracy.Balanced,
+          });
+          handleContinue(location.coords.latitude, location.coords.longitude);
+        } catch {
+          setDenied(true);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+    checkExistingPermission();
+  }, []);
 
   const handleRequestLocation = async () => {
     setLoading(true);
@@ -77,12 +98,17 @@ export const LocationStep = ({ handleGoBack, handleContinue, buttonIsLoading }: 
           {loading ? (
             <ActivityIndicator size="large" color={theme.primary50} />
           ) : (
-            <Button
-              text={denied ? loc.tryAgainButton : loc.allowButton}
-              onClick={handleRequestLocation}
-              loading={buttonIsLoading}
-              widthFull
-            />
+            <>
+              <Button
+                text={denied ? loc.tryAgainButton : loc.allowButton}
+                onClick={handleRequestLocation}
+                loading={buttonIsLoading}
+                widthFull
+              />
+              <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
+                <Text style={[styles.skipText, { color: theme.grey20 }]}>{loc.skipButton}</Text>
+              </TouchableOpacity>
+            </>
           )}
         </View>
       </View>
@@ -138,5 +164,15 @@ const styles = StyleSheet.create({
   actionContainer: {
     marginTop: 64,
     width: '100%',
+    gap: 16,
+  },
+  skipButton: {
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  skipText: {
+    fontSize: 14,
+    fontFamily: 'primaryMedium',
+    textDecorationLine: 'underline',
   },
 });

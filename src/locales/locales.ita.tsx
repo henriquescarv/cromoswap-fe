@@ -59,6 +59,7 @@ const Locales = {
       description: 'per trovare collezionisti vicino a te e facilitare i tuoi scambi :)',
       allowButton: 'Consenti posizione',
       tryAgainButton: 'Riprova',
+      skipButton: 'Salta per ora',
       permissionDenied: 'Permesso negato. Abilita la posizione nelle impostazioni del dispositivo.',
       openSettings: 'Apri impostazioni',
     }
@@ -70,10 +71,10 @@ const Locales = {
       nearYouTitle: 'Collezionisti vicini',
       seeProfile: 'Vedi profilo',
       trocables: (qty) => qty === 1 ? 'SCAMBIABILE' : 'SCAMBIABILI',
-      noPermissionText: 'Per vedere i collezionisti vicini, devi ',
-      noPermissionButton: 'consentire l\'uso della posizione',
-      noPermissionButtonSettings: 'abilitare la posizione',
-      inSettingsText: ' nelle impostazioni.'
+      noPermissionText: 'Per vedere i collezionisti vicini e scambiare figurine, attiva la tua posizione.',
+      noPermissionButton: 'Consenti posizione',
+      noPermissionButtonSettings: 'Apri impostazioni',
+      inSettingsText: ''
     },
     albums: {
       albumsTitle: 'I tuoi album',

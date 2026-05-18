@@ -72,11 +72,11 @@ export const forgotPasswordApi = axios.create({
   },
 });
 
-export const sendOTP = async (email: string, purpose: 'register' | 'reset_password') => {
+export const sendOTP = async (email: string, purpose: 'register' | 'reset_password' | 'change_email') => {
   return forgotPasswordApi.post('/send-otp', { email, purpose });
 };
 
-export const verifyOTP = async (email: string, otp: string, purpose: 'register' | 'reset_password') => {
+export const verifyOTP = async (email: string, otp: string, purpose: 'register' | 'reset_password' | 'change_email') => {
   return forgotPasswordApi.post('/verify-otp', { email, otp, purpose });
 };
 

@@ -16,6 +16,9 @@ import useStore from '@/services/store';
 import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 import { useToast } from '@/providers/ToastProvider';
+import { sendOTP, verifyOTP } from '@/services/api/api';
+
+type Step = 'input' | 'otp';
 
 export default function EditFieldScreen({ navigation }: any) {
   const insets = useSafeAreaInsets();
@@ -26,6 +29,7 @@ export default function EditFieldScreen({ navigation }: any) {
   const { editField: editFieldLocale } = locale;
 
   const { field, currentValue, label } = route.params;
+  const isEmailField = field === 'email';
 
   const {
     requestSummary,
@@ -34,16 +38,73 @@ export default function EditFieldScreen({ navigation }: any) {
 
   const [value, setValue] = useState(currentValue || '');
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    // No additional data loading needed for simple fields
-  }, [field]);
+  const [step, setStep] = useState<Step>('input');
+  const [otpValue, setOtpValue] = useState('');
+  const [verifiedToken, setVerifiedToken] = useState('');
 
   const goBack = () => {
     navigation.goBack();
   };
 
+  const handleSendOtp = async () => {
+    setLoading(true);
+    try {
+      await sendOTP(value, 'change_email');
+      setOtpValue('');
+      setStep('otp');
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message;
+      const message = errorMessage === 'Email already exists'
+        ? 'Este e-mail já está sendo usado em outra conta'
+        : 'Erro ao enviar código';
+      showToast('warning', message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (otpValue.length !== 6) return;
+    setLoading(true);
+    try {
+      const response = await verifyOTP(value, otpValue, 'change_email');
+      const token = response.data.verifiedToken;
+      setVerifiedToken(token);
+      await handleSaveWithToken(token);
+    } catch (error: any) {
+      const message = 'Código inválido';
+      showToast('warning', message);
+      setOtpValue('');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveWithToken = async (token: string) => {
+    try {
+      await requestChangeUserData({
+        dataToChange: field,
+        oldValue: currentValue,
+        newValue: value,
+        verifiedToken: token,
+      });
+      await requestSummary();
+      showToast('success', 'Campo atualizado com sucesso!');
+      goBack();
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message;
+      const message = errorMessage === 'Email already exists'
+        ? 'Este e-mail já está sendo usado em outra conta'
+        : 'Erro ao atualizar campo. Tente novamente.';
+      showToast('warning', message);
+    }
+  };
+
   const handleSave = async () => {
+    if (isEmailField) {
+      await handleSendOtp();
+      return;
+    }
     setLoading(true);
     try {
       await requestChangeUserData({
@@ -54,25 +115,62 @@ export default function EditFieldScreen({ navigation }: any) {
       await requestSummary();
       showToast('success', 'Campo atualizado com sucesso!');
       goBack();
-    } catch (error) {
-      console.error('Error updating field:', error);
-      showToast('warning', 'Erro ao atualizar campo. Tente novamente.');
+    } catch (error: any) {
+      const message = 'Erro ao atualizar campo. Tente novamente.';
+      showToast('warning', message);
     } finally {
       setLoading(false);
     }
   };
 
-  const renderInput = () => {
-    return (
-      <Input
-        placeholder={editFieldLocale.placeholder}
-        value={value}
-        onChangeText={setValue}
-      />
-    );
-  };
-
   const isSaveDisabled = !value;
+
+  if (isEmailField && step === 'otp') {
+    return (
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={[styles.safeArea, { backgroundColor: theme.highLight, paddingTop: insets.top }]}>
+          <View style={styles.wrapper}>
+            <View style={styles.headBlock}>
+              <View style={styles.headContainer}>
+                <TouchableOpacity onPress={() => setStep('input')}>
+                  <Ionicons name="chevron-back-outline" size={32} color={theme.primary50} />
+                </TouchableOpacity>
+                <Text style={[styles.blockTitle, { color: theme.primary100 }]}>Verificação de e-mail</Text>
+              </View>
+            </View>
+            <View style={styles.contentWrapper}>
+              <View style={styles.formContainer}>
+                <View style={styles.inputGroup}>
+                  <Text style={[styles.label, { color: theme.primary50 }]}>
+                    Enviamos um código de 6 dígitos para {value}.
+                  </Text>
+                  <Input
+                    placeholder="000000"
+                    value={otpValue}
+                    onChangeText={(v) => setOtpValue(v.replace(/\D/g, '').slice(0, 6))}
+                    keyboardType="numeric"
+                    maxLength={6}
+                  />
+                </View>
+                <View style={styles.buttonContainer}>
+                  <Button
+                    text="Verificar"
+                    onClick={handleVerifyOtp}
+                    loading={loading}
+                    disabled={otpValue.length !== 6}
+                    widthFull
+                  />
+                </View>
+                <TouchableOpacity onPress={handleSendOtp} style={styles.resendButton}>
+                  <Text style={[styles.resendText, { color: theme.primary50 }]}>Reenviar código</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </View>
+      </TouchableWithoutFeedback>
+    );
+  }
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -100,12 +198,16 @@ export default function EditFieldScreen({ navigation }: any) {
                 <Text style={[styles.label, { color: theme.primary100 }]}>
                   {label}
                 </Text>
-                {renderInput()}
+                <Input
+                  placeholder={editFieldLocale.placeholder}
+                  value={value}
+                  onChangeText={setValue}
+                />
               </View>
 
               <View style={[styles.buttonContainer]}>
                 <Button
-                  text={editFieldLocale.saveButton}
+                  text={isEmailField ? 'Continuar' : editFieldLocale.saveButton}
                   onClick={handleSave}
                   loading={loading}
                   widthFull
@@ -160,5 +262,14 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     marginTop: 16,
+  },
+  resendButton: {
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  resendText: {
+    fontSize: 14,
+    fontFamily: 'primaryRegular',
+    textDecorationLine: 'underline',
   },
 });

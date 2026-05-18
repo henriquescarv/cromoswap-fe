@@ -62,6 +62,7 @@ const Locales = {
       description: 'para encontrar coleccionistas cerca de ti y facilitar tus intercambios :)',
       allowButton: 'Permitir ubicación',
       tryAgainButton: 'Intentar de nuevo',
+      skipButton: 'Omitir por ahora',
       permissionDenied: 'Permiso denegado. Habilita la ubicación en la configuración del dispositivo.',
       openSettings: 'Abrir configuración',
     }
@@ -73,10 +74,10 @@ const Locales = {
       nearYouTitle: 'Coleccionistas cercanos',
       seeProfile: 'Ver perfil',
       trocables: (qty) => qty === 1 ? 'INTERCAMBIABLE' : 'INTERCAMBIABLES',
-      noPermissionText: 'Para ver coleccionistas cercanos, necesitas ',
-      noPermissionButton: 'permitir el uso de tu ubicación',
-      noPermissionButtonSettings: 'habilitar tu ubicación',
-      inSettingsText: ' en la configuración.'
+      noPermissionText: 'Para ver coleccionistas cercanos e intercambiar cromos, activa tu ubicación.',
+      noPermissionButton: 'Permitir ubicación',
+      noPermissionButtonSettings: 'Abrir configuración',
+      inSettingsText: ''
     },
     albums: {
       albumsTitle: 'Tus álbumes',

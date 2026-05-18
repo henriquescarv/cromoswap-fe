@@ -1,3 +1,5 @@
+import { TextInputProps } from "react-native";
+
 export type InputProps = {
   title?: string;
   placeholder?: string;
@@ -6,6 +8,7 @@ export type InputProps = {
   onBlur?: () => void;
   type?: 'password';
   password?: boolean;
+  keyboardType?: TextInputProps["keyboardType"];
   maxLength?: number;
   errorMessage?: string | null;
 }

@@ -37,7 +37,9 @@ const requestRegister = async ({ set, username, email, password, verifiedToken, 
     const registerData = await postRegister({ username, email, password, verifiedToken });
     setRegister({ set, status: 'success', token: registerData.token, refreshToken: registerData.refreshToken });
 
-    await postLocation({ latitude, longitude });
+    if (latitude !== undefined && longitude !== undefined) {
+      await postLocation({ latitude, longitude });
+    }
 
     const loginStoreCache = {
       token: registerData.token,

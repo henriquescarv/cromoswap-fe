@@ -127,4 +127,5 @@ export type changeUserDataProps = {
   dataToChange: "username" | "email" | "password" | "avatar" | "countryState" | "city";
   oldValue?: string;
   newValue: string;
+  verifiedToken?: string;
 }

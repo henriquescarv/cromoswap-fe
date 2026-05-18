@@ -339,11 +339,11 @@ const setChangeUserData = ({ set, status = null }: any) => {
   }));
 }
 
-const requestChangeUserData = async ({ set, dataToChange, oldValue, newValue }: changeUserDataProps) => {
+const requestChangeUserData = async ({ set, dataToChange, oldValue, newValue, verifiedToken }: changeUserDataProps) => {
   try {
     setChangeUserDataLoading({ set, loading: true });
 
-    await putChangeUserData({ dataToChange, oldValue, newValue });
+    await putChangeUserData({ dataToChange, oldValue, newValue, verifiedToken });
 
     setChangeUserData({ set, status: 'success' });
   } catch (error: any) {
@@ -355,6 +355,7 @@ const requestChangeUserData = async ({ set, dataToChange, oldValue, newValue }: 
       commonActions.setInvalidToken({ set, invalidToken: true });
     }
 
+    throw error;
   }
 }
 

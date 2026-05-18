@@ -59,6 +59,7 @@ const Locales = {
       description: 'to find collectors near you and make your swaps easier :)',
       allowButton: 'Allow location',
       tryAgainButton: 'Try again',
+      skipButton: 'Skip for now',
       permissionDenied: 'Permission denied. Enable location in device settings.',
       openSettings: 'Open settings',
     }
@@ -70,10 +71,10 @@ const Locales = {
       nearYouTitle: 'Nearby traders',
       seeProfile: 'View profile',
       trocables: (_qty) => 'TRADABLE',
-      noPermissionText: 'To see nearby collectors, you need to ',
-      noPermissionButton: 'allow location access',
-      noPermissionButtonSettings: 'enable your location',
-      inSettingsText: ' in settings.'
+      noPermissionText: 'To see nearby collectors and trade stickers, enable your location.',
+      noPermissionButton: 'Allow location',
+      noPermissionButtonSettings: 'Open settings',
+      inSettingsText: ''
     },
     albums: {
       albumsTitle: 'Your albums',

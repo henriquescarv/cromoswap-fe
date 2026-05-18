@@ -59,6 +59,7 @@ const Locales = {
       description: 'para encontrar colecionadores próximos a você e facilitar suas trocas :)',
       allowButton: 'Permitir localização',
       tryAgainButton: 'Tentar novamente',
+      skipButton: 'Pular por enquanto',
       permissionDenied: 'Permissão negada. Habilite a localização nas configurações do dispositivo.',
       openSettings: 'Abrir configurações',
     }
@@ -70,10 +71,10 @@ const Locales = {
       nearYouTitle: 'Trocadores próximos',
       seeProfile: 'Ver perfil',
       trocables: (qty) => qty === 1 ? 'TROCÁVEL' : 'TROCÁVEIS',
-      noPermissionText: 'Para ver colecionadores próximos, você precisa ',
-      noPermissionButton: 'permitir o uso da sua localização',
-      noPermissionButtonSettings: 'habilitar sua localização',
-      inSettingsText: " nas configurações."
+      noPermissionText: 'Para ver outros colecionadores próximos e conseguir trocar suas figurinhas, ative sua localização.',
+      noPermissionButton: 'Permitir localização',
+      noPermissionButtonSettings: 'Abrir configurações',
+      inSettingsText: ''
     },
     albums: {
       albumsTitle: 'Seus álbuns',
