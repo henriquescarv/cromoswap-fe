@@ -127,6 +127,7 @@ const Locales = {
   album: {
     searchPlaceholder: 'Cerca figurina',
     categoryPlaceholder: 'Categoria',
+    categorySearchPlaceholder: 'Cerca categoria',
     categoryConfirm: 'Conferma',
     error: 'Impossibile caricare le figurine',
     filterChips: {

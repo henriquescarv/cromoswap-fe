@@ -12,31 +12,41 @@ import {
 } from 'react-native';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 import { Ionicons } from '@expo/vector-icons';
+import Search from '@/components/Search/Search';
 
 interface CategorySelectFilterProps {
   categories: string[];
   selectedCategories: string[];
   onConfirm: (categories: string[]) => void;
   placeholder?: string;
+  searchPlaceholder?: string;
   confirmLabel?: string;
 }
 
-const SHEET_MAX_HEIGHT = Dimensions.get('window').height * 0.48;
+const SHEET_HEIGHT = Dimensions.get('window').height * 0.70;
 
 export default function CategorySelectFilter({
   categories,
   selectedCategories,
   onConfirm,
   placeholder = 'Categoria',
+  searchPlaceholder = 'Buscar categoria',
   confirmLabel = 'Confirmar',
 }: CategorySelectFilterProps) {
   const { theme } = useTheme();
   const [visible, setVisible] = useState(false);
   const [pendingSelection, setPendingSelection] = useState<string[]>([]);
-  const slideAnim = useRef(new Animated.Value(SHEET_MAX_HEIGHT)).current;
+  const [pinnedCategories, setPinnedCategories] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedTerm, setDebouncedTerm] = useState('');
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const slideAnim = useRef(new Animated.Value(SHEET_HEIGHT)).current;
 
   const openSheet = () => {
     setPendingSelection([...selectedCategories]);
+    setPinnedCategories([...selectedCategories]);
+    setSearchTerm('');
+    setDebouncedTerm('');
     setVisible(true);
     Animated.spring(slideAnim, {
       toValue: 0,
@@ -47,22 +57,33 @@ export default function CategorySelectFilter({
   };
 
   const closeSheet = (confirm = false) => {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
     Animated.timing(slideAnim, {
-      toValue: SHEET_MAX_HEIGHT,
+      toValue: SHEET_HEIGHT,
       duration: 220,
       useNativeDriver: true,
     }).start(() => {
       setVisible(false);
+      setSearchTerm('');
+      setDebouncedTerm('');
       if (confirm) {
         onConfirm(pendingSelection);
       }
     });
   };
 
+  const handleSearchChange = (text: string) => {
+    setSearchTerm(text);
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      setDebouncedTerm(text);
+    }, 500);
+  };
+
   // Keep slideAnim reset when visibility changes
   useEffect(() => {
     if (!visible) {
-      slideAnim.setValue(SHEET_MAX_HEIGHT);
+      slideAnim.setValue(SHEET_HEIGHT);
     }
   }, [visible]);
 
@@ -75,7 +96,23 @@ export default function CategorySelectFilter({
   const displayText =
     selectedCategories.length > 0 ? selectedCategories.join(', ') : null;
 
+  const term = debouncedTerm.toLowerCase();
+  const filteredPinned = term
+    ? pinnedCategories.filter(c => c.toLowerCase().includes(term))
+    : pinnedCategories;
+  const filteredRest = categories
+    .filter(c => !pinnedCategories.includes(c))
+    .filter(c => !term || c.toLowerCase().includes(term));
+  const listData = [
+    ...filteredPinned,
+    ...(filteredPinned.length > 0 && filteredRest.length > 0 ? ['__separator__'] : []),
+    ...filteredRest,
+  ];
+
   const renderItem = ({ item }: { item: string }) => {
+    if (item === '__separator__') {
+      return <View style={[styles.separator, { backgroundColor: theme.grey5 }]} />;
+    }
     const isSelected = pendingSelection.includes(item);
     return (
       <TouchableOpacity
@@ -156,9 +193,18 @@ export default function CategorySelectFilter({
             <View style={[styles.handle, { backgroundColor: theme.grey15 }]} />
           </View>
 
+          {/* Search */}
+          <View style={styles.searchWrapper}>
+            <Search
+              value={searchTerm}
+              onChangeText={handleSearchChange}
+              placeholder={searchPlaceholder}
+            />
+          </View>
+
           {/* Category list */}
           <FlatList
-            data={categories}
+            data={listData}
             keyExtractor={item => item}
             renderItem={renderItem}
             style={styles.list}
@@ -211,7 +257,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    maxHeight: SHEET_MAX_HEIGHT,
+    height: SHEET_HEIGHT,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     overflow: 'hidden',
@@ -226,8 +272,15 @@ const styles = StyleSheet.create({
     height: 4,
     borderRadius: 2,
   },
+  searchWrapper: {
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+  },
   list: {
-    flexGrow: 0,
+    flex: 1,
+  },
+  separator: {
+    height: 6,
   },
   option: {
     flexDirection: 'row',

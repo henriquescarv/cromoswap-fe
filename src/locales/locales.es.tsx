@@ -10,9 +10,6 @@ const Locales = {
     noAccountLabel: '¿No tienes una cuenta? ',
     registerButton: '¡Regístrate!',
   },
-  errors: {
-    retry: 'Recargar',
-  },
   register: {
     title: '¡Regístrate!',
     error: 'No se pudo crear la cuenta. Inténtalo de nuevo.',
@@ -128,6 +125,7 @@ const Locales = {
   album: {
     searchPlaceholder: 'Buscar cromo',
     categoryPlaceholder: 'Categoría',
+    categorySearchPlaceholder: 'Buscar categoría',
     categoryConfirm: 'Confirmar',
     error: 'No se pudieron cargar los cromos',
     filterChips: {

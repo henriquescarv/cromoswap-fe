@@ -35,6 +35,7 @@ export default function AlbumScreen({ navigation }: any) {
   const {
     albumDetails: albumDetailsStore,
     summary: summaryStore,
+    externalUserProfile: externalUserProfileStore,
     requestAlbumDetails,
     resetAlbumDetails,
     requestUpdateStickersQuantity,
@@ -418,6 +419,11 @@ export default function AlbumScreen({ navigation }: any) {
               {getAlbumName(albumDetailsStore.data?.name, language)}
               <Text style={[styles.stickersCount, { color: theme.grey20 }]}>{` (${albumDetailsStore.data?.totalStickers})`}</Text>
             </Text>
+            {isExternalAlbum && externalUserProfileStore?.data?.username && (
+              <Text style={[styles.albumOwner, { color: theme.grey20 }]}>
+                {`Álbum de ${externalUserProfileStore.data.username}`}
+              </Text>
+            )}
           </View>
 
           <TouchableOpacity onPress={() => setDisplayFilter(!displayFilter)} style={[styles.filterButton]}>
@@ -447,6 +453,7 @@ export default function AlbumScreen({ navigation }: any) {
                   setCurrentPage(1);
                 }}
                 placeholder={albumLocale.categoryPlaceholder}
+                searchPlaceholder={albumLocale.categorySearchPlaceholder}
                 confirmLabel={albumLocale.categoryConfirm}
               />
             )}
@@ -592,20 +599,24 @@ const styles = StyleSheet.create({
   albumInfos: {
     flex: 1,
     display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 4,
     width: '100%',
     marginHorizontal: 48,
   },
   albumName: {
     fontSize: 16,
     fontFamily: 'primaryBold',
-    flex: 1,
     textAlign: 'center',
   },
   stickersCount: {
     fontSize: 16,
     fontFamily: 'primaryRegular',
+  },
+  albumOwner: {
+    fontSize: 12,
+    fontFamily: 'primaryRegular',
+    textAlign: 'center',
   },
 });

@@ -1,5 +1,5 @@
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { StyleSheet, Text, View, TouchableWithoutFeedback, Keyboard, FlatList, ScrollView, TouchableOpacity, Linking } from 'react-native';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { StyleSheet, Text, View, TouchableWithoutFeedback, Keyboard, FlatList, TouchableOpacity, Linking, ScrollView, RefreshControl } from 'react-native';
 import { useTheme } from '@/providers/ThemeModeProvider/ThemeModeProvider';
 import { LocaleContext } from '@/providers/LocaleProvider/LocaleProvider';
 import { getAlbumName } from '@/utils/albumName';
@@ -126,6 +126,34 @@ export default function HomeScreen({ navigation }: any) {
     }, [cleanUpFunction, checkLocationPermission])
   );
 
+  // ── Pull-to-refresh ────────────────────────────────────────────────────────
+  const hasStartedLoadingRef = useRef(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const getDefaultDataRef = useRef<() => void>(getDefaultData);
+  useEffect(() => { getDefaultDataRef.current = getDefaultData; }, [getDefaultData]);
+
+  const doRefresh = useCallback(() => {
+    hasStartedLoadingRef.current = false;
+    setIsRefreshing(true);
+    getDefaultDataRef.current();
+  }, []);
+
+  useEffect(() => {
+    if (!isRefreshing) return;
+    if (usersByRegionStore.loading || userAlbumsStore.loading) {
+      hasStartedLoadingRef.current = true;
+    }
+    if (hasStartedLoadingRef.current && !usersByRegionStore.loading && !userAlbumsStore.loading) {
+      const timer = setTimeout(() => {
+        setIsRefreshing(false);
+        hasStartedLoadingRef.current = false;
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+  }, [isRefreshing, usersByRegionStore.loading, userAlbumsStore.loading]);
+  // ──────────────────────────────────────────────────────────────────────────
+
   const goToNearYouScreen = () => {
     navigation.navigate('NearYouScreen');
   };
@@ -157,7 +185,7 @@ export default function HomeScreen({ navigation }: any) {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <SafeAreaView style={[styles.wrapper, { backgroundColor: theme.highLight }]}>
-        <View style={[styles.headContainer, { borderColor: theme.grey5 }]}>
+        <View style={[styles.headContainer, { borderColor: theme.grey5, backgroundColor: theme.highLight }]}>
           <Text style={[styles.title, { color: theme.primary100 }]}>{homeLocale.title}</Text>
 
           <View style={[styles.headIconsContainer]}>
@@ -191,114 +219,127 @@ export default function HomeScreen({ navigation }: any) {
           </View>
         </View>
 
-        <ScrollView style={[styles.contentWrapper]}>
-          {(usersByRegionStore.loading || usersByRegionStore.list.length > 0 || locationPermission !== 'granted') && (
+        <View style={styles.scrollWrapper}>
+          <ScrollView
+            style={[styles.contentWrapper, { flex: 1 }]}
+            scrollEventThrottle={16}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefreshing}
+                onRefresh={doRefresh}
+                tintColor={theme.primary50}
+                colors={[theme.primary50]}
+              />
+            }
+          >
+            {(usersByRegionStore.loading || usersByRegionStore.list.length > 0 || locationPermission !== 'granted') && (
+              <View style={[styles.blockContainer]}>
+                <View style={[styles.blockHead]}>
+                  <Text style={[styles.blockTitle, { color: theme.primary100 }]}>{homeLocale.nearYou.nearYouTitle}</Text>
+                  <Button text={homeLocale.seeMoreButtonLabel} variant="text" fontSize={16} onClick={goToNearYouScreen} />
+                </View>
+
+                {usersByRegionStore.loading && (
+                  <FlatList
+                    data={[...Array(3)]}
+                    horizontal
+                    keyExtractor={(_, index) => index.toString()}
+                    renderItem={({ item }) => (
+                      <Skeleton width={214} height={140} borderRadius={24} />
+                    )}
+                    contentContainerStyle={styles.nearYouContainer}
+                    showsHorizontalScrollIndicator={false}
+                  />
+                )}
+
+                {!usersByRegionStore.loading && !!usersByRegionStore.list.length && (
+                  <FlatList
+                    data={users}
+                    horizontal
+                    keyExtractor={(item) => item.id.toString()}
+                    renderItem={({ item }) => (
+                      <UserCard
+                        username={item.username}
+                        trocableStickers={item.trocableStickers}
+                        albums={item.albumsInCommon.map((a: any) => getAlbumName(a, language))}
+                        onClick={() => goToUserProfileScreen(item.id)}
+                      />
+                    )}
+                    contentContainerStyle={styles.nearYouContainer}
+                    showsHorizontalScrollIndicator={false}
+                  />
+                )}
+
+                {locationPermission !== null && locationPermission !== 'granted' && (
+                  <View style={styles.noPermissionContainer}>
+                    <Text style={[styles.noPermissionText, { color: theme.primary100 }]}>
+                      {homeLocale.nearYou.noPermissionText}
+                    </Text>
+                    <Button
+                      text={
+                        locationPermission === 'denied'
+                          ? homeLocale.nearYou.noPermissionButtonSettings
+                          : homeLocale.nearYou.noPermissionButton
+                      }
+                      onClick={handleRequestLocationPermission}
+                      widthFull
+                    />
+                  </View>
+                )}
+              </View>
+            )}
+
             <View style={[styles.blockContainer]}>
               <View style={[styles.blockHead]}>
-                <Text style={[styles.blockTitle, { color: theme.primary100 }]}>{homeLocale.nearYou.nearYouTitle}</Text>
-                <Button text={homeLocale.seeMoreButtonLabel} variant="text" fontSize={16} onClick={goToNearYouScreen} />
+                <Text style={[styles.blockTitle, { color: theme.primary100 }]}>{homeLocale.albums.albumsTitle}</Text>
+
+                {albums?.length > 2 && (
+                  <Button
+                    text={homeLocale.seeMoreButtonLabel}
+                    variant="text"
+                    fontSize={16}
+                    onClick={goToAlbumsScreen}
+                  />
+                )}
               </View>
 
-              {usersByRegionStore.loading && (
-                <FlatList
-                  data={[...Array(3)]}
-                  horizontal
-                  keyExtractor={(_, index) => index.toString()}
-                  renderItem={({ item }) => (
-                    <Skeleton width={214} height={140} borderRadius={24} />
-                  )}
-                  contentContainerStyle={styles.nearYouContainer}
-                  showsHorizontalScrollIndicator={false}
-                />
-              )}
-
-              {!usersByRegionStore.loading && !!usersByRegionStore.list.length && (
-                <FlatList
-                  data={users}
-                  horizontal
-                  keyExtractor={(item) => item.id.toString()}
-                  renderItem={({ item }) => (
-                    <UserCard
-                      username={item.username}
-                      trocableStickers={item.trocableStickers}
-                      albums={item.albumsInCommon.map((a: any) => getAlbumName(a, language))}
-                      onClick={() => goToUserProfileScreen(item.id)}
-                    />
-                  )}
-                  contentContainerStyle={styles.nearYouContainer}
-                  showsHorizontalScrollIndicator={false}
-                />
-              )}
-
-              {locationPermission !== null && locationPermission !== 'granted' && (
-                <View style={styles.noPermissionContainer}>
-                  <Text style={[styles.noPermissionText, { color: theme.primary100 }]}>
-                    {homeLocale.nearYou.noPermissionText}
-                  </Text>
-                  <Button
-                    text={
-                      locationPermission === 'denied'
-                        ? homeLocale.nearYou.noPermissionButtonSettings
-                        : homeLocale.nearYou.noPermissionButton
-                    }
-                    onClick={handleRequestLocationPermission}
-                    widthFull
+              <View style={[styles.albumsContainer]}>
+                {userAlbumsStore.loading && (
+                  <Skeleton
+                    width="100%"
+                    height={90}
+                    borderRadius={16}
                   />
-                </View>
-              )}
+                )}
+
+                {!userAlbumsStore.loading && albums.slice(0, 2).map((item) => (
+                  <Album
+                    key={item.id}
+                    name={getAlbumName(item.name, language)}
+                    image={item.image}
+                    percentCompleted={item.percentCompleted}
+                    onClick={() => goToAlbumScreen(item.userAlbumId)}
+                  />
+                ))}
+
+                {!userAlbumsStore.loading && !albums?.length && (
+                  <EmptyState
+                    title={homeLocale.albums.noAlbums}
+                    style={{ minHeight: 180 }}
+                  />
+                )}
+
+                <TouchableOpacity style={[styles.plusButton, { borderColor: theme.primary100 }]} onPress={goToChooseAlbumScreen}>
+                  <Ionicons
+                    name={"add"}
+                    size={32}
+                    color={theme.primary100}
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
-          )}
-
-          <View style={[styles.blockContainer]}>
-            <View style={[styles.blockHead]}>
-              <Text style={[styles.blockTitle, { color: theme.primary100 }]}>{homeLocale.albums.albumsTitle}</Text>
-
-              {albums?.length > 2 && (
-                <Button
-                  text={homeLocale.seeMoreButtonLabel}
-                  variant="text"
-                  fontSize={16}
-                  onClick={goToAlbumsScreen}
-                />
-              )}
-            </View>
-
-            <View style={[styles.albumsContainer]}>
-              {userAlbumsStore.loading && (
-                <Skeleton
-                  width="100%"
-                  height={90}
-                  borderRadius={16}
-                />
-              )}
-
-              {!userAlbumsStore.loading && albums.slice(0, 2).map((item) => (
-                <Album
-                  key={item.id}
-                  name={getAlbumName(item.name, language)}
-                  image={item.image}
-                  percentCompleted={item.percentCompleted}
-                  onClick={() => goToAlbumScreen(item.userAlbumId)}
-                />
-              ))}
-
-              {!userAlbumsStore.loading && !albums?.length && (
-                <EmptyState
-                  title={homeLocale.albums.noAlbums}
-                  style={{ minHeight: 180 }}
-                />
-              )}
-
-              <TouchableOpacity style={[styles.plusButton, { borderColor: theme.primary100 }]} onPress={goToChooseAlbumScreen}>
-                <Ionicons
-                  name={"add"}
-                  size={32}
-                  color={theme.primary100}
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
-        </ScrollView>
+          </ScrollView>
+        </View>
       </SafeAreaView>
     </TouchableWithoutFeedback>
   );
@@ -319,11 +360,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderBottomWidth: 1,
     width: '100%',
+    zIndex: 100,
+    elevation: 1,
   },
   contentWrapper: {
     display: 'flex',
     width: '100%',
     // paddingBottom: 200,
+  },
+  scrollWrapper: {
+    flex: 1,
+    width: '100%',
   },
   blockContainer: {
     display: 'flex',

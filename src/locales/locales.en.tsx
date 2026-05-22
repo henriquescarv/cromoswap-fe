@@ -125,6 +125,7 @@ const Locales = {
   album: {
     searchPlaceholder: 'Search sticker',
     categoryPlaceholder: 'Category',
+    categorySearchPlaceholder: 'Search category',
     categoryConfirm: 'Confirm',
     error: 'Could not load stickers',
     filterChips: {

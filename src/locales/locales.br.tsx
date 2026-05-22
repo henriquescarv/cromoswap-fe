@@ -125,6 +125,7 @@ const Locales = {
   album: {
     searchPlaceholder: 'Buscar cromo',
     categoryPlaceholder: 'Categoria',
+    categorySearchPlaceholder: 'Buscar categoria',
     categoryConfirm: 'Confirmar',
     error: 'Não foi possível carregar os cromos',
     filterChips: {
