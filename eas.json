@@ -25,6 +25,12 @@
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "appleId": "henrique.scarvalho01@icloud.com",
+        "ascAppId": "6773509671",
+        "appleTeamId": "Y73NNTZ857"
+      }
+    }
   }
 }
