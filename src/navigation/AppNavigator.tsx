@@ -47,6 +47,7 @@ function BottomTabNavigator() {
         },
         tabBarActiveTintColor: theme.primary100,
         tabBarInactiveTintColor: theme.primary100,
+        tabBarStyle: { backgroundColor: theme.highLight, borderTopColor: theme.grey10 },
       })}
     >
       <Tab.Screen name="HomeScreen" component={HomeScreen} />

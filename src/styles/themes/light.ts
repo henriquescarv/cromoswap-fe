@@ -15,7 +15,7 @@ const lightTheme = {
 
   primary5: '#FDF9FF',
   primary10: '#F9F0FF',
-  primary20: '#F1DFFF',
+  primary20: '#994ED2',
   primary50: '#994ED2',
   primary100: '#381A51',
 

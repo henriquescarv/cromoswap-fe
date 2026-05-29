@@ -52,10 +52,14 @@ interface EmptyStateProps {
   style?: object;
 }
 
+const applyDarkColors = (svg: string) =>
+  svg.replace(/fill="#F9F0FF"/g, 'fill="#1E0F2B"').replace(/fill="white"/g, 'fill="#301b42"');
+
 export default function EmptyState({ title, description, variant = 'default', style }: EmptyStateProps) {
   const { theme } = useTheme();
 
-  const svg = variant === 'messages' ? emptyMessageStateSvg : variant === 'done' ? doneSvg : emptyStateSvg;
+  const baseSvg = variant === 'messages' ? emptyMessageStateSvg : variant === 'done' ? doneSvg : emptyStateSvg;
+  const svg = theme.title === 'dark' ? applyDarkColors(baseSvg) : baseSvg;
 
   return (
     <View style={[styles.container, style]}>

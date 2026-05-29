@@ -16,7 +16,8 @@ const ThemeContext = createContext<ThemeContextProps>({
 });
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const [theme, setTheme] = useState(Appearance.getColorScheme() === 'dark' ? darkTheme : lightTheme);
+  // apagar depois. Estamos arrumando o darkmode aqui
+  const [theme, setTheme] = useState(Appearance.getColorScheme() === 'dark' ? lightTheme : darkTheme);
 
   useEffect(() => {
     const subscription = Appearance.addChangeListener(({ colorScheme }) => {
