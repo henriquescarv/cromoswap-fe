@@ -19,7 +19,7 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://cromoswap-be-production.up.railway.app",
+        "EXPO_PUBLIC_API_URL": "http://cromoswap-alb-766029790.us-east-1.elb.amazonaws.com",
         "EXPO_PUBLIC_IBGE_API_URL": "https://servicodados.ibge.gov.br/api/v1"
       }
     }
